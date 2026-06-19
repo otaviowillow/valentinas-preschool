@@ -1,0 +1,310 @@
+/* ===========================================================================
+   Valentina's Preschool — global styles
+   Tokens mirror README.md §2 (Brand) — "Sunny Garden" palette.
+   Bright leaf green is the signature; deep green/coral for text (WCAG AA).
+   =========================================================================== */
+
+:root {
+  /* Brand palette — "Sunny Garden": brighter green + joyful pops */
+  --color-primary: #4fa45a; /* Bright leaf green — signature */
+  --color-primary-dark: #2c6b40; /* Deep green — headings/text on light (AA) */
+  --color-primary-light: #cfebd2; /* Soft mint */
+  --color-secondary: #ee6c45; /* Bright coral */
+  --color-secondary-dark: #b8431f; /* Deep coral — CTAs/links (AA on light) */
+  --color-accent: #ffc23c; /* Sunny yellow */
+  --color-sky: #4fb3d9; /* Sky blue pop */
+
+  /* Soft color tints for section backgrounds (joyful, still readable) */
+  --color-surface: #fffdf7; /* Bright cream */
+  --color-surface-2: #fbf1dc; /* Butter sand */
+  --color-mint: #eaf6ea;
+  --color-butter: #fff3d4;
+  --color-peach: #ffe7dc;
+  --color-sky-soft: #e4f4fa;
+
+  --color-ink: #2e2a26; /* Warm charcoal */
+  --color-ink-muted: #6b6258; /* Stone */
+  --color-white: #fffdf9;
+
+  /* Typography */
+  --font-heading: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'Nunito Sans Variable', system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+
+  /* Shape & rhythm */
+  --radius: 14px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --maxw: 1120px;
+  --maxw-narrow: 760px;
+  --shadow-sm: 0 2px 8px rgba(46, 42, 38, 0.06);
+  --shadow-md: 0 10px 30px rgba(46, 42, 38, 0.1);
+  --shadow-lg: 0 24px 60px rgba(46, 42, 38, 0.14);
+
+  --section-pad: clamp(3.5rem, 8vw, 7rem);
+}
+
+/* ----------------------------- reset ------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  line-height: 1.65;
+  font-size: 1.0625rem;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+a {
+  color: var(--color-primary-dark);
+  text-decoration-color: var(--color-primary-light);
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--color-secondary-dark);
+}
+ul,
+ol {
+  padding-left: 1.2em;
+}
+
+/* ----------------------------- typography -------------------------------- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.12;
+  color: var(--color-primary-dark);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h1 {
+  font-size: clamp(2.25rem, 5.5vw, 3.6rem);
+  font-weight: 600;
+}
+h2 {
+  font-size: clamp(1.75rem, 3.8vw, 2.6rem);
+}
+h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+}
+p {
+  text-wrap: pretty;
+}
+.lead {
+  font-size: clamp(1.125rem, 2vw, 1.35rem);
+  color: var(--color-ink);
+  line-height: 1.6;
+}
+.eyebrow {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--color-secondary-dark);
+}
+
+/* ----------------------------- layout ------------------------------------ */
+.container {
+  width: min(100% - 2.5rem, var(--maxw));
+  margin-inline: auto;
+}
+.container-narrow {
+  width: min(100% - 2.5rem, var(--maxw-narrow));
+  margin-inline: auto;
+}
+.section {
+  padding-block: var(--section-pad);
+}
+.section--cream {
+  background: var(--color-surface);
+}
+.section--sand {
+  background: var(--color-surface-2);
+}
+.section--mint {
+  background: var(--color-mint);
+}
+.section--butter {
+  background: var(--color-butter);
+}
+.section--peach {
+  background: var(--color-peach);
+}
+.section--sky {
+  background: var(--color-sky-soft);
+}
+.section--forest {
+  background: var(--color-primary-dark);
+  color: var(--color-surface);
+}
+.section--forest h1,
+.section--forest h2,
+.section--forest h3 {
+  color: var(--color-white);
+}
+.section-head {
+  max-width: 46rem;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.section-head.center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* ----------------------------- buttons ----------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.95em 1.6em;
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn--primary {
+  background: var(--color-secondary-dark);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+.btn--primary:hover {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary);
+}
+.btn--ghost:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+.btn--light {
+  background: var(--color-white);
+  color: var(--color-primary-dark);
+}
+.btn--lg {
+  font-size: 1.075rem;
+  padding: 1.05em 1.9em;
+}
+
+/* ----------------------------- cards ------------------------------------- */
+.card {
+  background: var(--color-white);
+  border: 1px solid rgba(167, 196, 176, 0.5);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 3vw, 2rem);
+  box-shadow: var(--shadow-sm);
+}
+.grid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+.grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+
+/* ----------------------------- helpers ----------------------------------- */
+.text-center {
+  text-align: center;
+}
+.stack > * + * {
+  margin-top: 1.1em;
+}
+.muted {
+  color: var(--color-ink-muted);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background: var(--color-surface-2);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-pill);
+  padding: 0.4em 0.9em;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.chip {
+  background: var(--color-white);
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-pill);
+  padding: 0.45em 0.9em;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

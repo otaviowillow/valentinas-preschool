@@ -1,0 +1,113 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/nunito-sans';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Extra JSON-LD objects (e.g. FAQPage, Course) for this page. */
+  schema?: Record<string, unknown>[];
+}
+const {
+  title,
+  description = site.description,
+  schema = [],
+} = Astro.props;
+
+const pageTitle = title
+  ? `${title} | ${site.name}`
+  : `${site.name} — Reggio-Inspired Preschool in Culver City / West LA`;
+
+const canonical = new URL(Astro.url.pathname, site.url).href;
+const ogImage = new URL('/og-image.jpg', site.url).href;
+
+const { nap } = site;
+
+// Site-wide LocalBusiness / ChildCare structured data.
+const businessSchema = {
+  '@context': 'https://schema.org',
+  '@type': ['ChildCare', 'Preschool', 'LocalBusiness'],
+  name: site.name,
+  description: site.description,
+  url: site.url,
+  telephone: nap.telephoneDisplay,
+  image: ogImage,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: nap.streetAddress,
+    addressLocality: nap.addressLocality,
+    addressRegion: nap.addressRegion,
+    postalCode: nap.postalCode,
+    addressCountry: nap.addressCountry,
+  },
+  areaServed: site.areasServed,
+  founder: { '@type': 'Person', name: site.director },
+  openingHours: 'Mo-Fr 07:30-18:00',
+  sameAs: [site.social.instagram],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#4a7c59" />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(businessSchema)}
+    />
+    {
+      schema.map((s) => (
+        <script type="application/ld+json" set:html={JSON.stringify(s)} />
+      ))
+    }
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%) translateY(-150%);
+        background: var(--color-primary-dark);
+        color: var(--color-white);
+        padding: 0.6rem 1.2rem;
+        border-radius: 0 0 var(--radius) var(--radius);
+        z-index: 100;
+        transition: transform 0.2s;
+      }
+      .skip-link:focus {
+        transform: translateX(-50%) translateY(0);
+        color: var(--color-white);
+      }
+    </style>
+  </body>
+</html>

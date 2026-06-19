@@ -1,0 +1,204 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+
+const { tuition } = site;
+
+// NOTE: figures below are from a third-party listing — CONFIRM with client
+// before launch (see README.md §5, Source Site Audit).
+const plans = [
+  { name: '2 days / week', price: 'Contact us', note: 'Part-time' },
+  { name: '3 days / week', price: 'Contact us', note: 'Part-time' },
+  {
+    name: '5 days / week',
+    price: `from $${tuition.weeklyFrom}/wk`,
+    note: 'Full-time, full day',
+    featured: true,
+  },
+];
+
+const faqs = [
+  {
+    q: 'What ages do you accept?',
+    a: `We welcome children ages ${site.facts.ageRange}, with a 1:4 teacher-to-child ratio and just 12 children total.`,
+  },
+  {
+    q: 'What are your hours?',
+    a: `We’re open ${site.facts.hours}.`,
+  },
+  {
+    q: 'How much is tuition?',
+    a: `Tuition starts at $${tuition.weeklyFrom} per week for full-time (5 days) and varies by schedule. There is a one-time $${tuition.applicationFee} application fee. ${tuition.note}`,
+  },
+  {
+    q: 'Are meals included?',
+    a: 'Yes — nutritious breakfast, lunch, and an afternoon snack are included every day. No cold lunchbox required.',
+  },
+  {
+    q: 'Do you offer a sibling discount?',
+    a: tuition.siblingDiscount
+      ? 'Yes, we offer a sibling discount. Please contact us for details.'
+      : 'Please contact us about current pricing.',
+  },
+  {
+    q: 'Do you accept childcare subsidies?',
+    a: tuition.subsidiesAccepted
+      ? 'Yes, we accept childcare subsidies. Reach out and we’ll walk you through it.'
+      : 'Please contact us to discuss payment options.',
+  },
+  {
+    q: 'What is enrichment going to cost extra?',
+    a: 'Nothing. Spanish, music & dance, yoga, gardening, cooking, and art are all included in tuition.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<BaseLayout
+  title="Tuition & FAQ"
+  description="Tuition, fees, hours, meals, sibling discounts, and subsidies at Valentina's Preschool in Culver City / West LA. Enrichment always included."
+  schema={[faqSchema]}
+>
+  <PageHero
+    eyebrow="Tuition & FAQ"
+    title="Simple, all-inclusive tuition"
+    lead="One tuition covers everything — enrichment, daily Spanish, and meals included. No surprise add-ons."
+  />
+
+  <section class="section section--cream">
+    <div class="container">
+      <div class="grid grid-3 plans">
+        {
+          plans.map((p) => (
+            <article class:list={['card plan stack', { 'plan--featured': p.featured }]}>
+              {p.featured && <span class="plan__tag">Most popular</span>}
+              <h3>{p.name}</h3>
+              <p class="plan__price">{p.price}</p>
+              <p class="muted">{p.note}</p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="fees muted">
+        One-time application fee: <strong>${tuition.applicationFee}</strong> ·
+        Sibling discount available · Childcare subsidies accepted
+      </p>
+      <p class="confirm-note">
+        Rates vary by schedule and are subject to change — contact us for current
+        pricing and availability.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--sand">
+    <div class="container-narrow">
+      <div class="section-head">
+        <h2>Frequently asked questions</h2>
+      </div>
+      <div class="faqs">
+        {
+          faqs.map((f) => (
+            <details class="faq">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .plans {
+    align-items: stretch;
+  }
+  .plan {
+    text-align: center;
+    align-items: center;
+  }
+  .plan--featured {
+    border-color: var(--color-secondary);
+    border-width: 2px;
+    position: relative;
+  }
+  .plan__tag {
+    position: absolute;
+    top: -0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-secondary);
+    color: var(--color-white);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.25rem 0.85rem;
+    border-radius: var(--radius-pill);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .plan__price {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--color-secondary-dark);
+  }
+  .fees {
+    text-align: center;
+    margin-top: 1.75rem;
+  }
+  .confirm-note {
+    text-align: center;
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .faqs {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .faq {
+    background: var(--color-white);
+    border: 1px solid rgba(167, 196, 176, 0.5);
+    border-radius: var(--radius);
+    padding: 0 1.25rem;
+  }
+  .faq summary {
+    cursor: pointer;
+    font-weight: 800;
+    color: var(--color-primary-dark);
+    padding: 1.1rem 0;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .faq summary::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: var(--color-secondary);
+    transition: transform 0.2s;
+  }
+  .faq[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq p {
+    padding-bottom: 1.1rem;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Img from '../components/Img.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+
+const programs = [
+  {
+    name: 'Toddlers',
+    age: '15 months – 3 years',
+    body: 'Gentle first steps away from home. Toddlers settle into healthy routines, build language (in two tongues), and explore the world through their senses — held by a 1:4 ratio that means constant, loving attention.',
+    points: ['Sensory & messy play', 'Early Spanish & songs', 'Self-care & routines'],
+    img: 'programToddler',
+  },
+  {
+    name: 'Preschool & Pre-K',
+    age: '3 – 5 years',
+    body: 'A rich runway to kindergarten. Children dive into early literacy, math, and science through projects they help shape — and our regular assessments make the Pre-K application process a breeze.',
+    points: ['Literacy, math & science', 'Project-based learning', 'Kindergarten readiness'],
+    img: 'programPreschool',
+  },
+];
+---
+
+<BaseLayout
+  title="Programs by Age — Toddler & Preschool in Culver City"
+  description="Toddler (15 months–3 years) and Preschool/Pre-K (3–5 years) programs at Valentina's in Culver City / West LA. A 1:4 ratio, daily Spanish, meals included, kindergarten readiness."
+>
+  <PageHero
+    eyebrow="Programs"
+    title="Programs that grow with your child"
+    lead={`From first goodbyes to kindergarten-ready — ages ${site.facts.ageRange}, all in one warm, home-like setting.`}
+  />
+
+  <section class="section section--cream">
+    <div class="container stack-lg">
+      {
+        programs.map((p) => (
+          <article class="program grid grid-2">
+            <Img name={p.img as any} ratio="4/3" />
+            <div class="stack">
+              <p class="eyebrow">{p.age}</p>
+              <h2>{p.name}</h2>
+              <p>{p.body}</p>
+              <ul class="chips">
+                {p.points.map((pt) => (
+                  <li class="chip">{pt}</li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section section--sand">
+    <div class="container-narrow text-center stack">
+      <h2>Included for every child</h2>
+      <p class="lead muted">
+        No hidden “extras.” Every program includes our full enrichment lineup,
+        nutritious meals, and daily Spanish.
+      </p>
+      <ul class="chips" style="justify-content:center">
+        <li class="chip">🍳 Breakfast, lunch &amp; snacks</li>
+        <li class="chip">🗣️ Daily Spanish</li>
+        <li class="chip">🎨 Art, music &amp; yoga</li>
+        <li class="chip">🌱 Gardening &amp; cooking</li>
+        <li class="chip">📋 Regular assessments</li>
+      </ul>
+      <p><a href="/enrichment/" class="btn btn--ghost">Explore enrichment</a></p>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .stack-lg > * + * {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+  .program {
+    align-items: center;
+  }
+  .program:nth-child(even) :global(.img) {
+    order: 2;
+  }
+  @media (max-width: 880px) {
+    .program:nth-child(even) :global(.img) {
+      order: 0;
+    }
+  }
+</style>

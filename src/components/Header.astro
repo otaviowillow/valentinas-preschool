@@ -1,0 +1,161 @@
+---
+import { navLinks, site } from '../data/site';
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="brand" aria-label={`${site.name} — home`}>
+      <span class="brand__name">Valentina’s</span>
+      <span class="brand__sub">Preschool</span>
+    </a>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+    <label for="nav-toggle" class="nav-burger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__list">
+        {
+          navLinks.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                class:list={['nav__link', { 'is-active': isActive(l.href) }]}
+                aria-current={isActive(l.href) ? 'page' : undefined}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+        <li class="nav__cta">
+          <a href="/contact/" class="btn btn--primary">Book a Tour</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(251, 247, 240, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(167, 196, 176, 0.45);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 4.5rem;
+  }
+  .brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand__name {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--color-primary-dark);
+  }
+  .brand__sub {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--color-secondary-dark);
+    margin-top: 0.2rem;
+  }
+  .nav__list {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+  }
+  .nav__link {
+    display: inline-block;
+    padding: 0.5rem 0.7rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--color-ink);
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+  }
+  .nav__link:hover,
+  .nav__link.is-active {
+    color: var(--color-primary-dark);
+    background: var(--color-surface-2);
+  }
+  .nav__cta {
+    margin-left: 0.4rem;
+  }
+
+  .nav-toggle,
+  .nav-burger {
+    display: none;
+  }
+  .nav-burger {
+    flex-direction: column;
+    gap: 5px;
+    padding: 0.6rem;
+    cursor: pointer;
+    border-radius: 10px;
+  }
+  .nav-burger span {
+    width: 24px;
+    height: 2.5px;
+    background: var(--color-primary-dark);
+    border-radius: 2px;
+    transition: 0.2s;
+  }
+
+  @media (max-width: 880px) {
+    .nav-burger {
+      display: flex;
+    }
+    .nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--color-surface);
+      border-bottom: 1px solid rgba(167, 196, 176, 0.45);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+      box-shadow: var(--shadow-md);
+    }
+    .nav__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.15rem;
+      padding: 1rem 1.25rem 1.5rem;
+    }
+    .nav__link {
+      padding: 0.8rem 0.7rem;
+      font-size: 1.05rem;
+    }
+    .nav__cta {
+      margin: 0.5rem 0 0;
+    }
+    .nav__cta .btn {
+      width: 100%;
+    }
+    .nav-toggle:checked ~ .nav {
+      max-height: 30rem;
+    }
+  }
+</style>

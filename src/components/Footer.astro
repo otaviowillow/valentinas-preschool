@@ -1,0 +1,151 @@
+---
+import { footerLinks, site } from '../data/site';
+const { nap } = site;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <span class="brand__name">Valentina’s Preschool</span>
+      <p class="muted footer-tag">
+        A boutique, Reggio-inspired preschool in Culver City / West LA. Just 12
+        children, a 1:4 ratio, and a whole lot of heart.
+      </p>
+      <p class="footer-badges">
+        <span class="pill">Licensed #{site.facts.license}</span>
+        <span class="pill">{site.facts.accreditation}</span>
+      </p>
+    </div>
+
+    {
+      Object.entries(footerLinks).map(([group, links]) => (
+        <nav class="footer-col" aria-label={group}>
+          <h2 class="footer-col__title">{group}</h2>
+          <ul>
+            {links.map((l) => (
+              <li>
+                <a href={l.href}>{l.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
+
+    <div class="footer-col footer-contact">
+      <h2 class="footer-col__title">Visit Us</h2>
+      <address>
+        {nap.streetAddress}<br />
+        {nap.addressLocality}, {nap.addressRegion}
+        {nap.postalCode}<br />
+        <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a><br />
+        <span class="muted">{site.facts.hours}</span>
+      </address>
+      <a
+        href={site.social.instagram}
+        class="footer-ig"
+        rel="me noopener"
+        target="_blank">{site.social.instagramHandle}</a
+      >
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p class="muted">
+      © {year} Valentina’s Preschool. All rights reserved.
+    </p>
+    <p class="muted">
+      Made with care in Culver City · West Los Angeles · Mid-City
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-primary-dark);
+    color: var(--color-surface);
+    padding-block: clamp(3rem, 6vw, 4.5rem) 1.5rem;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: 2.5rem;
+  }
+  .footer-brand .brand__name {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--color-white);
+  }
+  .footer-tag {
+    color: rgba(251, 247, 240, 0.75);
+    margin-top: 0.6rem;
+    max-width: 24rem;
+  }
+  .footer-badges {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .footer-col__title {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.78rem;
+    color: var(--color-accent);
+    margin-bottom: 0.9rem;
+  }
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .footer-col a,
+  .footer-contact a {
+    color: rgba(251, 247, 240, 0.85);
+    text-decoration: none;
+  }
+  .footer-col a:hover,
+  .footer-contact a:hover {
+    color: var(--color-white);
+    text-decoration: underline;
+  }
+  .footer-contact address {
+    font-style: normal;
+    line-height: 1.7;
+    color: rgba(251, 247, 240, 0.85);
+  }
+  .footer-ig {
+    display: inline-block;
+    margin-top: 0.8rem;
+    font-weight: 700;
+    color: var(--color-accent) !important;
+  }
+  .footer-bottom {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(251, 247, 240, 0.15);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .footer-bottom .muted {
+    color: rgba(251, 247, 240, 0.6);
+    font-size: 0.85rem;
+  }
+  @media (max-width: 880px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+  @media (max-width: 520px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

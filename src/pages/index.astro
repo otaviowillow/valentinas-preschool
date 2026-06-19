@@ -1,0 +1,457 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Img from '../components/Img.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+import { testimonials, reviewStats } from '../data/testimonials';
+import { imageSrc } from '../data/images';
+
+const featured = testimonials.slice(0, 3);
+
+// Full-bleed hero background (swap to a real photo in src/data/images.ts).
+const heroSrc = imageSrc('hero', 1700, 1100);
+
+const stats = [
+  { num: site.yearsServing, label: 'years in the neighborhood' },
+  { num: '2', label: 'languages, every day' },
+  { num: 'Top 3', label: 'preschool · 2026' },
+  { num: '100%', label: 'enrichment & meals included' },
+];
+
+const pillars = [
+  {
+    title: 'Reggio-inspired philosophy',
+    body: 'Children learn through active exploration and play, expressing themselves in a “hundred languages.” We document each child’s journey in their own binder.',
+    href: '/philosophy/',
+    cta: 'Our approach',
+  },
+  {
+    title: 'Emotional literacy',
+    body: 'Every day we coach children to name, understand, and manage feelings — resolving conflict peacefully. It’s the skill that shapes resilient, kind humans.',
+    href: '/emotional-literacy/',
+    cta: 'Why it matters',
+  },
+  {
+    title: 'Bilingual — daily Spanish',
+    body: 'Spanish is woven into every day through songs, play, and conversation. Children leave us switching between languages with ease.',
+    href: '/bilingual/',
+    cta: 'Our bilingual day',
+  },
+];
+
+// Whole-child curriculum across five domains (client's framework).
+const curriculum = [
+  {
+    title: 'Academic Foundations',
+    items: ['Language & Literacy', 'Mathematics', 'Science'],
+    tint: 'mint',
+  },
+  {
+    title: 'Creative Arts & Enrichment',
+    items: ['Music', 'Dance', 'Art', 'Drama'],
+    tint: 'peach',
+  },
+  {
+    title: 'Physical Development & Wellness',
+    items: ['Yoga', 'Movement', 'Outdoor Play'],
+    tint: 'sky',
+  },
+  {
+    title: 'Life Skills',
+    items: ['Cooking', 'Gardening', 'Practical Skills'],
+    tint: 'butter',
+  },
+  {
+    title: 'Social-Emotional Development',
+    items: ['Emotional Literacy', 'Self-Regulation', 'Empathy', 'Conflict Resolution'],
+    tint: 'plum',
+  },
+];
+
+---
+
+<BaseLayout>
+  <!-- ===================== FOLD 1 — HERO ===================== -->
+  <section class="hero" style={`background-image: url(${heroSrc})`}>
+    <div class="hero__scrim"></div>
+    <div class="container hero__inner">
+      <div class="hero__copy stack">
+        <a href="/testimonials/" class="award" aria-label={`${site.award.title} by ${site.award.by}`}>
+          <span class="award__star">★</span>
+          <span>
+            <strong>{site.award.title}</strong>
+            <small>{site.award.by} · {site.facts.accreditation}</small>
+          </span>
+        </a>
+        <h1>{site.tagline}</h1>
+        <p class="lead">
+          A boutique, Reggio-inspired preschool in Culver City &amp; West Los
+          Angeles — with <strong>daily Spanish</strong>, an enrichment-rich
+          curriculum, and <strong>nutritious meals</strong> made with love, for
+          ages 15 months to 5 years.
+        </p>
+        <div class="hero__actions">
+          <a href="/contact/" class="btn btn--primary btn--lg">Book a Tour</a>
+          <a href="/philosophy/" class="btn btn--ghost btn--lg">See our approach</a>
+        </div>
+        <p class="hero__trust">
+          Licensed #{site.facts.license} · {site.facts.accreditation} · {site.facts.hours}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TRUST BAND ===================== -->
+  <section class="section--sand stats">
+    <div class="container stats__grid">
+      {
+        stats.map((s) => (
+          <div class="stat">
+            <span class="stat__num">{s.num}</span>
+            <span class="stat__label">{s.label}</span>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ===================== FOLD 2 — WHY US ===================== -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">Why families choose us</p>
+        <h2>More than daycare — a small world built around your child</h2>
+        <p class="lead muted">
+          For over fourteen years, Valentina and her team have raised
+          well-rounded, kind little humans in a home-like setting where no child
+          gets lost in the shuffle.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {
+          pillars.map((p) => (
+            <article class="card stack">
+              <h3>{p.title}</h3>
+              <p>{p.body}</p>
+              <a href={p.href} class="card__link">
+                {p.cta} →
+              </a>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CURRICULUM / A DAY FULL OF DISCOVERY ========= -->
+  <section class="section section--mint">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">All included in tuition</p>
+        <h2>A day full of discovery</h2>
+        <p class="lead muted">
+          We nurture the whole child — across five connected domains, woven
+          through play, every single day.
+        </p>
+      </div>
+      <div class="curriculum">
+        {
+          curriculum.map((c) => (
+            <article class={`curric-row curric-row--${c.tint}`}>
+              <h3 class="curric-row__title">{c.title}</h3>
+              <ul class="curric-tags">
+                {c.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+      <p class="text-center" style="margin-top:2.25rem">
+        <a href="/programs/" class="btn btn--ghost">Programs by age</a>
+        <a href="/enrichment/" class="btn btn--ghost">Explore enrichment</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== FOLD 3 — TESTIMONIALS ===================== -->
+  <section class="section section--cream">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">
+          ★★★★★ {reviewStats.reviewCount} reviews from real families
+        </p>
+        <h2>“No child gets left behind.”</h2>
+      </div>
+      <div class="grid grid-3">
+        {
+          featured.map((t) => (
+            <figure class="card quote stack">
+              <blockquote>“{t.quote}”</blockquote>
+              <figcaption>
+                <strong>{t.author}</strong>
+                <span class="muted">{t.location} · {t.dateDisplay}</span>
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+      <p class="text-center" style="margin-top:2rem">
+        <a href="/testimonials/" class="btn btn--ghost">Read all reviews</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== FOLD 4 — INSTAGRAM ===================== -->
+  <section class="section section--sky">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">A peek into our week</p>
+        <h2>Life at Valentina’s</h2>
+        <p class="muted">
+          Follow along at
+          <a href={site.social.instagram} rel="noopener" target="_blank"
+            >{site.social.instagramHandle}</a
+          >
+        </p>
+      </div>
+      <div class="ig-grid">
+        {
+          (
+            [
+              'igGarden',
+              'igPaint',
+              'igYoga',
+              'igCooking',
+              'igCircle',
+              'igArt',
+              'igOutdoor',
+              'igReading',
+            ] as const
+          ).map((name) => (
+            <Img name={name} ratio="1/1" width={500} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--color-primary-dark);
+    display: flex;
+    align-items: center;
+    min-height: clamp(34rem, 78vh, 46rem);
+    padding-block: clamp(3rem, 8vw, 6rem);
+    overflow: hidden;
+  }
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        100deg,
+        rgba(28, 50, 35, 0.86) 0%,
+        rgba(28, 50, 35, 0.7) 55%,
+        rgba(28, 50, 35, 0.28) 82%,
+        rgba(28, 50, 35, 0.12) 100%
+      ),
+      linear-gradient(0deg, rgba(28, 50, 35, 0.35), transparent 45%);
+  }
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+  .hero__copy {
+    max-width: 56rem;
+  }
+  .hero h1 {
+    color: var(--color-white);
+    text-wrap: balance;
+  }
+  .hero .lead {
+    color: rgba(255, 253, 247, 0.92);
+    max-width: 44rem;
+  }
+  .hero .lead strong {
+    color: var(--color-white);
+  }
+  .hero__actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .hero__trust {
+    font-size: 0.88rem;
+    color: rgba(255, 253, 247, 0.8);
+  }
+  /* On the dark hero, make the outline button readable. */
+  .hero .btn--ghost {
+    color: var(--color-white);
+    border-color: rgba(255, 253, 247, 0.7);
+  }
+  .hero .btn--ghost:hover {
+    background: var(--color-white);
+    color: var(--color-primary-dark);
+    border-color: var(--color-white);
+  }
+  .award {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-pill);
+    padding: 0.45rem 1rem 0.45rem 0.6rem;
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    width: fit-content;
+  }
+  .award__star {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: #6b4e16;
+    font-size: 1rem;
+  }
+  .award strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--color-primary-dark);
+    line-height: 1.1;
+  }
+  .award small {
+    color: var(--color-ink-muted);
+    font-size: 0.75rem;
+  }
+
+  .stats {
+    padding-block: clamp(2rem, 4vw, 3rem);
+  }
+  .stats__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    text-align: center;
+  }
+  .stat__num {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    color: var(--color-secondary-dark);
+    line-height: 1;
+  }
+  .stat__label {
+    display: block;
+    margin-top: 0.4rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    font-size: 0.95rem;
+  }
+
+  .card__link {
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--color-secondary-dark);
+  }
+
+  .curriculum {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-width: 920px;
+    margin-inline: auto;
+  }
+  .curric-row {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    background: var(--color-white);
+    border: 1px solid rgba(167, 196, 176, 0.5);
+    border-left: 6px solid var(--color-primary);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .curric-row--mint {
+    border-left-color: var(--color-primary);
+  }
+  .curric-row--peach {
+    border-left-color: var(--color-secondary);
+  }
+  .curric-row--sky {
+    border-left-color: var(--color-sky);
+  }
+  .curric-row--butter {
+    border-left-color: var(--color-accent);
+  }
+  .curric-row--plum {
+    border-left-color: #a86fb0;
+  }
+  .curric-row__title {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  .curric-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .curric-tags li {
+    background: var(--color-surface);
+    border: 1px solid rgba(167, 196, 176, 0.4);
+    border-radius: var(--radius-pill);
+    padding: 0.35em 0.85em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  @media (max-width: 640px) {
+    .curric-row {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+  }
+
+  .quote blockquote {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: var(--color-primary-dark);
+  }
+  .quote figcaption {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ig-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
+  }
+
+  @media (max-width: 880px) {
+    .stats__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem 1rem;
+    }
+    .ig-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

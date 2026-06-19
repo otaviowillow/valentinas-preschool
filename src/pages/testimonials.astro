@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site } from '../data/site';
+import { testimonials, reviewStats } from '../data/testimonials';
+
+const reviewSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Preschool',
+  name: site.name,
+  url: site.url,
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: reviewStats.ratingValue,
+    reviewCount: reviewStats.reviewCount,
+    bestRating: 5,
+  },
+  review: testimonials.map((t) => ({
+    '@type': 'Review',
+    author: { '@type': 'Person', name: t.author },
+    datePublished: t.date,
+    reviewRating: { '@type': 'Rating', ratingValue: 5, bestRating: 5 },
+    reviewBody: t.full,
+  })),
+};
+---
+
+<BaseLayout
+  title="Testimonials — What Families Say"
+  description="Read reviews from Valentina's Preschool families in Culver City, West LA, and beyond. A boutique preschool parents trust and children love."
+  schema={[reviewSchema]}
+>
+  <PageHero
+    eyebrow="★★★★★ From our families"
+    title="Words from the parents who know us best"
+    lead="The award is nice. But these are the reviews that matter — from families who trusted us with their first goodbyes and proudest firsts."
+  >
+    <p class="award-line">
+      <span class="pill">★ {site.award.title} · {site.award.by}</span>
+    </p>
+  </PageHero>
+
+  <section class="section section--cream">
+    <div class="container reviews">
+      {
+        testimonials.map((t) => (
+          <figure class="card review stack">
+            <div class="review__stars" aria-label="5 out of 5 stars">
+              ★★★★★
+            </div>
+            <blockquote>{t.full}</blockquote>
+            <figcaption>
+              <strong>{t.author}</strong>
+              <span class="muted">
+                {t.location} · {t.dateDisplay}
+              </span>
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .award-line {
+    margin-top: 0.5rem;
+  }
+  .reviews {
+    columns: 2;
+    column-gap: clamp(1rem, 2.5vw, 1.75rem);
+  }
+  .review {
+    break-inside: avoid;
+    margin-bottom: clamp(1rem, 2.5vw, 1.75rem);
+  }
+  .review__stars {
+    color: var(--color-accent);
+    letter-spacing: 2px;
+  }
+  .review blockquote {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .review figcaption {
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 720px) {
+    .reviews {
+      columns: 1;
+    }
+  }
+</style>

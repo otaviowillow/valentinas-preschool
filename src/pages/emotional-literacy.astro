@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Img from '../components/Img.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+const benefits = [
+  'Tolerate frustration better',
+  'Have fewer conflicts',
+  'Show less destructive behavior',
+  'Feel less lonely',
+  'Stay more focused',
+  'Act less impulsively',
+  'Show greater academic achievement',
+  'Build empathy for others',
+];
+---
+
+<BaseLayout
+  title="Emotional Literacy — Social-Emotional Learning Preschool"
+  description="At Valentina's Preschool in West LA, we coach emotional literacy every day — helping children identify, understand, and manage feelings, and resolve conflict peacefully."
+>
+  <PageHero
+    eyebrow="Emotional Literacy"
+    title="The skill that shapes resilient, kind humans"
+    lead="Emotional literacy is the ability to identify, understand, and respond to emotions — in oneself and others — in a healthy way. We coach it intensely, every single day."
+  />
+
+  <section class="section section--cream">
+    <div class="container grid grid-2" style="align-items:center">
+      <div class="stack">
+        <h2>Why it matters so much</h2>
+        <p>
+          Research now recognizes social-emotional skills as a main factor in
+          raising strong, resilient, successful children and young adults.
+          Children with emotional literacy are simply healthier — and happier.
+        </p>
+        <ul class="benefit-list">
+          {benefits.map((b) => <li>{b}</li>)}
+        </ul>
+      </div>
+      <Img name="emotional" ratio="4/3" />
+    </div>
+  </section>
+
+  <section class="section section--sand">
+    <div class="container-narrow stack">
+      <h2>How we teach it</h2>
+      <p>
+        To help a child self-regulate, our teachers pay close attention and help
+        them notice the triggers that come with strong emotions. During the
+        preschool years children learn the basics — saying “hi” and “bye,”
+        taking turns, “sorry, please, thank you,” and problem-solving.
+      </p>
+      <p>
+        We focus on resolving interpersonal conflicts in a peaceful, non-violent
+        way. The teacher models compassionate behavior and sets the tone for the
+        whole classroom — demonstrating kindness, generosity, thoughtfulness,
+        and understanding. We encourage children to express their feelings in a
+        positive, acceptable way, and to show empathy.
+      </p>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .benefit-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 1.25rem;
+  }
+  .benefit-list li {
+    position: relative;
+    padding-left: 1.6rem;
+    font-weight: 600;
+  }
+  .benefit-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: 900;
+  }
+  @media (max-width: 520px) {
+    .benefit-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

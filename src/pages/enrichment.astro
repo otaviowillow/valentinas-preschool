@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+const programs = [
+  {
+    icon: '🗣️',
+    name: 'Spanish language',
+    body: 'A second language boosts verbal communication, math and reasoning, and cultural awareness. We practice it daily through song, play, and conversation.',
+  },
+  {
+    icon: '🎵',
+    name: 'Music & dance',
+    body: 'Music supports motor skills, language, literacy, and memory. Dancing lets children practice self-expression while their bodies and minds learn to work together.',
+  },
+  {
+    icon: '🧘',
+    name: 'Yoga',
+    body: 'Yoga builds body awareness and teaches children to manage stress through breathing and movement — growing concentration, confidence, and a positive self-image.',
+  },
+  {
+    icon: '🌱',
+    name: 'Organic gardening',
+    body: 'Planting seeds, watering, and watching them grow gives children purpose and responsibility. The self-esteem of eating a tomato you grew yourself is priceless.',
+  },
+  {
+    icon: '🍳',
+    name: 'Cooking',
+    body: 'A basic life skill that sneaks in early math — counting eggs, measuring water — while inviting children to explore with their senses and try new tastes.',
+  },
+  {
+    icon: '🎨',
+    name: 'Art atelier',
+    body: 'Led by our art teacher, children create beautiful pieces that let them express their talents and see their “hundred languages” come to life.',
+  },
+];
+---
+
+<BaseLayout
+  title="Enrichment Programs — Yoga, Music, Gardening, Cooking & Art"
+  description="Yoga, music & dance, organic gardening, cooking, art, and daily Spanish — all included in tuition at Valentina's Preschool in Culver City / West LA."
+>
+  <PageHero
+    eyebrow="Enrichment"
+    title="Enrichment that’s included — never an add-on"
+    lead="At many schools these are pricey extras. Here, they’re simply part of the day, every day."
+  />
+
+  <section class="section section--cream">
+    <div class="container grid grid-3">
+      {
+        programs.map((p) => (
+          <article class="card stack">
+            <span class="enrich-icon" aria-hidden="true">
+              {p.icon}
+            </span>
+            <h3>{p.name}</h3>
+            <p>{p.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .enrich-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+</style>

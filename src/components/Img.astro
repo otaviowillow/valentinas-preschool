@@ -1,0 +1,51 @@
+---
+/**
+ * Renders a registered image by key (see src/data/images.ts).
+ * Temporary placeholders come from a public image API; swap to real photos by
+ * editing ONLY src/data/images.ts.
+ */
+import { images, imageSrc, type ImageKey } from '../data/images';
+
+interface Props {
+  name: ImageKey;
+  ratio?: string; // e.g. "4/3", "1/1", "4/5"
+  width?: number; // base pixel width used to request the placeholder
+  loading?: 'lazy' | 'eager';
+  class?: string;
+}
+const {
+  name,
+  ratio = '4/3',
+  width = 900,
+  loading = 'lazy',
+  class: className = '',
+} = Astro.props;
+
+const [rw, rh] = ratio.split('/').map(Number);
+const height = Math.round((width * rh) / rw);
+const src = imageSrc(name, width, height);
+const alt = images[name].alt;
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={loading}
+  decoding="async"
+  class={`img ${className}`}
+  style={`--ratio:${ratio}`}
+/>
+
+<style>
+  .img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio);
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-2);
+  }
+</style>

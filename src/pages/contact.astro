@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../data/site';
+
+const { nap } = site;
+const mapQuery = encodeURIComponent(
+  `${nap.streetAddress}, ${nap.addressLocality}, ${nap.addressRegion} ${nap.postalCode}`
+);
+---
+
+<BaseLayout
+  title="Book a Tour & Contact"
+  description="Book a tour or join the waitlist at Valentina's Preschool, 6100 Hargis St, Los Angeles, CA 90034. Call (310) 839-9147 or send us a note."
+>
+  <PageHero
+    eyebrow="Visit Us"
+    title="Come see if we’re the right fit"
+    lead="Spots are limited — we keep our family small on purpose. Tell us a little about your child and we’ll be in touch personally."
+  />
+
+  <section class="section section--cream">
+    <div class="container contact-grid">
+      <!--
+        TODO: wire this form to a service before launch — e.g. Web3Forms,
+        Formspree, or a Cloudflare Pages Function. Replace `action` and add the
+        provider's access key. Right now it has no backend.
+      -->
+      <form
+        class="card contact-form stack"
+        action="https://example-form-endpoint.invalid"
+        method="POST"
+      >
+        <h2>Request a tour</h2>
+
+        <div class="field">
+          <label for="parent">Your name</label>
+          <input id="parent" name="parent_name" type="text" required />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="childage">Child’s age</label>
+            <input
+              id="childage"
+              name="child_age"
+              type="text"
+              placeholder="e.g. 2 years"
+            />
+          </div>
+          <div class="field">
+            <label for="start">Desired start</label>
+            <input id="start" name="start_date" type="text" placeholder="e.g. Fall 2026" />
+          </div>
+        </div>
+
+        <fieldset class="field">
+          <legend>I’d like to…</legend>
+          <label class="radio"
+            ><input type="radio" name="intent" value="tour" checked /> Book a tour</label
+          >
+          <label class="radio"
+            ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
+          >
+        </fieldset>
+
+        <div class="field">
+          <label for="message">Anything we should know?</label>
+          <textarea id="message" name="message" rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--lg">Send request</button>
+        <p class="muted form-fallback">
+          Prefer to talk? Call <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a>.
+        </p>
+      </form>
+
+      <aside class="contact-info stack">
+        <div class="card stack">
+          <h2>Find us</h2>
+          <address>
+            {nap.streetAddress}<br />
+            {nap.addressLocality}, {nap.addressRegion} {nap.postalCode}
+          </address>
+          <p>
+            <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a>
+          </p>
+          <p><strong>Hours:</strong><br />{site.facts.hours}</p>
+          <p>
+            <a href={site.social.instagram} rel="noopener" target="_blank"
+              >{site.social.instagramHandle}</a
+            >
+          </p>
+          <p class="muted">
+            Licensed #{site.facts.license} · {site.facts.accreditation}
+          </p>
+        </div>
+        <iframe
+          class="map"
+          title="Map to Valentina's Preschool"
+          src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  label,
+  legend {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--color-primary-dark);
+  }
+  input,
+  textarea {
+    font: inherit;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--color-primary-light);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  input:focus,
+  textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+  }
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    margin-right: 1.2rem;
+  }
+  .form-fallback {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .contact-info address {
+    font-style: normal;
+    line-height: 1.6;
+  }
+  .map {
+    width: 100%;
+    height: 320px;
+    border: 0;
+    border-radius: var(--radius-lg);
+  }
+  @media (max-width: 880px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
