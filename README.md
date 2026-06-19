@@ -133,6 +133,49 @@ Latest build: **11 pages, no errors.**
 
 ---
 
+## Deployment & domain
+
+**Repo:** https://github.com/otaviowillow/valentinas-preschool (public, `main`).
+
+**Cost: ~$11/year total** — the domain is the only paid item. Hosting, SSL,
+GitHub, and the form backend are all free.
+
+### Step 1 — Deploy to Cloudflare Pages (free, ~5 min)
+1. Create a free account at <https://dash.cloudflare.com>.
+2. **Workers & Pages → Create → Pages → Connect to Git** → authorize GitHub →
+   pick **`valentinas-preschool`**.
+3. Build settings (Astro is auto-detected; confirm these):
+   - **Framework preset:** Astro
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+4. **Save and Deploy.** In ~1 min you get a live URL:
+   `valentinas-preschool.pages.dev`. Every push to `main` now auto-deploys.
+
+### Step 2 — Buy the domain (~$10–11/yr)
+**Option A — Cloudflare Registrar (recommended; at-cost, DNS auto-wired):**
+1. In the Cloudflare dashboard: **Domain Registration → Register Domains**.
+2. Search `valentinaspreschool.com` → add to cart → pay. WHOIS privacy is free.
+
+**Option B — Porkbun (cheapest standalone):** register at <https://porkbun.com>,
+then add the domain to Cloudflare (**+ Add a site**) and switch its nameservers
+to the two Cloudflare gives you.
+
+### Step 3 — Attach the domain to the site
+1. **Workers & Pages → your project → Custom domains → Set up a domain.**
+2. Enter `valentinaspreschool.com` **and** `www.valentinaspreschool.com`.
+   - If the domain is on Cloudflare (Option A, or B after nameserver switch),
+     DNS records are created automatically.
+3. Set the apex (`valentinaspreschool.com`) to redirect to
+   `www.valentinaspreschool.com` (matches `site` in `astro.config.mjs`).
+4. SSL/HTTPS is issued automatically (free). Done.
+
+> **Form backend (free, do before launch):** the contact form is frontend-only.
+> Wire it to a **Cloudflare Pages Function** (100k req/day free) or a free
+> service (Web3Forms/Formspree). Put any API key in **Cloudflare → Settings →
+> Environment variables / secrets** — never commit it (the repo is public).
+
+---
+
 ## What's left ⏳
 
 ### Needs the client (blocking polish, not the build)
