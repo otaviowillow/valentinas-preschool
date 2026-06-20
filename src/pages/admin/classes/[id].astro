@@ -1,0 +1,156 @@
+---
+export const prerender = false;
+
+import { asc, eq } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { ageFromDob } from '../../../lib/format';
+
+const id = Number(Astro.params.id);
+const db = dbFrom();
+
+const [cls] = Number.isInteger(id)
+  ? await db.select().from(schema.classes).where(eq(schema.classes.id, id))
+  : [];
+if (!cls) return Astro.redirect('/admin/classes/');
+
+const roster = await db
+  .select()
+  .from(schema.children)
+  .where(eq(schema.children.classId, id))
+  .orderBy(asc(schema.children.firstName));
+
+const self = `/admin/classes/${id}/`;
+---
+
+<AdminLayout title={cls.name} active="classes">
+  <a class="admin-back" href="/admin/classes/">← All classes</a>
+
+  <div class="admin-head">
+    <div>
+      <h1>{cls.name}</h1>
+      <p>{roster.length} child{roster.length === 1 ? '' : 'ren'} assigned · capacity {cls.capacity}</p>
+    </div>
+  </div>
+
+  <div class="grid-2col">
+    <section class="admin-panel">
+      <h2>Roster</h2>
+      {
+        roster.length === 0 ? (
+          <p class="muted">No children assigned to this class yet.</p>
+        ) : (
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roster.map((c) => (
+                <tr>
+                  <td>
+                    <a href={`/admin/children/${c.id}/`}>
+                      {c.firstName} {c.lastName ?? ''}
+                    </a>
+                  </td>
+                  <td>{ageFromDob(c.dob)}</td>
+                  <td>
+                    <StatusBadge status={c.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+    </section>
+
+    <section class="admin-panel">
+      <h2>Edit class</h2>
+      <form method="POST" action="/api/admin/classes/" class="admin-form">
+        <input type="hidden" name="_action" value="update" />
+        <input type="hidden" name="id" value={id} />
+        <input type="hidden" name="_redirect" value={self} />
+        <div class="admin-field">
+          <label for="name">Class name *</label>
+          <input id="name" name="name" value={cls.name} required />
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="ageMinMonths">Min age (months)</label>
+            <input
+              id="ageMinMonths"
+              name="ageMinMonths"
+              type="number"
+              min="0"
+              max="120"
+              value={cls.ageMinMonths ?? ''}
+            />
+          </div>
+          <div class="admin-field">
+            <label for="ageMaxMonths">Max age (months)</label>
+            <input
+              id="ageMaxMonths"
+              name="ageMaxMonths"
+              type="number"
+              min="0"
+              max="120"
+              value={cls.ageMaxMonths ?? ''}
+            />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="capacity">Capacity</label>
+            <input
+              id="capacity"
+              name="capacity"
+              type="number"
+              min="0"
+              max="100"
+              value={cls.capacity}
+            />
+          </div>
+          <div class="admin-field">
+            <label for="color">Color</label>
+            <input id="color" name="color" type="color" value={cls.color ?? '#4fa45a'} />
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn">Save changes</button>
+        </div>
+      </form>
+
+      <form
+        method="POST"
+        action="/api/admin/classes/"
+        onsubmit="return confirm('Delete this class? Children will be unassigned.');"
+        style="margin-top:1rem;"
+      >
+        <input type="hidden" name="_action" value="delete" />
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm"
+          >Delete class</button
+        >
+      </form>
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .grid-2col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

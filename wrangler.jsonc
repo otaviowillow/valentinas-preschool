@@ -2,8 +2,40 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "valentinas-preschool",
   "compatibility_date": "2026-06-19",
-  // Static Astro build output (no SSR adapter). Run `npm run build` first.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // SSR entry from the @astrojs/cloudflare adapter. Static pages are still
+  // emitted to ./dist and served via the ASSETS binding; only on-demand routes
+  // (/admin, /api) execute in this Worker.
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "assets": {
-    "directory": "./dist"
-  }
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // ---- Bindings -----------------------------------------------------------
+  // D1 (SQLite) database. Create it once with:
+  //   npx wrangler d1 create valentinas-preschool-db
+  // then paste the returned database_id below (replace the placeholder).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "valentinas-preschool-db",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "drizzle/migrations"
+    }
+  ],
+
+  // R2 bucket for uploaded photos (parent comms). Create it once with:
+  //   npx wrangler r2 bucket create valentinas-preschool-media
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "valentinas-preschool-media"
+    }
+  ]
 }

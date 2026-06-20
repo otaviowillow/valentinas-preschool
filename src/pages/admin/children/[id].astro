@@ -1,0 +1,128 @@
+---
+export const prerender = false;
+
+import { asc, eq } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { ageFromDob } from '../../../lib/format';
+import { CHILD_STATUSES } from '../../../db/schema';
+
+const id = Number(Astro.params.id);
+const db = dbFrom();
+
+const [child] = Number.isInteger(id)
+  ? await db.select().from(schema.children).where(eq(schema.children.id, id))
+  : [];
+if (!child) return Astro.redirect('/admin/children/');
+
+const families = await db
+  .select()
+  .from(schema.families)
+  .orderBy(asc(schema.families.primaryContactName));
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.name));
+
+const self = `/admin/children/${id}/`;
+---
+
+<AdminLayout title={`${child.firstName} ${child.lastName ?? ''}`} active="children">
+  <a class="admin-back" href="/admin/children/">← All children</a>
+
+  <div class="admin-head">
+    <div>
+      <h1>{child.firstName} {child.lastName ?? ''}</h1>
+      <p>{ageFromDob(child.dob)} old</p>
+    </div>
+  </div>
+
+  <section class="admin-panel" style="max-width:640px;">
+    <h2>Edit child</h2>
+    <form method="POST" action="/api/admin/children/" class="admin-form">
+      <input type="hidden" name="_action" value="update" />
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="_redirect" value={self} />
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="firstName">First name *</label>
+          <input id="firstName" name="firstName" value={child.firstName} required />
+        </div>
+        <div class="admin-field">
+          <label for="lastName">Last name</label>
+          <input id="lastName" name="lastName" value={child.lastName ?? ''} />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="dob">Date of birth</label>
+          <input id="dob" name="dob" type="date" value={child.dob ?? ''} />
+        </div>
+        <div class="admin-field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            {
+              CHILD_STATUSES.map((s) => (
+                <option value={s} selected={s === child.status}>
+                  {s}
+                </option>
+              ))
+            }
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="familyId">Family</label>
+          <select id="familyId" name="familyId">
+            <option value="">— None —</option>
+            {
+              families.map((f) => (
+                <option value={f.id} selected={f.id === child.familyId}>
+                  {f.primaryContactName}
+                </option>
+              ))
+            }
+          </select>
+        </div>
+        <div class="admin-field">
+          <label for="classId">Class</label>
+          <select id="classId" name="classId">
+            <option value="">— Unassigned —</option>
+            {
+              classList.map((c) => (
+                <option value={c.id} selected={c.id === child.classId}>
+                  {c.name}
+                </option>
+              ))
+            }
+          </select>
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="startDate">Start date</label>
+        <input id="startDate" name="startDate" value={child.startDate ?? ''} />
+      </div>
+      <div class="admin-field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="3">{child.notes ?? ''}</textarea>
+      </div>
+      <div class="admin-actions">
+        <button type="submit" class="admin-btn">Save changes</button>
+      </div>
+    </form>
+
+    <form
+      method="POST"
+      action="/api/admin/children/"
+      onsubmit="return confirm('Delete this child record?');"
+      style="margin-top:1rem;"
+    >
+      <input type="hidden" name="_action" value="delete" />
+      <input type="hidden" name="id" value={id} />
+      <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm"
+        >Delete child</button
+      >
+    </form>
+  </section>
+</AdminLayout>

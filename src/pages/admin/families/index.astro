@@ -1,0 +1,97 @@
+---
+export const prerender = false;
+
+import { asc, count } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { formatDate } from '../../../lib/format';
+
+const db = dbFrom();
+const families = await db
+  .select()
+  .from(schema.families)
+  .orderBy(asc(schema.families.primaryContactName));
+
+const counts = await db
+  .select({ familyId: schema.children.familyId, c: count() })
+  .from(schema.children)
+  .groupBy(schema.children.familyId);
+const countMap = new Map(counts.map((r) => [r.familyId, r.c]));
+---
+
+<AdminLayout title="Families" active="families">
+  <div class="admin-head">
+    <div>
+      <h1>Families</h1>
+      <p>Households and their primary contacts.</p>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    {
+      families.length === 0 ? (
+        <p class="admin-empty">No families yet. Add one below.</p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Children</th>
+              <th>Added</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {families.map((f) => (
+              <tr>
+                <td>
+                  <a href={`/admin/families/${f.id}/`}>{f.primaryContactName}</a>
+                </td>
+                <td>{f.email ?? '—'}</td>
+                <td>{f.phone ?? '—'}</td>
+                <td>{countMap.get(f.id) ?? 0}</td>
+                <td>{formatDate(f.createdAt)}</td>
+                <td>
+                  <a href={`/admin/families/${f.id}/`}>Open</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>Add a family</h2>
+    <form method="POST" action="/api/admin/families/" class="admin-form">
+      <input type="hidden" name="_action" value="create" />
+      <input type="hidden" name="_redirect" value="/admin/families/" />
+      <div class="admin-field">
+        <label for="primaryContactName">Primary contact name *</label>
+        <input id="primaryContactName" name="primaryContactName" required />
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" />
+        </div>
+        <div class="admin-field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" />
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="address">Address</label>
+        <input id="address" name="address" />
+      </div>
+      <div class="admin-field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+      </div>
+      <div><button type="submit" class="admin-btn">Add family</button></div>
+    </form>
+  </section>
+</AdminLayout>

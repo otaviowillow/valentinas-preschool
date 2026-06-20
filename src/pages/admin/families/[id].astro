@@ -1,0 +1,208 @@
+---
+export const prerender = false;
+
+import { asc, eq } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { ageFromDob, formatDate } from '../../../lib/format';
+import { CHILD_STATUSES } from '../../../db/schema';
+
+const id = Number(Astro.params.id);
+const db = dbFrom();
+
+const [family] = Number.isInteger(id)
+  ? await db.select().from(schema.families).where(eq(schema.families.id, id))
+  : [];
+if (!family) return Astro.redirect('/admin/families/');
+
+const kids = await db
+  .select()
+  .from(schema.children)
+  .where(eq(schema.children.familyId, id))
+  .orderBy(asc(schema.children.firstName));
+
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.name));
+const classMap = new Map(classList.map((c) => [c.id, c.name]));
+
+const self = `/admin/families/${id}/`;
+---
+
+<AdminLayout title={family.primaryContactName} active="families">
+  <a class="admin-back" href="/admin/families/">← All families</a>
+
+  <div class="admin-head">
+    <div>
+      <h1>{family.primaryContactName}</h1>
+      <p>Added {formatDate(family.createdAt)}</p>
+    </div>
+    <div class="admin-actions">
+      <a class="admin-btn admin-btn--ghost" href={`/admin/billing/?family=${id}`}
+        >Billing</a
+      >
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    <h2>Children</h2>
+    {
+      kids.length === 0 ? (
+        <p class="muted">No children linked yet. Add one below.</p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Status</th>
+              <th>Class</th>
+              <th>Start</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {kids.map((c) => (
+              <tr>
+                <td>
+                  <a href={`/admin/children/${c.id}/`}>
+                    {c.firstName} {c.lastName ?? ''}
+                  </a>
+                </td>
+                <td>{ageFromDob(c.dob)}</td>
+                <td>
+                  <StatusBadge status={c.status} />
+                </td>
+                <td>{c.classId ? (classMap.get(c.classId) ?? '—') : '—'}</td>
+                <td>{c.startDate ?? '—'}</td>
+                <td>
+                  <a href={`/admin/children/${c.id}/`}>Edit</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+
+  <div class="grid-2col">
+    <section class="admin-panel">
+      <h2>Add a child</h2>
+      <form method="POST" action="/api/admin/children/" class="admin-form">
+        <input type="hidden" name="_action" value="create" />
+        <input type="hidden" name="familyId" value={id} />
+        <input type="hidden" name="_redirect" value={self} />
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="firstName">First name *</label>
+            <input id="firstName" name="firstName" required />
+          </div>
+          <div class="admin-field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="lastName" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="dob">Date of birth</label>
+            <input id="dob" name="dob" type="date" />
+          </div>
+          <div class="admin-field">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              {
+                CHILD_STATUSES.map((s) => (
+                  <option value={s} selected={s === 'enrolled'}>
+                    {s}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="classId">Class</label>
+            <select id="classId" name="classId">
+              <option value="">— Unassigned —</option>
+              {classList.map((c) => <option value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="startDate">Start date</label>
+            <input id="startDate" name="startDate" placeholder="e.g. Fall 2026" />
+          </div>
+        </div>
+        <div><button type="submit" class="admin-btn">Add child</button></div>
+      </form>
+    </section>
+
+    <section class="admin-panel">
+      <h2>Edit family</h2>
+      <form method="POST" action="/api/admin/families/" class="admin-form">
+        <input type="hidden" name="_action" value="update" />
+        <input type="hidden" name="id" value={id} />
+        <div class="admin-field">
+          <label for="primaryContactName">Primary contact name *</label>
+          <input
+            id="primaryContactName"
+            name="primaryContactName"
+            value={family.primaryContactName}
+            required
+          />
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value={family.email ?? ''} />
+          </div>
+          <div class="admin-field">
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" value={family.phone ?? ''} />
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="address">Address</label>
+          <input id="address" name="address" value={family.address ?? ''} />
+        </div>
+        <div class="admin-field">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="3">{family.notes ?? ''}</textarea>
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn">Save changes</button>
+        </div>
+      </form>
+
+      <form
+        method="POST"
+        action="/api/admin/families/"
+        onsubmit="return confirm('Delete this family?');"
+        style="margin-top:1rem;"
+      >
+        <input type="hidden" name="_action" value="delete" />
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm"
+          >Delete family</button
+        >
+      </form>
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .grid-2col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

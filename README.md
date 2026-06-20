@@ -23,6 +23,7 @@ named `little-sprouts-childcare` — that's a cosmetic placeholder only.
 4. [Website Plan](#4-website-plan) — original splash vision → Home conversion layer
 5. [Source Site Audit](#5-source-site-audit) — verbatim content + facts from the old Weebly site
 6. [Competitor Analysis](#6-competitor-analysis) — teardown of four reference sites
+7. [Admin Panel](#7-admin-panel) — the staff management app (D1 + R2, Cloudflare Access)
 
 ---
 
@@ -1631,3 +1632,99 @@ preschools (a theme parents literally cite in the testimonials).
 **Still needed from client** (carry over from the source audit): real photos,
 hours, tuition/FAQ answers, confirmed staff roster, social media handles, and
 whether to publish pricing.
+
+---
+
+# 7. Admin Panel
+
+A staff-only management app layered onto the same Astro project. The public
+marketing pages stay static and fast; only `/admin/*` and `/api/*` run on-demand
+in a Cloudflare Worker. Built on Cloudflare's free tier.
+
+## Architecture
+
+- **Hosting:** one Cloudflare Worker (`@astrojs/cloudflare` adapter). Static
+  pages are prerendered to `dist/` and served via the `ASSETS` binding; admin and
+  API routes set `export const prerender = false` and execute in the Worker.
+- **Database:** Cloudflare **D1** (SQLite), accessed with **Drizzle ORM**. Schema
+  in `src/db/schema.ts`; SQL migrations in `drizzle/migrations/`.
+- **File storage:** Cloudflare **R2** bucket (`MEDIA` binding) for uploaded
+  photos. Served back through `/api/admin/media/[id]/`.
+- **Auth:** **Cloudflare Access** (Zero Trust) gates `/admin*` and `/api/admin*`
+  at the edge — no auth code, free for <50 users. `src/middleware.ts` is a
+  server-side backstop that reads the Access-injected email. Local `astro dev`
+  bypasses Access with a placeholder admin email.
+- **Bindings** are accessed via `import { env } from "cloudflare:workers"`
+  (Astro v6 removed `Astro.locals.runtime.env`). Helpers live in `src/db/index.ts`.
+
+## Modules (all built)
+
+| Area | Routes | Notes |
+| --- | --- | --- |
+| Dashboard | `/admin/` | counts: new inquiries, enrolled, open seats, outstanding balance |
+| Inquiries | `/admin/inquiries/` | website contact form → D1; status pipeline; convert to family |
+| Families | `/admin/families/` | CRUD; add children inline |
+| Children | `/admin/children/` | CRUD; status + class assignment |
+| Classes | `/admin/classes/` | CRUD; capacity (filled vs. open seats) |
+| Billing | `/admin/billing/` | invoices + payments, per-family balances, overdue flags |
+| Communications | `/admin/comms/` | announcements (optional email) + R2 photo gallery |
+
+The public contact form (`src/pages/contact.astro`) now posts to
+`/api/inquiries/`, which validates (Zod), stores the lead, and redirects to
+`/thank-you/`.
+
+## Local development
+
+```bash
+npm install
+npm run db:generate        # regenerate migrations after editing src/db/schema.ts
+npm run db:migrate:local   # apply migrations to the local D1 (.wrangler/ state)
+npm run dev                # astro dev; platformProxy exposes local D1/R2
+```
+
+Visit `http://localhost:4321/admin/` (Access is bypassed locally).
+
+## One-time Cloudflare provisioning (on the daughter's account)
+
+These need `wrangler login` to her Cloudflare account; they can't be done from CI.
+
+```bash
+# 1. Create the database, then paste the returned database_id into wrangler.jsonc
+npx wrangler d1 create valentinas-preschool-db
+
+# 2. Create the R2 bucket
+npx wrangler r2 bucket create valentinas-preschool-media
+
+# 3. Apply migrations to the remote DB
+npm run db:migrate:remote
+```
+
+Then in the **Zero Trust dashboard → Access → Applications**, add a self-hosted
+app covering `valentinaspreschool.com/admin*` and `/api/admin*`, with an
+allow policy listing the staff email(s).
+
+## Secrets (never committed)
+
+Set as Worker secrets (`npx wrangler secret put NAME`) — all optional:
+
+- `RESEND_API_KEY` — enables announcement + new-inquiry emails (Resend).
+- `NOTIFY_EMAIL` — where new-inquiry notifications are sent.
+
+## Deploy
+
+CI is `.github/workflows/deploy.yml`: on push to `main` it builds, applies remote
+D1 migrations, and runs `wrangler deploy`. Requires repo secrets
+`CLOUDFLARE_API_TOKEN` (Workers Scripts/D1/R2 edit + Account read) and
+`CLOUDFLARE_ACCOUNT_ID`. If Cloudflare's native "Workers Builds" is also
+connected to the repo, disable one of them to avoid double deploys.
+
+## Notable decisions
+
+- **Tracking-first billing.** Invoices/payments are recorded by hand; recording a
+  payment against an invoice marks it `paid`. Online collection (Stripe) is a
+  deliberate fast-follow, not in v1.
+- **Spam control.** The public form uses a honeypot field + Astro's built-in
+  CSRF origin check.
+- **Deletes are safe.** Deleting a class unassigns its children; deleting a child
+  detaches its invoices/photos; a family can't be deleted while it has children
+  or invoices.

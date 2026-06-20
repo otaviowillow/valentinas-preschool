@@ -1,0 +1,393 @@
+---
+export const prerender = false;
+
+import { asc, desc, eq, ne } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { formatDate, money } from '../../../lib/format';
+import { INVOICE_STATUSES } from '../../../db/schema';
+
+const db = dbFrom();
+const familyParam = Number(Astro.url.searchParams.get('family')) || null;
+
+const families = await db
+  .select()
+  .from(schema.families)
+  .orderBy(asc(schema.families.primaryContactName));
+const familyName = new Map(families.map((f) => [f.id, f.primaryContactName]));
+
+const invoices = await db
+  .select()
+  .from(schema.invoices)
+  .where(ne(schema.invoices.status, 'void'))
+  .orderBy(desc(schema.invoices.createdAt));
+const payments = await db
+  .select()
+  .from(schema.payments)
+  .orderBy(desc(schema.payments.paidAt));
+
+const todayStr = new Date().toISOString().slice(0, 10);
+const isOverdue = (inv: (typeof invoices)[number]) =>
+  inv.status === 'overdue' ||
+  (inv.status === 'sent' && !!inv.dueDate && inv.dueDate < todayStr);
+const displayStatus = (inv: (typeof invoices)[number]) =>
+  isOverdue(inv) ? 'overdue' : inv.status;
+
+// Per-family balances.
+interface Bal {
+  invoiced: number;
+  paid: number;
+  overdue: number;
+}
+const bal = new Map<number, Bal>();
+const ensure = (id: number) => {
+  if (!bal.has(id)) bal.set(id, { invoiced: 0, paid: 0, overdue: 0 });
+  return bal.get(id)!;
+};
+for (const inv of invoices) {
+  const b = ensure(inv.familyId);
+  b.invoiced += inv.amountCents;
+  if (isOverdue(inv)) b.overdue += 1;
+}
+for (const p of payments) {
+  ensure(p.familyId).paid += p.amountCents;
+}
+const totalOutstanding = [...bal.values()].reduce(
+  (s, b) => s + (b.invoiced - b.paid),
+  0
+);
+
+// Selected-family detail.
+const selected = familyParam
+  ? families.find((f) => f.id === familyParam)
+  : null;
+const famInvoices = selected
+  ? invoices.filter((i) => i.familyId === selected.id)
+  : [];
+const famPayments = selected
+  ? payments.filter((p) => p.familyId === selected.id)
+  : [];
+const famChildren = selected
+  ? await db
+      .select()
+      .from(schema.children)
+      .where(eq(schema.children.familyId, selected.id))
+      .orderBy(asc(schema.children.firstName))
+  : [];
+const self = selected ? `/admin/billing/?family=${selected.id}` : '/admin/billing/';
+---
+
+<AdminLayout title="Billing" active="billing">
+  <div class="admin-head">
+    <div>
+      <h1>Billing</h1>
+      <p>Invoices, payments, and per-family balances.</p>
+    </div>
+    {
+      selected && (
+        <a class="admin-btn admin-btn--ghost" href="/admin/billing/">
+          All families
+        </a>
+      )
+    }
+  </div>
+
+  {
+    !selected && (
+      <>
+        <div class="admin-cards">
+          <div class="admin-card">
+            <div class="num">{money(totalOutstanding)}</div>
+            <div class="label">Total outstanding</div>
+          </div>
+        </div>
+
+        <section class="admin-panel">
+          <h2>Balances by family</h2>
+          {families.length === 0 ? (
+            <p class="admin-empty">No families yet.</p>
+          ) : (
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Family</th>
+                  <th>Invoiced</th>
+                  <th>Paid</th>
+                  <th>Balance</th>
+                  <th>Overdue</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {families.map((f) => {
+                  const b = bal.get(f.id) ?? { invoiced: 0, paid: 0, overdue: 0 };
+                  const balance = b.invoiced - b.paid;
+                  return (
+                    <tr>
+                      <td>{f.primaryContactName}</td>
+                      <td>{money(b.invoiced)}</td>
+                      <td>{money(b.paid)}</td>
+                      <td>
+                        <strong style={balance > 0 ? 'color:#a51f1f' : ''}>
+                          {money(balance)}
+                        </strong>
+                      </td>
+                      <td>
+                        {b.overdue > 0 ? (
+                          <span class="badge badge--overdue">{b.overdue}</span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td>
+                        <a href={`/admin/billing/?family=${f.id}`}>Open</a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+      </>
+    )
+  }
+
+  {
+    selected && (
+      <>
+        <div class="admin-cards">
+          <div class="admin-card">
+            <div class="num">{money((bal.get(selected.id)?.invoiced ?? 0) - (bal.get(selected.id)?.paid ?? 0))}</div>
+            <div class="label">Balance · {selected.primaryContactName}</div>
+          </div>
+          <div class="admin-card">
+            <div class="num">{money(bal.get(selected.id)?.invoiced ?? 0)}</div>
+            <div class="label">Invoiced</div>
+          </div>
+          <div class="admin-card">
+            <div class="num">{money(bal.get(selected.id)?.paid ?? 0)}</div>
+            <div class="label">Paid</div>
+          </div>
+        </div>
+
+        <section class="admin-panel">
+          <h2>Invoices</h2>
+          {famInvoices.length === 0 ? (
+            <p class="muted">No invoices yet.</p>
+          ) : (
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Period</th>
+                  <th>Amount</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {famInvoices.map((inv) => (
+                  <tr>
+                    <td>{inv.description ?? '—'}</td>
+                    <td>{inv.period ?? '—'}</td>
+                    <td>{money(inv.amountCents)}</td>
+                    <td>{inv.dueDate ? formatDate(inv.dueDate) : '—'}</td>
+                    <td>
+                      <StatusBadge status={displayStatus(inv)} />
+                    </td>
+                    <td>
+                      <form
+                        method="POST"
+                        action="/api/admin/invoices/"
+                        class="admin-actions"
+                      >
+                        <input type="hidden" name="_action" value="status" />
+                        <input type="hidden" name="id" value={inv.id} />
+                        <input type="hidden" name="_redirect" value={self} />
+                        <select name="status" class="status-mini">
+                          {INVOICE_STATUSES.map((s) => (
+                            <option value={s} selected={s === inv.status}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                        <button class="admin-btn admin-btn--ghost admin-btn--sm">
+                          Set
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <section class="admin-panel">
+          <h2>Payments</h2>
+          {famPayments.length === 0 ? (
+            <p class="muted">No payments recorded.</p>
+          ) : (
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Note</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {famPayments.map((p) => (
+                  <tr>
+                    <td>{formatDate(p.paidAt)}</td>
+                    <td>{money(p.amountCents)}</td>
+                    <td>{p.method ?? '—'}</td>
+                    <td>{p.note ?? '—'}</td>
+                    <td>
+                      <form
+                        method="POST"
+                        action="/api/admin/payments/"
+                        onsubmit="return confirm('Delete this payment?');"
+                      >
+                        <input type="hidden" name="_action" value="delete" />
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="_redirect" value={self} />
+                        <button class="admin-btn admin-btn--danger admin-btn--sm">
+                          Delete
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <div class="grid-2col">
+          <section class="admin-panel">
+            <h2>Create invoice</h2>
+            <form method="POST" action="/api/admin/invoices/" class="admin-form">
+              <input type="hidden" name="_action" value="create" />
+              <input type="hidden" name="familyId" value={selected.id} />
+              <input type="hidden" name="_redirect" value={self} />
+              <div class="grid2">
+                <div class="admin-field">
+                  <label for="amount">Amount (USD) *</label>
+                  <input id="amount" name="amount" inputmode="decimal" placeholder="350.00" required />
+                </div>
+                <div class="admin-field">
+                  <label for="dueDate">Due date</label>
+                  <input id="dueDate" name="dueDate" type="date" />
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="admin-field">
+                  <label for="period">Period</label>
+                  <input id="period" name="period" placeholder="e.g. Sep 2026" />
+                </div>
+                <div class="admin-field">
+                  <label for="status">Status</label>
+                  <select id="status" name="status">
+                    {INVOICE_STATUSES.map((s) => (
+                      <option value={s} selected={s === 'sent'}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div class="admin-field">
+                <label for="childId">Child (optional)</label>
+                <select id="childId" name="childId">
+                  <option value="">— Whole family —</option>
+                  {famChildren.map((c) => (
+                    <option value={c.id}>
+                      {c.firstName} {c.lastName ?? ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="description">Description</label>
+                <input id="description" name="description" placeholder="Monthly tuition" />
+              </div>
+              <div>
+                <button type="submit" class="admin-btn">Create invoice</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="admin-panel">
+            <h2>Record payment</h2>
+            <form method="POST" action="/api/admin/payments/" class="admin-form">
+              <input type="hidden" name="_action" value="create" />
+              <input type="hidden" name="familyId" value={selected.id} />
+              <input type="hidden" name="_redirect" value={self} />
+              <div class="grid2">
+                <div class="admin-field">
+                  <label for="pamount">Amount (USD) *</label>
+                  <input id="pamount" name="amount" inputmode="decimal" placeholder="350.00" required />
+                </div>
+                <div class="admin-field">
+                  <label for="method">Method</label>
+                  <select id="method" name="method">
+                    <option value="">—</option>
+                    <option>cash</option>
+                    <option>check</option>
+                    <option>card</option>
+                    <option>transfer</option>
+                    <option>subsidy</option>
+                  </select>
+                </div>
+              </div>
+              <div class="admin-field">
+                <label for="invoiceId">Apply to invoice (optional)</label>
+                <select id="invoiceId" name="invoiceId">
+                  <option value="">— Unapplied —</option>
+                  {famInvoices.map((inv) => (
+                    <option value={inv.id}>
+                      {money(inv.amountCents)} · {inv.description ?? inv.period ?? `#${inv.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="note">Note</label>
+                <input id="note" name="note" />
+              </div>
+              <div>
+                <button type="submit" class="admin-btn">Record payment</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </>
+    )
+  }
+</AdminLayout>
+
+<style>
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .status-mini {
+    font: inherit;
+    padding: 0.25rem 0.4rem;
+    border: 1.5px solid var(--color-primary-light);
+    border-radius: var(--radius);
+  }
+  @media (max-width: 860px) {
+    .grid-2col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

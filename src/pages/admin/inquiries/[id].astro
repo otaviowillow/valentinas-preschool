@@ -1,0 +1,139 @@
+---
+export const prerender = false;
+
+import { eq } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { formatDate, titleCase } from '../../../lib/format';
+import { INQUIRY_STATUSES } from '../../../db/schema';
+
+const id = Number(Astro.params.id);
+const db = dbFrom();
+
+const [inquiry] = Number.isInteger(id)
+  ? await db.select().from(schema.inquiries).where(eq(schema.inquiries.id, id))
+  : [];
+
+if (!inquiry) return Astro.redirect('/admin/inquiries/');
+
+const family = inquiry.familyId
+  ? (
+      await db
+        .select()
+        .from(schema.families)
+        .where(eq(schema.families.id, inquiry.familyId))
+    )[0]
+  : null;
+
+const self = `/admin/inquiries/${id}/`;
+---
+
+<AdminLayout title="Inquiry" active="inquiries">
+  <a class="admin-back" href="/admin/inquiries/">← All inquiries</a>
+
+  <div class="admin-head">
+    <div>
+      <h1>{inquiry.parentName}</h1>
+      <p>
+        Received {formatDate(inquiry.createdAt)} · <StatusBadge
+          status={inquiry.status}
+        />
+      </p>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items:start;" class="inquiry-grid">
+    <section class="admin-panel">
+      <h2>Details</h2>
+      <table class="admin-table">
+        <tbody>
+          <tr><th>Email</th><td>{inquiry.email ?? '—'}</td></tr>
+          <tr><th>Phone</th><td>{inquiry.phone ?? '—'}</td></tr>
+          <tr><th>Child age</th><td>{inquiry.childAge ?? '—'}</td></tr>
+          <tr><th>Desired start</th><td>{inquiry.desiredStart ?? '—'}</td></tr>
+          <tr><th>Intent</th><td>{titleCase(inquiry.intent)}</td></tr>
+          <tr><th>Referred by</th><td>{inquiry.referredBy ?? '—'}</td></tr>
+          <tr><th>Source</th><td>{inquiry.source ?? '—'}</td></tr>
+          <tr>
+            <th>Message</th>
+            <td style="white-space: pre-wrap;">{inquiry.message ?? '—'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <aside class="stack" style="display:grid; gap:1.5rem;">
+      <section class="admin-panel">
+        <h2>Status</h2>
+        <form method="POST" action="/api/admin/inquiries/" class="admin-form">
+          <input type="hidden" name="_action" value="status" />
+          <input type="hidden" name="id" value={inquiry.id} />
+          <input type="hidden" name="_redirect" value={self} />
+          <div class="admin-field">
+            <label for="status">Pipeline stage</label>
+            <select id="status" name="status">
+              {
+                INQUIRY_STATUSES.map((s) => (
+                  <option value={s} selected={s === inquiry.status}>
+                    {titleCase(s)}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+          <button type="submit" class="admin-btn">Update status</button>
+        </form>
+      </section>
+
+      <section class="admin-panel">
+        <h2>Family</h2>
+        {
+          family ? (
+            <p>
+              Linked to{' '}
+              <a href={`/admin/families/${family.id}/`}>
+                {family.primaryContactName}
+              </a>
+              . Add the child from the family page.
+            </p>
+          ) : (
+            <form method="POST" action="/api/admin/inquiries/">
+              <input type="hidden" name="_action" value="convert" />
+              <input type="hidden" name="id" value={inquiry.id} />
+              <p class="muted" style="margin-top:0;">
+                Create a family record from this inquiry's contact info, then add
+                the child.
+              </p>
+              <button type="submit" class="admin-btn">Convert to family</button>
+            </form>
+          )
+        }
+      </section>
+
+      <section class="admin-panel">
+        <h2 style="color:#a51f1f;">Danger zone</h2>
+        <form
+          method="POST"
+          action="/api/admin/inquiries/"
+          onsubmit="return confirm('Delete this inquiry permanently?');"
+        >
+          <input type="hidden" name="_action" value="delete" />
+          <input type="hidden" name="id" value={inquiry.id} />
+          <input type="hidden" name="_redirect" value="/admin/inquiries/" />
+          <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm"
+            >Delete inquiry</button
+          >
+        </form>
+      </section>
+    </aside>
+  </div>
+</AdminLayout>
+
+<style>
+  @media (max-width: 860px) {
+    .inquiry-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

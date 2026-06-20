@@ -1,0 +1,59 @@
+name: Deploy to Cloudflare Workers
+
+# Builds the Astro site (static marketing pages + SSR admin Worker), applies any
+# pending D1 migrations to the remote database, and deploys to Cloudflare Workers
+# on every push to main. Also runnable manually from the Actions tab.
+#
+# Requires two repository secrets (Settings -> Secrets and variables -> Actions):
+#   CLOUDFLARE_API_TOKEN   - token with Workers Scripts:Edit, D1:Edit, R2:Edit,
+#                            and Account Settings:Read on the daughter's account
+#   CLOUDFLARE_ACCOUNT_ID  - the account ID from the Cloudflare dashboard
+#
+# IMPORTANT: Cloudflare may also auto-deploy via "Workers Builds" (connected Git).
+# To avoid double deploys, disable that in the Worker's Settings -> Builds, OR
+# delete this workflow and rely on Workers Builds instead (note: Workers Builds
+# does NOT run D1 migrations, so you'd apply them with `npm run db:migrate:remote`).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workers-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Apply D1 migrations (remote)
+        run: npx wrangler d1 migrations apply valentinas-preschool-db --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

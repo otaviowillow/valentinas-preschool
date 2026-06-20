@@ -1,0 +1,222 @@
+---
+export const prerender = false;
+
+import { asc, desc } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { formatDate } from '../../../lib/format';
+
+const db = dbFrom();
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.name));
+const classMap = new Map(classList.map((c) => [c.id, c.name]));
+
+const announcements = await db
+  .select()
+  .from(schema.announcements)
+  .orderBy(desc(schema.announcements.publishedAt));
+
+const photos = await db
+  .select()
+  .from(schema.photos)
+  .orderBy(desc(schema.photos.takenAt))
+  .limit(60);
+---
+
+<AdminLayout title="Communications" active="comms">
+  <div class="admin-head">
+    <div>
+      <h1>Communications</h1>
+      <p>Post announcements and share daily photos.</p>
+    </div>
+  </div>
+
+  <div class="grid-2col">
+    <section class="admin-panel">
+      <h2>New announcement</h2>
+      <form method="POST" action="/api/admin/announcements/" class="admin-form">
+        <input type="hidden" name="_action" value="create" />
+        <input type="hidden" name="_redirect" value="/admin/comms/" />
+        <div class="admin-field">
+          <label for="title">Title *</label>
+          <input id="title" name="title" required />
+        </div>
+        <div class="admin-field">
+          <label for="body">Message *</label>
+          <textarea id="body" name="body" rows="5" required></textarea>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="audience">Audience</label>
+            <select id="audience" name="audience">
+              <option value="all">All families</option>
+              <option value="class">Specific class</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="aclass">Class (if specific)</label>
+            <select id="aclass" name="classId">
+              <option value="">—</option>
+              {classList.map((c) => <option value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <label class="email-opt">
+          <input type="checkbox" name="email" /> Also email families (requires email setup)
+        </label>
+        <div><button type="submit" class="admin-btn">Post announcement</button></div>
+      </form>
+    </section>
+
+    <section class="admin-panel">
+      <h2>Upload a photo</h2>
+      <form
+        method="POST"
+        action="/api/admin/photos/"
+        class="admin-form"
+        enctype="multipart/form-data"
+      >
+        <input type="hidden" name="_action" value="upload" />
+        <input type="hidden" name="_redirect" value="/admin/comms/" />
+        <div class="admin-field">
+          <label for="file">Image *</label>
+          <input id="file" name="file" type="file" accept="image/*" required />
+        </div>
+        <div class="admin-field">
+          <label for="caption">Caption</label>
+          <input id="caption" name="caption" />
+        </div>
+        <div class="admin-field">
+          <label for="pclass">Class (optional)</label>
+          <select id="pclass" name="classId">
+            <option value="">—</option>
+            {classList.map((c) => <option value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+        <div><button type="submit" class="admin-btn">Upload photo</button></div>
+      </form>
+    </section>
+  </div>
+
+  <section class="admin-panel">
+    <h2>Recent announcements</h2>
+    {
+      announcements.length === 0 ? (
+        <p class="muted">No announcements yet.</p>
+      ) : (
+        <ul class="ann-list">
+          {announcements.map((a) => (
+            <li>
+              <div>
+                <strong>{a.title}</strong>
+                <span class="muted">
+                  {' '}
+                  · {formatDate(a.publishedAt)} ·{' '}
+                  {a.audience === 'class' && a.classId
+                    ? (classMap.get(a.classId) ?? 'Class')
+                    : 'All families'}
+                </span>
+                <p style="white-space:pre-wrap;margin:.35rem 0 0;">{a.body}</p>
+              </div>
+              <form method="POST" action="/api/admin/announcements/" onsubmit="return confirm('Delete this announcement?');">
+                <input type="hidden" name="_action" value="delete" />
+                <input type="hidden" name="id" value={a.id} />
+                <input type="hidden" name="_redirect" value="/admin/comms/" />
+                <button class="admin-btn admin-btn--danger admin-btn--sm">Delete</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>Photo gallery</h2>
+    {
+      photos.length === 0 ? (
+        <p class="muted">No photos uploaded yet.</p>
+      ) : (
+        <div class="photo-grid">
+          {photos.map((p) => (
+            <figure class="photo">
+              <img src={`/api/admin/media/${p.id}/`} alt={p.caption ?? 'Classroom photo'} loading="lazy" />
+              <figcaption>
+                <span>{p.caption ?? '—'}</span>
+                <form method="POST" action="/api/admin/photos/" onsubmit="return confirm('Delete this photo?');">
+                  <input type="hidden" name="_action" value="delete" />
+                  <input type="hidden" name="id" value={p.id} />
+                  <input type="hidden" name="_redirect" value="/admin/comms/" />
+                  <button class="admin-btn admin-btn--danger admin-btn--sm">×</button>
+                </form>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</AdminLayout>
+
+<style>
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .email-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .ann-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .ann-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-surface-2);
+  }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+  .photo {
+    margin: 0;
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+  .photo img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+  }
+  .photo figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.82rem;
+  }
+  @media (max-width: 860px) {
+    .grid-2col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+export const prerender = false;
+
+import { and, asc, eq, type SQL } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { ageFromDob } from '../../../lib/format';
+import { CHILD_STATUSES } from '../../../db/schema';
+
+const db = dbFrom();
+const statusParam = Astro.url.searchParams.get('status');
+const validStatus = CHILD_STATUSES.find((s) => s === statusParam);
+
+const conditions: SQL[] = [];
+if (validStatus) conditions.push(eq(schema.children.status, validStatus));
+
+const rows = await db
+  .select({
+    child: schema.children,
+    familyId: schema.families.id,
+    familyName: schema.families.primaryContactName,
+    className: schema.classes.name,
+  })
+  .from(schema.children)
+  .leftJoin(schema.families, eq(schema.children.familyId, schema.families.id))
+  .leftJoin(schema.classes, eq(schema.children.classId, schema.classes.id))
+  .where(conditions.length ? and(...conditions) : undefined)
+  .orderBy(asc(schema.children.firstName));
+---
+
+<AdminLayout title="Children" active="children">
+  <div class="admin-head">
+    <div>
+      <h1>Children</h1>
+      <p>Every enrolled, waitlisted, and inquiring child.</p>
+    </div>
+  </div>
+
+  <div class="admin-actions" style="margin-bottom:1rem;">
+    <a
+      class={`admin-btn admin-btn--sm ${validStatus ? 'admin-btn--ghost' : ''}`}
+      href="/admin/children/">All</a
+    >
+    {
+      CHILD_STATUSES.map((s) => (
+        <a
+          class={`admin-btn admin-btn--sm ${validStatus === s ? '' : 'admin-btn--ghost'}`}
+          href={`/admin/children/?status=${s}`}
+        >
+          {s}
+        </a>
+      ))
+    }
+  </div>
+
+  <section class="admin-panel">
+    {
+      rows.length === 0 ? (
+        <p class="admin-empty">
+          No children{validStatus ? ` with status “${validStatus}”` : ''} yet. Add
+          children from a family's page.
+        </p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Family</th>
+              <th>Class</th>
+              <th>Status</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr>
+                <td>
+                  <a href={`/admin/children/${r.child.id}/`}>
+                    {r.child.firstName} {r.child.lastName ?? ''}
+                  </a>
+                </td>
+                <td>{ageFromDob(r.child.dob)}</td>
+                <td>
+                  {r.familyId ? (
+                    <a href={`/admin/families/${r.familyId}/`}>{r.familyName}</a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td>{r.className ?? '—'}</td>
+                <td>
+                  <StatusBadge status={r.child.status} />
+                </td>
+                <td>
+                  <a href={`/admin/children/${r.child.id}/`}>Edit</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+</AdminLayout>

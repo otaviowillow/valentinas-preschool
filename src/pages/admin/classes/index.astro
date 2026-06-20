@@ -1,0 +1,116 @@
+---
+export const prerender = false;
+
+import { asc, count, eq } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+
+const db = dbFrom();
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.ageMinMonths));
+
+const enrolled = await db
+  .select({ classId: schema.children.classId, c: count() })
+  .from(schema.children)
+  .where(eq(schema.children.status, 'enrolled'))
+  .groupBy(schema.children.classId);
+const enrolledMap = new Map(enrolled.map((r) => [r.classId, r.c]));
+
+const ageLabel = (min: number | null, max: number | null) => {
+  if (min == null && max == null) return '—';
+  const fmt = (m: number) => (m % 12 === 0 ? `${m / 12}y` : `${m}m`);
+  return `${min != null ? fmt(min) : '?'}–${max != null ? fmt(max) : '?'}`;
+};
+---
+
+<AdminLayout title="Classes" active="classes">
+  <div class="admin-head">
+    <div>
+      <h1>Classes &amp; capacity</h1>
+      <p>Seats filled vs. open across each classroom.</p>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    {
+      classList.length === 0 ? (
+        <p class="admin-empty">No classes yet. Create one below.</p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Ages</th>
+              <th>Capacity</th>
+              <th>Enrolled</th>
+              <th>Open seats</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {classList.map((c) => {
+              const filled = enrolledMap.get(c.id) ?? 0;
+              const open = Math.max(0, c.capacity - filled);
+              return (
+                <tr>
+                  <td>
+                    <span
+                      style={`display:inline-block;width:.7rem;height:.7rem;border-radius:50%;margin-right:.4rem;background:${c.color ?? 'var(--color-primary)'}`}
+                    />
+                    <a href={`/admin/classes/${c.id}/`}>{c.name}</a>
+                  </td>
+                  <td>{ageLabel(c.ageMinMonths, c.ageMaxMonths)}</td>
+                  <td>{c.capacity}</td>
+                  <td>{filled}</td>
+                  <td>
+                    <strong style={open === 0 ? 'color:#a51f1f' : ''}>
+                      {open}
+                    </strong>
+                  </td>
+                  <td>
+                    <a href={`/admin/classes/${c.id}/`}>Edit</a>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+
+  <section class="admin-panel" style="max-width:640px;">
+    <h2>Add a class</h2>
+    <form method="POST" action="/api/admin/classes/" class="admin-form">
+      <input type="hidden" name="_action" value="create" />
+      <input type="hidden" name="_redirect" value="/admin/classes/" />
+      <div class="admin-field">
+        <label for="name">Class name *</label>
+        <input id="name" name="name" placeholder="e.g. Toddlers" required />
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="ageMinMonths">Min age (months)</label>
+          <input id="ageMinMonths" name="ageMinMonths" type="number" min="0" max="120" />
+        </div>
+        <div class="admin-field">
+          <label for="ageMaxMonths">Max age (months)</label>
+          <input id="ageMaxMonths" name="ageMaxMonths" type="number" min="0" max="120" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="capacity">Capacity</label>
+          <input id="capacity" name="capacity" type="number" min="0" max="100" value="0" />
+        </div>
+        <div class="admin-field">
+          <label for="color">Color</label>
+          <input id="color" name="color" type="color" value="#4fa45a" />
+        </div>
+      </div>
+      <div><button type="submit" class="admin-btn">Add class</button></div>
+    </form>
+  </section>
+</AdminLayout>

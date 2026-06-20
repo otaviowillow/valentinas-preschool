@@ -21,17 +21,24 @@ const mapQuery = encodeURIComponent(
 
   <section class="section section--cream" style="padding: 0">
     <div class="container contact-grid">
-      <!--
-        TODO: wire this form to a service before launch — e.g. Web3Forms,
-        Formspree, or a Cloudflare Pages Function. Replace `action` and add the
-        provider's access key. Right now it has no backend.
-      -->
       <form
         class="card contact-form stack"
-        action="https://example-form-endpoint.invalid"
+        action="/api/inquiries/"
         method="POST"
       >
         <h2>Request a tour</h2>
+
+        <p class="form-error" id="form-error" role="alert" hidden>
+          Sorry — something went wrong. Please check your details and try again,
+          or call us directly.
+        </p>
+
+
+        {/* Honeypot: hidden from people, tempting to bots. Leave empty. */}
+        <div class="hp" aria-hidden="true">
+          <label for="website">Website</label>
+          <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+        </div>
 
         <div class="field">
           <label for="parent">Your name</label>
@@ -146,6 +153,11 @@ const mapQuery = encodeURIComponent(
     }
     radios.forEach((r) => r.addEventListener('change', syncReferredField));
     syncReferredField();
+
+    if (new URLSearchParams(location.search).get('error') === '1') {
+      const banner = document.getElementById('form-error');
+      if (banner) banner.hidden = false;
+    }
   </script>
 </BaseLayout>
 
@@ -202,6 +214,22 @@ const mapQuery = encodeURIComponent(
   .form-fallback {
     margin: 0.9rem 0 0;
     font-size: 0.9rem;
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .form-error {
+    margin: 0;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius);
+    background: #fbdcd6;
+    color: #a51f1f;
+    border: 1px solid #a51f1f;
+    font-weight: 600;
   }
   .contact-info address {
     font-style: normal;

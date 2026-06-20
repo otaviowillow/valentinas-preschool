@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../data/site';
+
+const { nap } = site;
+---
+
+<BaseLayout
+  title="Thank You"
+  description="Thanks for reaching out to Valentina's Preschool. We'll be in touch personally."
+>
+  <PageHero
+    eyebrow="Message received"
+    title="Thank you — we’ll be in touch"
+    lead="We read every note personally and typically reply within one business day. We can’t wait to learn more about your family."
+  />
+
+  <section class="section section--cream">
+    <div class="container container-narrow stack" style="text-align: center;">
+      <p>
+        In the meantime, feel free to call us at
+        <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a> or follow
+        along on
+        <a href={site.social.instagram} rel="noopener" target="_blank"
+          >{site.social.instagramHandle}</a
+        >.
+      </p>
+      <p>
+        <a class="btn btn--primary btn--lg" href="/">Back to home</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

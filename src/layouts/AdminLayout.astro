@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+import '../styles/admin.css';
+
+interface Props {
+  title: string;
+  /** Nav key to highlight (e.g. 'inquiries'). */
+  active?: string;
+}
+const { title, active } = Astro.props;
+const adminEmail = Astro.locals.adminEmail ?? '';
+const flash = Astro.url.searchParams.get('flash');
+const error = Astro.url.searchParams.get('error');
+
+const nav = [
+  { key: 'dashboard', label: 'Dashboard', href: '/admin/' },
+  { key: 'inquiries', label: 'Inquiries', href: '/admin/inquiries/' },
+  { key: 'children', label: 'Children', href: '/admin/children/' },
+  { key: 'families', label: 'Families', href: '/admin/families/' },
+  { key: 'classes', label: 'Classes', href: '/admin/classes/' },
+  { key: 'billing', label: 'Billing', href: '/admin/billing/' },
+  { key: 'comms', label: 'Communications', href: '/admin/comms/' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>{title} · Admin · Valentina's Preschool</title>
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a href="/admin/" class="admin-brand">
+          Valentina's
+          <small>Admin</small>
+        </a>
+        <nav class="admin-nav">
+          {
+            nav.map((item) => (
+              <a
+                href={item.href}
+                aria-current={active === item.key ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="admin-sidebar__foot">
+          {adminEmail && <div>{adminEmail}</div>}
+          <a href="/cdn-cgi/access/logout">Sign out</a> ·
+          <a href="/">View site</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        {flash && <div class="admin-flash">{flash}</div>}
+        {error && <div class="admin-flash admin-flash--error">{error}</div>}
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
