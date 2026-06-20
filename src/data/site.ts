@@ -6,9 +6,9 @@ export const site = {
   name: "Valentina's Preschool",
   shortName: 'Valentina’s',
   tagline:
-    'Childhood is not a race — every child develops at their own pace and grace.',
+    'Childhood is not a race. Every child develops at their own pace and grace.',
   description:
-    'A boutique, Reggio-inspired preschool in Culver City / West LA. Just 12 children, a 1:4 ratio, bilingual (daily Spanish), meals included. Ages 15 months–5 years.',
+    'A boutique, Reggio-inspired preschool in Culver City / West LA. Bilingual (daily Spanish), meals included. Ages 15 months–5 years.',
   // TODO: switch to https://www.valentinaspreschool.com once the domain is live.
   url: 'https://www.valentinaspreschool.com',
   director: 'Valentina Gloginic',
@@ -51,7 +51,7 @@ export const site = {
   },
 
   award: {
-    title: 'Top 3 Preschool — 2026',
+    title: 'Top 3 Preschool · 2026',
     by: 'BusinessRate',
     detail: 'Mid-City, Los Angeles · powered by Google Reviews',
     // TODO: link to her live BusinessRate ranking page when available.
@@ -69,6 +69,7 @@ export const navLinks = [
   { label: 'Philosophy', href: '/philosophy/' },
   { label: 'Programs', href: '/programs/' },
   { label: 'Enrichment', href: '/enrichment/' },
+  { label: 'Educators', href: '/educators/' },
   { label: 'Testimonials', href: '/testimonials/' },
   { label: 'Tuition', href: '/tuition/' },
   { label: 'Contact', href: '/contact/' },

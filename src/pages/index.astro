@@ -27,12 +27,12 @@ const pillars = [
   },
   {
     title: 'Emotional literacy',
-    body: 'Every day we coach children to name, understand, and manage feelings — resolving conflict peacefully. It’s the skill that shapes resilient, kind humans.',
+    body: 'Every day we coach children to name, understand, and manage feelings, resolving conflict peacefully. It’s the skill that shapes resilient, kind humans.',
     href: '/emotional-literacy/',
     cta: 'Why it matters',
   },
   {
-    title: 'Bilingual — daily Spanish',
+    title: 'Bilingual: daily Spanish',
     body: 'Spanish is woven into every day through songs, play, and conversation. Children leave us switching between languages with ease.',
     href: '/bilingual/',
     cta: 'Our bilingual day',
@@ -42,26 +42,31 @@ const pillars = [
 // Whole-child curriculum across five domains (client's framework).
 const curriculum = [
   {
+    icon: '/icons/academic.png',
     title: 'Academic Foundations',
     items: ['Language & Literacy', 'Mathematics', 'Science'],
     tint: 'mint',
   },
   {
+    icon: '/icons/arts.png',
     title: 'Creative Arts & Enrichment',
     items: ['Music', 'Dance', 'Art', 'Drama'],
     tint: 'peach',
   },
   {
+    icon: '/icons/physical.png',
     title: 'Physical Development & Wellness',
     items: ['Yoga', 'Movement', 'Outdoor Play'],
     tint: 'sky',
   },
   {
+    icon: '/icons/life.png',
     title: 'Life Skills',
     items: ['Cooking', 'Gardening', 'Practical Skills'],
     tint: 'butter',
   },
   {
+    icon: '/icons/social.png',
     title: 'Social-Emotional Development',
     items: ['Emotional Literacy', 'Self-Regulation', 'Empathy', 'Conflict Resolution'],
     tint: 'plum',
@@ -86,7 +91,7 @@ const curriculum = [
         <h1>{site.tagline}</h1>
         <p class="lead">
           A boutique, Reggio-inspired preschool in Culver City &amp; West Los
-          Angeles — with <strong>daily Spanish</strong>, an enrichment-rich
+          Angeles, with <strong>daily Spanish</strong>, an enrichment-rich
           curriculum, and <strong>nutritious meals</strong> made with love, for
           ages 15 months to 5 years.
         </p>
@@ -120,7 +125,7 @@ const curriculum = [
     <div class="container">
       <div class="section-head center">
         <p class="eyebrow">Why families choose us</p>
-        <h2>More than daycare — a small world built around your child</h2>
+        <h2>More than a preschool. A small world built around your child</h2>
         <p class="lead muted">
           For over fourteen years, Valentina and her team have raised
           well-rounded, kind little humans in a home-like setting where no child
@@ -150,7 +155,7 @@ const curriculum = [
         <p class="eyebrow">All included in tuition</p>
         <h2>A day full of discovery</h2>
         <p class="lead muted">
-          We nurture the whole child — across five connected domains, woven
+          We nurture the whole child across five connected domains, woven
           through play, every single day.
         </p>
       </div>
@@ -158,7 +163,17 @@ const curriculum = [
         {
           curriculum.map((c) => (
             <article class={`curric-row curric-row--${c.tint}`}>
-              <h3 class="curric-row__title">{c.title}</h3>
+              <h3 class="curric-row__title">
+                <img
+                  src={c.icon}
+                  alt=""
+                  class="curric-row__icon"
+                  width="160"
+                  height="160"
+                  loading="lazy"
+                />
+                {c.title}
+              </h3>
               <ul class="curric-tags">
                 {c.items.map((it) => (
                   <li>{it}</li>
@@ -309,7 +324,7 @@ const curriculum = [
     background: var(--color-white);
     border: 1px solid var(--color-primary-light);
     border-radius: var(--radius-pill);
-    padding: 0.45rem 1rem 0.45rem 0.6rem;
+    padding: 0.6rem 1.1rem 0.6rem 0.6rem;
     text-decoration: none;
     box-shadow: var(--shadow-sm);
     width: fit-content;
@@ -403,6 +418,15 @@ const curriculum = [
   .curric-row__title {
     font-size: 1.1rem;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .curric-row__icon {
+    flex: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    object-fit: contain;
   }
   .curric-tags {
     list-style: none;

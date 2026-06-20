@@ -16,10 +16,10 @@ const mapQuery = encodeURIComponent(
   <PageHero
     eyebrow="Visit Us"
     title="Come see if we’re the right fit"
-    lead="Spots are limited — we keep our family small on purpose. Tell us a little about your child and we’ll be in touch personally."
+    lead="Spots are limited. We keep our family small on purpose. Tell us a little about your child and we’ll be in touch personally."
   />
 
-  <section class="section section--cream">
+  <section class="section section--cream" style="padding: 0">
     <div class="container contact-grid">
       <!--
         TODO: wire this form to a service before launch — e.g. Web3Forms,
@@ -73,7 +73,20 @@ const mapQuery = encodeURIComponent(
           <label class="radio"
             ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
           >
+          <label class="radio"
+            ><input type="radio" name="intent" value="referral" /> I was referred</label
+          >
         </fieldset>
+
+        <div class="field referred-by" hidden>
+          <label for="referred">Who referred you?</label>
+          <input
+            id="referred"
+            name="referred_by"
+            type="text"
+            placeholder="The family who sent you our way"
+          />
+        </div>
 
         <div class="field">
           <label for="message">Anything we should know?</label>
@@ -115,6 +128,25 @@ const mapQuery = encodeURIComponent(
       </aside>
     </div>
   </section>
+
+  <script>
+    const intent = new URLSearchParams(location.search).get('intent');
+    const radios = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[name="intent"]')
+    );
+    const referredBy = document.querySelector<HTMLElement>('.referred-by');
+
+    function syncReferredField() {
+      const selected = radios.find((r) => r.checked)?.value;
+      if (referredBy) referredBy.hidden = selected !== 'referral';
+    }
+
+    if (intent && radios.some((r) => r.value === intent)) {
+      radios.forEach((r) => (r.checked = r.value === intent));
+    }
+    radios.forEach((r) => r.addEventListener('change', syncReferredField));
+    syncReferredField();
+  </script>
 </BaseLayout>
 
 <style>
@@ -123,6 +155,9 @@ const mapQuery = encodeURIComponent(
     grid-template-columns: 1.2fr 0.8fr;
     gap: clamp(1.5rem, 4vw, 3rem);
     align-items: start;
+  }
+  .contact-form {
+    padding: clamp(1.75rem, 4vw, 2.75rem);
   }
   .field {
     display: flex;
@@ -165,7 +200,7 @@ const mapQuery = encodeURIComponent(
     margin-right: 1.2rem;
   }
   .form-fallback {
-    margin: 0;
+    margin: 0.9rem 0 0;
     font-size: 0.9rem;
   }
   .contact-info address {

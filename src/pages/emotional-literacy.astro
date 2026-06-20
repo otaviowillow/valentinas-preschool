@@ -17,13 +17,13 @@ const benefits = [
 ---
 
 <BaseLayout
-  title="Emotional Literacy — Social-Emotional Learning Preschool"
-  description="At Valentina's Preschool in West LA, we coach emotional literacy every day — helping children identify, understand, and manage feelings, and resolve conflict peacefully."
+  title="Emotional Literacy: Social-Emotional Learning Preschool"
+  description="At Valentina's Preschool in West LA, we coach emotional literacy every day, helping children identify, understand, and manage feelings, and resolve conflict peacefully."
 >
   <PageHero
     eyebrow="Emotional Literacy"
     title="The skill that shapes resilient, kind humans"
-    lead="Emotional literacy is the ability to identify, understand, and respond to emotions — in oneself and others — in a healthy way. We coach it intensely, every single day."
+    lead="Emotional literacy is the ability to identify, understand, and respond to emotions, in oneself and others, in a healthy way. We coach it intensely, every single day."
   />
 
   <section class="section section--cream">
@@ -33,7 +33,7 @@ const benefits = [
         <p>
           Research now recognizes social-emotional skills as a main factor in
           raising strong, resilient, successful children and young adults.
-          Children with emotional literacy are simply healthier — and happier.
+          Children with emotional literacy are simply healthier, and happier.
         </p>
         <ul class="benefit-list">
           {benefits.map((b) => <li>{b}</li>)}
@@ -49,13 +49,13 @@ const benefits = [
       <p>
         To help a child self-regulate, our teachers pay close attention and help
         them notice the triggers that come with strong emotions. During the
-        preschool years children learn the basics — saying “hi” and “bye,”
+        preschool years children learn the basics: saying “hi” and “bye,”
         taking turns, “sorry, please, thank you,” and problem-solving.
       </p>
       <p>
         We focus on resolving interpersonal conflicts in a peaceful, non-violent
         way. The teacher models compassionate behavior and sets the tone for the
-        whole classroom — demonstrating kindness, generosity, thoughtfulness,
+        whole classroom, demonstrating kindness, generosity, thoughtfulness,
         and understanding. We encourage children to express their feelings in a
         positive, acceptable way, and to show empathy.
       </p>
@@ -69,15 +69,16 @@ const benefits = [
   .benefit-list {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin-top: 0.5rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.6rem 1.25rem;
+    gap: 1.5rem 1.5rem;
   }
   .benefit-list li {
     position: relative;
-    padding-left: 1.6rem;
+    padding-left: 1.7rem;
     font-weight: 600;
+    line-height: 1.4;
   }
   .benefit-list li::before {
     content: '✓';

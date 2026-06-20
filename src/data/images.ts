@@ -48,7 +48,7 @@ export const images = {
   igGarden: { alt: 'Children gardening outdoors with little tools', keywords: 'kids gardening', pexels: 18990251 },
   igPaint: { alt: 'Children making art together', keywords: 'child painting', pexels: 5211431 },
   igYoga: { alt: 'Children being active and learning together', keywords: 'kids movement / yoga', pexels: 5212345 },
-  igCooking: { alt: 'A cooking project — measuring and mixing', keywords: 'kids cooking', pexels: 5593692 },
+  igCooking: { alt: 'A cooking project: measuring and mixing', keywords: 'kids cooking', pexels: 5593692 },
   igCircle: { alt: 'Circle time learning together', keywords: 'kids circle time', pexels: 5212338 },
   igArt: { alt: 'A child with a hands-on baking project', keywords: 'child creative project', pexels: 3806957 },
   igOutdoor: { alt: 'Outdoor play and exploration', keywords: 'children playing outside', pexels: 18990251 },
@@ -84,7 +84,7 @@ export const images = {
   // Educator portraits (randomuser.me — swap for real staff photos)
   eduValentina: {
     alt: 'Valentina Gloginic, Founder & Director of Valentina’s Preschool',
-    src: 'https://randomuser.me/api/portraits/women/65.jpg',
+    src: '/valentina.jpg',
   },
   eduAshley: {
     alt: 'Ashley A., Teacher at Valentina’s Preschool',

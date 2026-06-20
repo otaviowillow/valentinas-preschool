@@ -18,7 +18,7 @@ export const testimonials: Testimonial[] = [
     dateDisplay: 'July 2023',
     quote:
       'A small, home-like and friendly place where everyone is welcome. No child gets left behind.',
-    full: 'We have had a spectacular experience at Valentina’s preschool these past few years. While all my friends were picking corporate, cookie-cutter preschools, I chose Valentina’s — where the energy was comfortable and focused on nurturing an individual child with individual needs. The staff go out of their way to make sure every child feels special and loved. As a single mom, I really, really trust Valentina.',
+    full: 'We have had a spectacular experience at Valentina’s preschool these past few years. While all my friends were picking corporate, cookie-cutter preschools, I chose Valentina’s, where the energy was comfortable and focused on nurturing an individual child with individual needs. The staff go out of their way to make sure every child feels special and loved. As a single mom, I really, really trust Valentina.',
   },
   {
     author: 'Hannah W.',
@@ -35,8 +35,8 @@ export const testimonials: Testimonial[] = [
     date: '2022-08-30',
     dateDisplay: 'August 2022',
     quote:
-      'My daughter learned so much — from ABCs and numbers to Spanish and yoga.',
-    full: 'Valentina and her team are amazing people. My daughter started with them when she was 2 years old and learned so much — from ABCs and numbers to Spanish and yoga stretches. I am extremely thankful, as my daughter is now advanced at her new school. Choose Valentina’s preschool, they’re the best!',
+      'My daughter learned so much, from ABCs and numbers to Spanish and yoga.',
+    full: 'Valentina and her team are amazing people. My daughter started with them when she was 2 years old and learned so much, from ABCs and numbers to Spanish and yoga stretches. I am extremely thankful, as my daughter is now advanced at her new school. Choose Valentina’s preschool, they’re the best!',
   },
   {
     author: 'Diana D.',
@@ -44,8 +44,8 @@ export const testimonials: Testimonial[] = [
     date: '2022-06-18',
     dateDisplay: 'June 2022',
     quote:
-      'In this more intimate setting our daughter has thrived — she knows more Spanish than we do!',
-    full: 'Valentina and her team of caring educators follow excellent safety protocols. In this more intimate setting our daughter has thrived — she practices Spanish daily and now knows more than we do! The Friday backpack full of artwork, math, and tracing is a delight. The regular assessments set us up for a wonderful, breezy Pre-K application process.',
+      'In this more intimate setting our daughter has thrived. She knows more Spanish than we do!',
+    full: 'Valentina and her team of caring educators follow excellent safety protocols. In this more intimate setting our daughter has thrived. She practices Spanish daily and now knows more than we do! The Friday backpack full of artwork, math, and tracing is a delight. The regular assessments set us up for a wonderful, breezy Pre-K application process.',
   },
   {
     author: 'R S.',
@@ -63,7 +63,7 @@ export const testimonials: Testimonial[] = [
     dateDisplay: 'September 2017',
     quote:
       'I am amazed how much my son has progressed. There’s an art project every single day.',
-    full: 'Valentina’s preschool is fantastic, without any exaggeration. Every day my son comes home with something new. They draw, cook, bake, learn letters and lots of Spanish words. There’s an art project every day — plus gardening, science experiments, and yoga several times a week. If children act out, they are always talked to with respect; Valentina kneels down to speak with them at their level. My children are happy and learn so much every day.',
+    full: 'Valentina’s preschool is fantastic, without any exaggeration. Every day my son comes home with something new. They draw, cook, bake, learn letters and lots of Spanish words. There’s an art project every day, plus gardening, science experiments, and yoga several times a week. If children act out, they are always talked to with respect; Valentina kneels down to speak with them at their level. My children are happy and learn so much every day.',
   },
   {
     author: 'Paige M.',
@@ -72,7 +72,7 @@ export const testimonials: Testimonial[] = [
     dateDisplay: 'July 2016',
     quote:
       'As a teacher myself, I appreciate the thematic units Valentina plans each week.',
-    full: 'Valentina’s is absolutely incredible! My daughter thrived under their guidance. As a teacher myself, I appreciate the thematic units Valentina plans each week — my daughter particularly loved studying polar bears and making ice caps. The day is filled with gardening, painting, yoga, reading, cooking, and dress up. I highly recommend Valentina’s.',
+    full: 'Valentina’s is absolutely incredible! My daughter thrived under their guidance. As a teacher myself, I appreciate the thematic units Valentina plans each week. My daughter particularly loved studying polar bears and making ice caps. The day is filled with gardening, painting, yoga, reading, cooking, and dress up. I highly recommend Valentina’s.',
   },
   {
     author: 'Elisha S.',
@@ -80,7 +80,7 @@ export const testimonials: Testimonial[] = [
     date: '2015-10-02',
     dateDisplay: 'October 2015',
     quote: 'Daycare is her home away from home. She comes home happy every day.',
-    full: 'My daughter has been going to Valentina’s for 2 years now — she loves it and so do I. Valentina is there with us first-time parents every step of the way, helping with potty training and behavior. Daycare is her home away from home. She comes home happy and with art projects every week. A really great environment for kids — highly recommended.',
+    full: 'My daughter has been going to Valentina’s for 2 years now. She loves it and so do I. Valentina is there with us first-time parents every step of the way, helping with potty training and behavior. Daycare is her home away from home. She comes home happy and with art projects every week. A really great environment for kids, highly recommended.',
   },
 ];
 
