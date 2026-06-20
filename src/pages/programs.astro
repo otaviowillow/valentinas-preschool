@@ -9,14 +9,14 @@ const programs = [
   {
     name: 'Toddlers',
     age: '15 months – 3 years',
-    body: 'Gentle first steps away from home. Toddlers settle into healthy routines, build language (in two tongues), and explore the world through their senses — held by a 1:4 ratio that means constant, loving attention.',
+    body: 'Gentle first steps away from home. Toddlers settle into healthy routines, build language (in two tongues), and explore the world through their senses. We provide constant, loving attention.',
     points: ['Sensory & messy play', 'Early Spanish & songs', 'Self-care & routines'],
     img: 'programToddler',
   },
   {
     name: 'Preschool & Pre-K',
     age: '3 – 5 years',
-    body: 'A rich runway to kindergarten. Children dive into early literacy, math, and science through projects they help shape — and our regular assessments make the Pre-K application process a breeze.',
+    body: 'A rich runway to kindergarten. Children dive into early literacy, math, and science through projects they help shape and our regular assessments make the Pre-K application process a breeze.',
     points: ['Literacy, math & science', 'Project-based learning', 'Kindergarten readiness'],
     img: 'programPreschool',
   },
@@ -24,16 +24,16 @@ const programs = [
 ---
 
 <BaseLayout
-  title="Programs by Age — Toddler & Preschool in Culver City"
-  description="Toddler (15 months–3 years) and Preschool/Pre-K (3–5 years) programs at Valentina's in Culver City / West LA. A 1:4 ratio, daily Spanish, meals included, kindergarten readiness."
+  title="Programs by Age: Toddler & Preschool in Culver City"
+  description="Toddler (15 months–3 years) and Preschool/Pre-K (3–5 years) programs at Valentina's in Culver City / West LA. Daily Spanish, meals included, kindergarten readiness."
 >
   <PageHero
     eyebrow="Programs"
     title="Programs that grow with your child"
-    lead={`From first goodbyes to kindergarten-ready — ages ${site.facts.ageRange}, all in one warm, home-like setting.`}
+    lead={`From first goodbyes to kindergarten-ready, ages ${site.facts.ageRange}, all in one warm, home-like setting.`}
   />
 
-  <section class="section section--cream">
+  <section class="section section--cream" style="padding: 0">
     <div class="container stack-lg">
       {
         programs.map((p) => (
@@ -82,6 +82,9 @@ const programs = [
   }
   .program {
     align-items: center;
+  }
+  .program .chips {
+    margin-top: 1.75rem;
   }
   .program:nth-child(even) :global(.img) {
     order: 2;

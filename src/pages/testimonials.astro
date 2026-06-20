@@ -27,14 +27,14 @@ const reviewSchema = {
 ---
 
 <BaseLayout
-  title="Testimonials — What Families Say"
+  title="Testimonials: What Families Say"
   description="Read reviews from Valentina's Preschool families in Culver City, West LA, and beyond. A boutique preschool parents trust and children love."
   schema={[reviewSchema]}
 >
   <PageHero
     eyebrow="★★★★★ From our families"
     title="Words from the parents who know us best"
-    lead="The award is nice. But these are the reviews that matter — from families who trusted us with their first goodbyes and proudest firsts."
+    lead="The award is nice. But these are the reviews that matter, from families who trusted us with their first goodbyes and proudest firsts."
   >
     <p class="award-line">
       <span class="pill">★ {site.award.title} · {site.award.by}</span>
@@ -70,12 +70,13 @@ const reviewSchema = {
     margin-top: 0.5rem;
   }
   .reviews {
-    columns: 2;
-    column-gap: clamp(1rem, 2.5vw, 1.75rem);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    align-items: stretch;
   }
   .review {
-    break-inside: avoid;
-    margin-bottom: clamp(1rem, 2.5vw, 1.75rem);
+    height: 100%;
   }
   .review__stars {
     color: var(--color-accent);
@@ -91,7 +92,7 @@ const reviewSchema = {
   }
   @media (max-width: 720px) {
     .reviews {
-      columns: 1;
+      grid-template-columns: 1fr;
     }
   }
 </style>

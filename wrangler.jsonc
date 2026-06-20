@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "valentinas-preschool",
+  "compatibility_date": "2026-06-19",
+  // Static Astro build output (no SSR adapter). Run `npm run build` first.
+  "assets": {
+    "directory": "./dist"
+  }
+}

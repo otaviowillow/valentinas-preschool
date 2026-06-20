@@ -7,9 +7,18 @@ const isActive = (href: string) =>
 
 <header class="site-header">
   <div class="container header-inner">
-    <a href="/" class="brand" aria-label={`${site.name} — home`}>
-      <span class="brand__name">Valentina’s</span>
-      <span class="brand__sub">Preschool</span>
+    <a href="/" class="brand" aria-label={`${site.name} home`}>
+      <img
+        src="/logo-hands.png"
+        alt=""
+        class="brand__logo"
+        width="320"
+        height="320"
+      />
+      <span class="brand__text">
+        <span class="brand__name">Valentina’s</span>
+        <span class="brand__sub">Preschool</span>
+      </span>
     </a>
 
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
@@ -58,9 +67,19 @@ const isActive = (href: string) =>
   }
   .brand {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
     line-height: 1;
     text-decoration: none;
+  }
+  .brand__logo {
+    height: 2.6rem;
+    width: auto;
+  }
+  .brand__text {
+    display: flex;
+    flex-direction: column;
   }
   .brand__name {
     font-family: var(--font-heading);
@@ -94,10 +113,12 @@ const isActive = (href: string) =>
     text-decoration: none;
     border-radius: var(--radius-pill);
   }
-  .nav__link:hover,
+  .nav__link:hover {
+    color: var(--color-secondary-dark);
+  }
   .nav__link.is-active {
-    color: var(--color-primary-dark);
-    background: var(--color-surface-2);
+    color: var(--color-secondary-dark);
+    background: rgba(238, 108, 69, 0.22);
   }
   .nav__cta {
     margin-left: 0.4rem;

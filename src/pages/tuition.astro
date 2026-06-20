@@ -9,12 +9,11 @@ const { tuition } = site;
 // NOTE: figures below are from a third-party listing — CONFIRM with client
 // before launch (see README.md §5, Source Site Audit).
 const plans = [
-  { name: '2 days / week', price: 'Contact us', note: 'Part-time' },
-  { name: '3 days / week', price: 'Contact us', note: 'Part-time' },
+  { name: 'Part-time', price: 'Contact us', note: '2 or 3 days / week' },
   {
-    name: '5 days / week',
+    name: 'Full-time',
     price: `from $${tuition.weeklyFrom}/wk`,
-    note: 'Full-time, full day',
+    note: '5 days / week, full day',
     featured: true,
   },
 ];
@@ -22,7 +21,7 @@ const plans = [
 const faqs = [
   {
     q: 'What ages do you accept?',
-    a: `We welcome children ages ${site.facts.ageRange}, with a 1:4 teacher-to-child ratio and just 12 children total.`,
+    a: `We welcome children ages ${site.facts.ageRange}.`,
   },
   {
     q: 'What are your hours?',
@@ -34,7 +33,7 @@ const faqs = [
   },
   {
     q: 'Are meals included?',
-    a: 'Yes — nutritious breakfast, lunch, and an afternoon snack are included every day. No cold lunchbox required.',
+    a: 'Yes. Nutritious breakfast, lunch, and an afternoon snack are included every day. No cold lunchbox required.',
   },
   {
     q: 'Do you offer a sibling discount?',
@@ -73,7 +72,7 @@ const faqSchema = {
   <PageHero
     eyebrow="Tuition & FAQ"
     title="Simple, all-inclusive tuition"
-    lead="One tuition covers everything — enrichment, daily Spanish, and meals included. No surprise add-ons."
+    lead="One tuition covers everything: enrichment, daily Spanish, and meals included. No surprise add-ons."
   />
 
   <section class="section section--cream">
@@ -95,9 +94,19 @@ const faqSchema = {
         Sibling discount available · Childcare subsidies accepted
       </p>
       <p class="confirm-note">
-        Rates vary by schedule and are subject to change — contact us for current
+        Rates vary by schedule and are subject to change. Contact us for current
         pricing and availability.
       </p>
+
+      <div class="referral">
+        <span class="referral__badge">Referral offer</span>
+        <h3>Refer a family, you both win</h3>
+        <p>
+          Know a family who would love it here? When they enroll, your
+          application fee is waived and your first week is free.
+        </p>
+        <a href="/contact/?intent=referral" class="btn btn--primary">Refer a family</a>
+      </div>
     </div>
   </section>
 
@@ -163,6 +172,32 @@ const faqSchema = {
     color: var(--color-ink-muted);
     font-size: 0.9rem;
     margin-top: 0.5rem;
+  }
+  .referral {
+    margin-top: 2.5rem;
+    text-align: center;
+    background: var(--color-peach);
+    border: 1px solid var(--color-secondary);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+  }
+  .referral__badge {
+    display: inline-block;
+    background: var(--color-secondary);
+    color: var(--color-white);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.85rem;
+    border-radius: var(--radius-pill);
+  }
+  .referral h3 {
+    margin-top: 0.9rem;
+  }
+  .referral p {
+    max-width: 32rem;
+    margin: 0.6rem auto 1.4rem;
   }
   .faqs {
     display: grid;
