@@ -1,8 +1,8 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "valentinas-preschool",
-  "compatibility_date": "2026-06-19",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2026-06-20",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 
   // SSR entry from the @astrojs/cloudflare adapter. Static pages are still
   // emitted to ./dist and served via the ASSETS binding; only on-demand routes

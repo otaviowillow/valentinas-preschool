@@ -8,8 +8,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "wrangler dev",
+    "preview": "npm run build && wrangler dev",
     "astro": "astro",
+    "generate-types": "wrangler types",
+    "deploy": "npm run build && wrangler deploy",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply valentinas-preschool-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply valentinas-preschool-db --remote"
@@ -27,5 +29,8 @@
     "@cloudflare/workers-types": "^4.20260620.1",
     "drizzle-kit": "^0.31.10",
     "wrangler": "^4.103.0"
+  },
+  "overrides": {
+    "vite": "^7"
   }
 }
