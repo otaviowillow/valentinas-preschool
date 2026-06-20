@@ -56,6 +56,19 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return redirect(`/admin/families/${familyId}/`, 303);
   }
 
+  if (action === 'link_referrer') {
+    const raw = String(form.get('referredByFamilyId') ?? '').trim();
+    const referrerId = raw ? Number(raw) : null;
+    if (raw && (!Number.isInteger(referrerId) || referrerId! <= 0)) {
+      return badRequest('Invalid family');
+    }
+    await db
+      .update(schema.inquiries)
+      .set({ referredByFamilyId: referrerId, updatedAt: new Date() })
+      .where(eq(schema.inquiries.id, id));
+    return redirect(redirectTarget(form, `/admin/inquiries/${id}/`), 303);
+  }
+
   if (action === 'delete') {
     await db.delete(schema.inquiries).where(eq(schema.inquiries.id, id));
     return redirect(redirectTarget(form, '/admin/inquiries/'), 303);

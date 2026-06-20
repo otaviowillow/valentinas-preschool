@@ -1,0 +1,1 @@
+ALTER TABLE `inquiries` ADD `referred_by_family_id` integer REFERENCES families(id);

@@ -87,6 +87,10 @@ export const inquiries = sqliteTable('inquiries', {
   status: text('status', { enum: INQUIRY_STATUSES }).notNull().default('new'),
   source: text('source'),
   familyId: integer('family_id').references(() => families.id),
+  // The existing family who referred this lead (set by staff in the admin).
+  referredByFamilyId: integer('referred_by_family_id').references(
+    () => families.id
+  ),
   ...timestamps,
 });
 

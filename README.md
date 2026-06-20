@@ -1695,9 +1695,17 @@ npx wrangler d1 create valentinas-preschool-db
 # 2. Create the R2 bucket
 npx wrangler r2 bucket create valentinas-preschool-media
 
-# 3. Apply migrations to the remote DB
+# 3. Create the sessions KV namespace, then paste its id into wrangler.jsonc
+npx wrangler kv namespace create SESSION
+
+# 4. Apply migrations to the remote DB
 npm run db:migrate:remote
 ```
+
+**Custom domain:** `wrangler.jsonc` lists `valentinaspreschool.com` and
+`www.valentinaspreschool.com` as `custom_domain` routes, so `wrangler deploy`
+creates the DNS records and binds them to the Worker automatically — no manual
+DNS entry needed (the zone must already be active in this Cloudflare account).
 
 Then in the **Zero Trust dashboard → Access → Applications**, add a self-hosted
 app covering `valentinaspreschool.com/admin*` and `/api/admin*`, with an
