@@ -4,6 +4,11 @@
   "compatibility_date": "2026-06-20",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 
+  // Build before deploy when Workers Builds runs `wrangler deploy` (dist/ is gitignored).
+  "build": {
+    "command": "npm run build"
+  },
+
   // SSR entry from the @astrojs/cloudflare adapter. Static pages are still
   // emitted to ./dist and served via the ASSETS binding; only on-demand routes
   // (/admin, /api) execute in this Worker.
