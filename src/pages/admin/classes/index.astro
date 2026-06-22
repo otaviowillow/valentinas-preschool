@@ -81,14 +81,24 @@ const ageLabel = (min: number | null, max: number | null) => {
     }
   </section>
 
-  <section class="admin-panel" style="max-width:640px;">
+  <section class="admin-panel">
     <h2>Add a class</h2>
     <form method="POST" action="/api/admin/classes/" class="admin-form">
       <input type="hidden" name="_action" value="create" />
       <input type="hidden" name="_redirect" value="/admin/classes/" />
+      <div class="name-color-row">
+        <div class="admin-field admin-field--grow">
+          <label for="name">Class name *</label>
+          <input id="name" name="name" placeholder="e.g. Toddlers" required />
+        </div>
+        <div class="admin-field admin-field--color">
+          <label for="color">Color</label>
+          <input id="color" name="color" type="color" value="#4fa45a" />
+        </div>
+      </div>
       <div class="admin-field">
-        <label for="name">Class name *</label>
-        <input id="name" name="name" placeholder="e.g. Toddlers" required />
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" placeholder="Age group, schedule, or classroom notes"></textarea>
       </div>
       <div class="grid2">
         <div class="admin-field">
@@ -100,15 +110,9 @@ const ageLabel = (min: number | null, max: number | null) => {
           <input id="ageMaxMonths" name="ageMaxMonths" type="number" min="0" max="120" />
         </div>
       </div>
-      <div class="grid2">
-        <div class="admin-field">
-          <label for="capacity">Capacity</label>
-          <input id="capacity" name="capacity" type="number" min="0" max="100" value="0" />
-        </div>
-        <div class="admin-field">
-          <label for="color">Color</label>
-          <input id="color" name="color" type="color" value="#4fa45a" />
-        </div>
+      <div class="admin-field">
+        <label for="capacity">Capacity</label>
+        <input id="capacity" name="capacity" type="number" min="0" max="100" value="0" />
       </div>
       <div><button type="submit" class="admin-btn">Add class</button></div>
     </form>

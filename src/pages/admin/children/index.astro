@@ -12,6 +12,15 @@ const db = dbFrom();
 const statusParam = Astro.url.searchParams.get('status');
 const validStatus = CHILD_STATUSES.find((s) => s === statusParam);
 
+const familyList = await db
+  .select()
+  .from(schema.families)
+  .orderBy(asc(schema.families.primaryContactName));
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.name));
+
 const conditions: SQL[] = [];
 if (validStatus) conditions.push(eq(schema.children.status, validStatus));
 
@@ -59,7 +68,7 @@ const rows = await db
       rows.length === 0 ? (
         <p class="admin-empty">
           No children{validStatus ? ` with status “${validStatus}”` : ''} yet. Add
-          children from a family's page.
+          one below.
         </p>
       ) : (
         <table class="admin-table">
@@ -100,6 +109,68 @@ const rows = await db
             ))}
           </tbody>
         </table>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>Add a child</h2>
+    {
+      familyList.length === 0 ? (
+        <p class="muted">
+          Add a <a href="/admin/families/">family</a> first, then link the child here.
+        </p>
+      ) : (
+        <form method="POST" action="/api/admin/children/" class="admin-form">
+          <input type="hidden" name="_action" value="create" />
+          <input type="hidden" name="_redirect" value="/admin/children/" />
+          <div class="admin-field">
+            <label for="familyId">Family *</label>
+            <select id="familyId" name="familyId" required>
+              {familyList.map((f) => (
+                <option value={f.id}>{f.primaryContactName}</option>
+              ))}
+            </select>
+          </div>
+          <div class="grid2">
+            <div class="admin-field">
+              <label for="firstName">First name *</label>
+              <input id="firstName" name="firstName" required />
+            </div>
+            <div class="admin-field">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="admin-field">
+              <label for="dob">Date of birth</label>
+              <input id="dob" name="dob" type="date" />
+            </div>
+            <div class="admin-field">
+              <label for="status">Status</label>
+              <select id="status" name="status">
+                {CHILD_STATUSES.map((s) => (
+                  <option value={s} selected={s === 'enrolled'}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="admin-field">
+              <label for="classId">Class</label>
+              <select id="classId" name="classId">
+                <option value="">Unassigned</option>
+                {classList.map((c) => <option value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div class="admin-field">
+              <label for="startDate">Start date</label>
+              <input id="startDate" name="startDate" placeholder="e.g. Fall 2026" />
+            </div>
+          </div>
+          <div><button type="submit" class="admin-btn">Add child</button></div>
+        </form>
       )
     }
   </section>

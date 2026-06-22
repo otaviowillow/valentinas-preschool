@@ -73,6 +73,7 @@ const photos = await db
     <section class="admin-panel">
       <h2>Upload a photo</h2>
       <form
+        id="photoForm"
         method="POST"
         action="/api/admin/photos/"
         class="admin-form"
@@ -80,22 +81,44 @@ const photos = await db
       >
         <input type="hidden" name="_action" value="upload" />
         <input type="hidden" name="_redirect" value="/admin/comms/" />
+
         <div class="admin-field">
-          <label for="file">Image *</label>
-          <input id="file" name="file" type="file" accept="image/*" required />
+          <span class="dz-label">Image *</span>
+          <div class="dropzone-wrap">
+            <label class="dropzone" for="file" id="dropzone">
+              <span class="dz-view dz-idle" data-state="idle">
+                <span class="dz-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-7.97 6 6 0 0 1 11.5-1.2A3.5 3.5 0 0 1 18 18z"/><path d="M12 12v6"/><path d="M9.5 14.5 12 12l2.5 2.5"/></svg>
+                </span>
+                <span class="dz-title">Tap to upload photo</span>
+                <span class="dz-hint">PNG, JPG, WebP or GIF (max 10 MB)</span>
+              </span>
+              <span class="dz-view dz-busy" data-state="busy" hidden>
+                <span class="dz-pct" id="dzPct">0%</span>
+                <span class="dz-status">Uploading…</span>
+              </span>
+              <span class="dz-view dz-done" data-state="done" hidden>
+                <span class="dz-check">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                </span>
+                <span class="dz-title">Upload complete</span>
+              </span>
+            </label>
+            <input
+              id="file"
+              name="file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              required
+              hidden
+            />
+            <button type="button" class="dz-clear" id="dzClear" hidden>
+              Clear
+            </button>
+          </div>
         </div>
-        <div class="admin-field">
-          <label for="caption">Caption</label>
-          <input id="caption" name="caption" />
-        </div>
-        <div class="admin-field">
-          <label for="pclass">Class (optional)</label>
-          <select id="pclass" name="classId">
-            <option value="">—</option>
-            {classList.map((c) => <option value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div><button type="submit" class="admin-btn">Upload photo</button></div>
+
+        <div><button type="submit" class="admin-btn" id="photoSubmit">Upload photo</button></div>
       </form>
     </section>
   </div>
@@ -219,4 +242,172 @@ const photos = await db
       grid-template-columns: 1fr;
     }
   }
+
+  /* ---- photo dropzone ---- */
+  .dz-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-primary-dark);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .dropzone {
+    display: block;
+    border: 2px dashed var(--color-primary-light);
+    border-radius: 12px;
+    background: var(--admin-card);
+    padding: 1rem 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .dropzone:hover,
+  .dropzone.is-drag {
+    border-color: var(--color-primary);
+    background: var(--color-mint);
+  }
+  .dz-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .dz-view[hidden] {
+    display: none !important;
+  }
+  .dz-icon {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--color-mint);
+    color: var(--color-primary);
+  }
+  .dz-icon svg { width: 1.15rem; height: 1.15rem; }
+  .dz-title { font-weight: 800; font-size: 0.9rem; color: var(--color-primary-dark); }
+  .dz-hint { font-size: 0.75rem; color: var(--color-ink-muted); }
+  .dz-pct {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+  }
+  .dz-status { font-size: 0.78rem; color: var(--color-ink-muted); }
+  .dz-check {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--color-mint);
+    color: var(--color-primary);
+  }
+  .dz-check svg { width: 1.25rem; height: 1.25rem; }
+  .dz-clear {
+    display: inline-flex;
+    margin: 0.6rem auto 0;
+    background: none;
+    border: none;
+    color: var(--color-secondary-dark);
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 </style>
+
+<script data-astro-rerun>
+  const form = document.getElementById('photoForm') as HTMLFormElement | null;
+  const input = document.getElementById('file') as HTMLInputElement | null;
+  const zone = document.getElementById('dropzone');
+  const clearBtn = document.getElementById('dzClear');
+  const submitBtn = document.getElementById('photoSubmit') as HTMLButtonElement | null;
+
+  if (form && input && zone) {
+    const idle = zone.querySelector('.dz-idle') as HTMLElement;
+    const busy = zone.querySelector('.dz-busy') as HTMLElement;
+    const done = zone.querySelector('.dz-done') as HTMLElement;
+    const pct = document.getElementById('dzPct');
+
+    const show = (state: 'idle' | 'busy' | 'done') => {
+      idle.hidden = state !== 'idle';
+      busy.hidden = state !== 'busy';
+      done.hidden = state !== 'done';
+    };
+
+    const reset = () => {
+      input.value = '';
+      if (pct) pct.textContent = '0%';
+      show('idle');
+      if (clearBtn) clearBtn.hidden = true;
+      if (submitBtn) submitBtn.disabled = false;
+    };
+
+    ['dragenter', 'dragover'].forEach((e) =>
+      zone.addEventListener(e, (ev) => {
+        ev.preventDefault();
+        zone.classList.add('is-drag');
+      })
+    );
+    ['dragleave', 'drop'].forEach((e) =>
+      zone.addEventListener(e, (ev) => {
+        ev.preventDefault();
+        zone.classList.remove('is-drag');
+      })
+    );
+    zone.addEventListener('drop', (ev) => {
+      const dt = (ev as DragEvent).dataTransfer;
+      if (dt?.files.length) {
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+
+    input.addEventListener('change', () => {
+      if (input.files?.[0]) {
+        if (clearBtn) clearBtn.hidden = false;
+      }
+    });
+
+    if (clearBtn) clearBtn.addEventListener('click', reset);
+
+    form.addEventListener('submit', (ev) => {
+      const f = input.files?.[0];
+      if (!f) return;
+      ev.preventDefault();
+      if (submitBtn) submitBtn.disabled = true;
+      if (pct) pct.textContent = '0%';
+      show('busy');
+      if (clearBtn) clearBtn.hidden = true;
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', form.action);
+      xhr.upload.addEventListener('progress', (e) => {
+        if (!e.lengthComputable || !pct) return;
+        pct.textContent = Math.round((e.loaded / e.total) * 100) + '%';
+      });
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 400) {
+          if (pct) pct.textContent = '100%';
+          show('done');
+          setTimeout(() => {
+            window.location.href = '/admin/comms/?flash=Photo uploaded.';
+          }, 600);
+        } else {
+          reset();
+          alert('Upload failed. Please try again.');
+        }
+      });
+      xhr.addEventListener('error', () => {
+        reset();
+        alert('Upload failed. Please try again.');
+      });
+      xhr.send(new FormData(form));
+    });
+
+    show('idle');
+  }
+</script>

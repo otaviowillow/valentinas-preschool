@@ -1,0 +1,164 @@
+---
+export const prerender = false;
+
+import { asc, desc, eq, sql } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { money, formatDate } from '../../../lib/format';
+
+const db = dbFrom();
+const { employees, payrollEntries } = schema;
+
+const team = await db
+  .select()
+  .from(employees)
+  .orderBy(asc(employees.name));
+const empMap = new Map(team.map((e) => [e.id, e.name]));
+const activeTeam = team.filter((e) => e.status === 'active');
+
+const entries = await db
+  .select()
+  .from(payrollEntries)
+  .orderBy(desc(payrollEntries.paidAt))
+  .limit(50);
+
+const [allTime] = await db
+  .select({ total: sql<number>`coalesce(sum(${payrollEntries.grossCents}), 0)` })
+  .from(payrollEntries);
+
+// Sum of payments made in the current calendar month.
+const monthStart = new Date();
+monthStart.setDate(1);
+monthStart.setHours(0, 0, 0, 0);
+const [thisMonth] = await db
+  .select({ total: sql<number>`coalesce(sum(${payrollEntries.grossCents}), 0)` })
+  .from(payrollEntries)
+  .where(sql`${payrollEntries.paidAt} >= ${Math.floor(monthStart.getTime() / 1000)}`);
+---
+
+<AdminLayout title="Payroll" active="payroll">
+  <div class="admin-head">
+    <div>
+      <h1>Payroll</h1>
+      <p>Record and review payments to your team.</p>
+    </div>
+  </div>
+
+  <div class="admin-cards">
+    <div class="admin-card">
+      <div class="num">{money(thisMonth?.total ?? 0)}</div>
+      <div class="label">Paid this month</div>
+    </div>
+    <div class="admin-card">
+      <div class="num">{money(allTime?.total ?? 0)}</div>
+      <div class="label">Paid all time</div>
+    </div>
+    <div class="admin-card">
+      <div class="num">{activeTeam.length}</div>
+      <div class="label">Active team members</div>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    <h2>Record a payment</h2>
+    {
+      team.length === 0 ? (
+        <p class="muted">
+          Add a <a href="/admin/team/">team member</a> first, then record their
+          pay here.
+        </p>
+      ) : (
+        <form method="POST" action="/api/admin/payroll/" class="admin-form">
+          <input type="hidden" name="_action" value="create" />
+          <input type="hidden" name="_redirect" value="/admin/payroll/" />
+          <div class="admin-field">
+            <label for="employeeId">Team member *</label>
+            <select id="employeeId" name="employeeId" required>
+              {team.map((e) => (
+                <option value={e.id}>
+                  {e.name}
+                  {e.status === 'inactive' ? ' (inactive)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div class="grid2">
+            <div class="admin-field">
+              <label for="gross">Gross amount ($) *</label>
+              <input id="gross" name="gross" type="text" inputmode="decimal" required />
+            </div>
+            <div class="admin-field">
+              <label for="hours">Hours</label>
+              <input id="hours" name="hours" type="number" min="0" max="2000" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="admin-field">
+              <label for="periodLabel">Pay period</label>
+              <input id="periodLabel" name="periodLabel" placeholder="e.g. Jun 1–15" />
+            </div>
+            <div class="admin-field">
+              <label for="method">Method</label>
+              <select id="method" name="method">
+                <option value="">—</option>
+                <option value="check">Check</option>
+                <option value="transfer">Transfer</option>
+                <option value="cash">Cash</option>
+              </select>
+            </div>
+          </div>
+          <div><button type="submit" class="admin-btn">Record payment</button></div>
+        </form>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>Recent payments</h2>
+    {
+      entries.length === 0 ? (
+        <p class="admin-empty">No payments recorded yet.</p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Paid</th>
+              <th>Team member</th>
+              <th>Period</th>
+              <th>Hours</th>
+              <th>Gross</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((p) => (
+              <tr>
+                <td>{formatDate(p.paidAt)}</td>
+                <td>
+                  <a href={`/admin/team/${p.employeeId}/`}>
+                    {empMap.get(p.employeeId) ?? 'Unknown'}
+                  </a>
+                </td>
+                <td>{p.periodLabel ?? '—'}</td>
+                <td>{p.hours ?? '—'}</td>
+                <td>{money(p.grossCents)}</td>
+                <td>
+                  <form
+                    method="POST"
+                    action="/api/admin/payroll/"
+                    onsubmit="return confirm('Delete this payroll entry?');"
+                  >
+                    <input type="hidden" name="_action" value="delete" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <input type="hidden" name="_redirect" value="/admin/payroll/" />
+                    <button class="admin-btn admin-btn--danger admin-btn--sm">×</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+</AdminLayout>

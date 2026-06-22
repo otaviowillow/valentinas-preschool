@@ -6,7 +6,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
 import { formatDate, money } from '../../../lib/format';
-import { INVOICE_STATUSES } from '../../../db/schema';
+import { INVOICE_STATUSES, RECURRING_FREQUENCIES } from '../../../db/schema';
 
 const db = dbFrom();
 const familyParam = Number(Astro.url.searchParams.get('family')) || null;
@@ -75,7 +75,20 @@ const famChildren = selected
       .where(eq(schema.children.familyId, selected.id))
       .orderBy(asc(schema.children.firstName))
   : [];
+const famRecurring = selected
+  ? await db
+      .select()
+      .from(schema.recurringInvoices)
+      .where(eq(schema.recurringInvoices.familyId, selected.id))
+      .orderBy(asc(schema.recurringInvoices.nextRunDate))
+  : [];
 const self = selected ? `/admin/billing/?family=${selected.id}` : '/admin/billing/';
+const todayDate = new Date().toISOString().slice(0, 10);
+const freqLabel: Record<string, string> = {
+  weekly: 'Weekly',
+  biweekly: 'Every 2 weeks',
+  monthly: 'Monthly',
+};
 ---
 
 <AdminLayout title="Billing" active="billing">
@@ -85,10 +98,16 @@ const self = selected ? `/admin/billing/?family=${selected.id}` : '/admin/billin
       <p>Invoices, payments, and per-family balances.</p>
     </div>
     {
-      selected && (
+      selected ? (
         <a class="admin-btn admin-btn--ghost" href="/admin/billing/">
           All families
         </a>
+      ) : (
+        <form method="POST" action="/api/admin/recurring/">
+          <input type="hidden" name="_action" value="run" />
+          <input type="hidden" name="_redirect" value="/admin/billing/" />
+          <button class="admin-btn">Generate due invoices</button>
+        </form>
       )
     }
   </div>
@@ -269,6 +288,118 @@ const self = selected ? `/admin/billing/?family=${selected.id}` : '/admin/billin
           )}
         </section>
 
+        <section class="admin-panel">
+          <h2>Recurring billing</h2>
+          {famRecurring.length === 0 ? (
+            <p class="muted">
+              No recurring plans. Set one up below to auto-generate invoices on a
+              schedule.
+            </p>
+          ) : (
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Amount</th>
+                  <th>Frequency</th>
+                  <th>Next run</th>
+                  <th>Auto-email</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {famRecurring.map((r) => (
+                  <tr>
+                    <td>{money(r.amountCents)}</td>
+                    <td>{freqLabel[r.frequency] ?? r.frequency}</td>
+                    <td>{formatDate(r.nextRunDate)}</td>
+                    <td>{r.autoSend ? 'On' : 'Off'}</td>
+                    <td>
+                      <span class={`badge badge--${r.active ? 'enrolled' : 'withdrawn'}`}>
+                        {r.active ? 'active' : 'paused'}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="admin-actions">
+                        <form method="POST" action="/api/admin/recurring/">
+                          <input type="hidden" name="_action" value="toggle" />
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="_redirect" value={self} />
+                          <button class="admin-btn admin-btn--ghost admin-btn--sm">
+                            {r.active ? 'Pause' : 'Resume'}
+                          </button>
+                        </form>
+                        <form
+                          method="POST"
+                          action="/api/admin/recurring/"
+                          onsubmit="return confirm('Delete this recurring plan?');"
+                        >
+                          <input type="hidden" name="_action" value="delete" />
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="_redirect" value={self} />
+                          <button class="admin-btn admin-btn--danger admin-btn--sm">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          <h3 style="margin:1.25rem 0 0.75rem;font-size:1.05rem;">
+            New recurring plan
+          </h3>
+          <form method="POST" action="/api/admin/recurring/" class="admin-form">
+            <input type="hidden" name="_action" value="create" />
+            <input type="hidden" name="familyId" value={selected.id} />
+            <input type="hidden" name="_redirect" value={self} />
+            <div class="grid2">
+              <div class="admin-field">
+                <label for="ramount">Amount (USD) *</label>
+                <input id="ramount" name="amount" inputmode="decimal" placeholder="350.00" required />
+              </div>
+              <div class="admin-field">
+                <label for="frequency">Frequency</label>
+                <select id="frequency" name="frequency">
+                  {RECURRING_FREQUENCIES.map((f) => (
+                    <option value={f} selected={f === 'monthly'}>
+                      {freqLabel[f]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="admin-field">
+                <label for="nextRunDate">First invoice date *</label>
+                <input id="nextRunDate" name="nextRunDate" type="date" value={todayDate} required />
+              </div>
+              <div class="admin-field">
+                <label for="rchild">Child (optional)</label>
+                <select id="rchild" name="childId">
+                  <option value="">— Whole family —</option>
+                  {famChildren.map((c) => (
+                    <option value={c.id}>
+                      {c.firstName} {c.lastName ?? ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div class="admin-field">
+              <label for="rdescription">Description</label>
+              <input id="rdescription" name="description" placeholder="Monthly tuition" />
+            </div>
+            <label class="recurring-autosend">
+              <input type="checkbox" name="autoSend" /> Auto-email the family when each invoice is generated (needs email setup)
+            </label>
+            <div><button type="submit" class="admin-btn">Create recurring plan</button></div>
+          </form>
+        </section>
+
         <div class="grid-2col">
           <section class="admin-panel">
             <h2>Create invoice</h2>
@@ -384,6 +515,17 @@ const self = selected ? `/admin/billing/?family=${selected.id}` : '/admin/billin
     padding: 0.25rem 0.4rem;
     border: 1.5px solid var(--color-primary-light);
     border-radius: var(--radius);
+    background: var(--admin-card);
+  }
+  .recurring-autosend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .recurring-autosend input {
+    width: auto;
   }
   @media (max-width: 860px) {
     .grid-2col {

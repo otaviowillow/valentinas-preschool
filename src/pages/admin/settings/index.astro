@@ -1,0 +1,81 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSettings } from '../../../lib/settings';
+
+const s = await getSettings();
+---
+
+<AdminLayout title="Site settings" active="settings">
+  <div class="admin-head">
+    <div>
+      <h1>Site settings</h1>
+      <p>Capacity and the tuition pricing shown on the public site.</p>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    <form method="POST" action="/api/admin/settings/" class="admin-form">
+      <input type="hidden" name="_action" value="update" />
+      <input type="hidden" name="_redirect" value="/admin/settings/" />
+
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="capacity">Total capacity (spots)</label>
+          <input id="capacity" name="capacity" type="number" min="0" max="500" value={s.capacity} />
+        </div>
+        <div class="admin-field">
+          <label for="applicationFee">Application fee ($)</label>
+          <input id="applicationFee" name="applicationFee" type="number" min="0" value={s.applicationFee} />
+        </div>
+      </div>
+
+      <h2 style="margin:0.5rem 0 0;font-size:1.05rem;">Part-time plan</h2>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="partTimeLabel">Label</label>
+          <input id="partTimeLabel" name="partTimeLabel" value={s.partTimeLabel} required />
+        </div>
+        <div class="admin-field">
+          <label for="partTimePrice">Price text</label>
+          <input id="partTimePrice" name="partTimePrice" value={s.partTimePrice} required />
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="partTimeNote">Note</label>
+        <input id="partTimeNote" name="partTimeNote" value={s.partTimeNote} />
+      </div>
+
+      <h2 style="margin:0.5rem 0 0;font-size:1.05rem;">Full-time plan</h2>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="fullTimeLabel">Label</label>
+          <input id="fullTimeLabel" name="fullTimeLabel" value={s.fullTimeLabel} required />
+        </div>
+        <div class="admin-field">
+          <label for="weeklyFrom">Weekly rate from ($/wk)</label>
+          <input id="weeklyFrom" name="weeklyFrom" type="number" min="0" value={s.weeklyFrom} />
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="fullTimeNote">Note</label>
+        <input id="fullTimeNote" name="fullTimeNote" value={s.fullTimeNote} />
+      </div>
+      <p class="muted" style="margin:0;font-size:0.85rem;">
+        Full-time price displays as “from ${s.weeklyFrom}/wk”.
+      </p>
+
+      <div class="admin-field">
+        <label class="email-opt" style="flex-direction:row;display:flex;gap:0.5rem;align-items:center;font-weight:600;">
+          <input type="checkbox" name="siblingDiscount" checked={s.siblingDiscount} /> Sibling discount available
+        </label>
+        <label class="email-opt" style="flex-direction:row;display:flex;gap:0.5rem;align-items:center;font-weight:600;">
+          <input type="checkbox" name="subsidiesAccepted" checked={s.subsidiesAccepted} /> Childcare subsidies accepted
+        </label>
+      </div>
+
+      <div><button type="submit" class="admin-btn">Save settings</button></div>
+    </form>
+  </section>
+</AdminLayout>

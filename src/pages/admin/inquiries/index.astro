@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, or, isNotNull } from 'drizzle-orm';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
@@ -12,10 +12,22 @@ const db = dbFrom();
 const filter = Astro.url.searchParams.get('status');
 const validFilter = INQUIRY_STATUSES.find((s) => s === filter);
 
+const intentFilter = Astro.url.searchParams.get('intent');
+const validIntent = intentFilter === 'referral' ? 'referral' : null;
+
 const rows = await db
   .select()
   .from(schema.inquiries)
-  .where(validFilter ? eq(schema.inquiries.status, validFilter) : undefined)
+  .where(
+    validFilter
+      ? eq(schema.inquiries.status, validFilter)
+      : validIntent
+        ? or(
+            eq(schema.inquiries.intent, 'referral'),
+            isNotNull(schema.inquiries.referredBy)
+          )
+        : undefined
+  )
   .orderBy(desc(schema.inquiries.createdAt));
 ---
 
@@ -29,8 +41,12 @@ const rows = await db
 
   <div class="admin-actions" style="margin-bottom: 1rem;">
     <a
-      class={`admin-btn admin-btn--sm ${validFilter ? 'admin-btn--ghost' : ''}`}
+      class={`admin-btn admin-btn--sm ${validFilter || validIntent ? 'admin-btn--ghost' : ''}`}
       href="/admin/inquiries/">All</a
+    >
+    <a
+      class={`admin-btn admin-btn--sm ${validIntent ? '' : 'admin-btn--ghost'}`}
+      href="/admin/inquiries/?intent=referral">Referrals</a
     >
     {
       INQUIRY_STATUSES.map((s) => (
@@ -47,7 +63,11 @@ const rows = await db
   <section class="admin-panel">
     {
       rows.length === 0 ? (
-        <p class="admin-empty">No inquiries{validFilter ? ` with status “${validFilter}”` : ''} yet.</p>
+        <p class="admin-empty">
+          No inquiries
+          {validFilter ? ` with status “${validFilter}”` : validIntent ? ' tagged as referrals' : ''}{' '}
+          yet.
+        </p>
       ) : (
         <table class="admin-table">
           <thead>
@@ -71,7 +91,13 @@ const rows = await db
                 </td>
                 <td>{row.childAge ?? '—'}</td>
                 <td>{row.desiredStart ?? '—'}</td>
-                <td>{titleCase(row.intent)}</td>
+                <td>
+                  {row.intent === 'referral' || row.referredBy ? (
+                    <span class="badge badge--offered">Referral</span>
+                  ) : (
+                    titleCase(row.intent)
+                  )}
+                </td>
                 <td>
                   <StatusBadge status={row.status} />
                 </td>

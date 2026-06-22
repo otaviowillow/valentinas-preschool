@@ -56,6 +56,11 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  background: var(--color-surface);
+}
+
+@view-transition {
+  navigation: auto;
 }
 body {
   font-family: var(--font-body);
@@ -307,5 +312,10 @@ p {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
