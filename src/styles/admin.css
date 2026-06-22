@@ -344,6 +344,14 @@
 .admin-rail .admin-panel {
   margin-bottom: 0;
 }
+.inquiry-aside {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.inquiry-aside .admin-panel {
+  margin-bottom: 0;
+}
 .rail-card__top {
   display: flex;
   align-items: center;

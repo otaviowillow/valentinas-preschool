@@ -1,11 +1,12 @@
 ---
 export const prerender = false;
 
-import { desc, eq, or, isNotNull } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
 import { formatDate, titleCase } from '../../../lib/format';
+import { isReferralInquiry } from '../../../lib/inquiries';
 import { INQUIRY_STATUSES } from '../../../db/schema';
 
 const db = dbFrom();
@@ -22,10 +23,7 @@ const rows = await db
     validFilter
       ? eq(schema.inquiries.status, validFilter)
       : validIntent
-        ? or(
-            eq(schema.inquiries.intent, 'referral'),
-            isNotNull(schema.inquiries.referredBy)
-          )
+        ? eq(schema.inquiries.intent, 'referral')
         : undefined
   )
   .orderBy(desc(schema.inquiries.createdAt));
@@ -92,7 +90,7 @@ const rows = await db
                 <td>{row.childAge ?? '—'}</td>
                 <td>{row.desiredStart ?? '—'}</td>
                 <td>
-                  {row.intent === 'referral' || row.referredBy ? (
+                  {isReferralInquiry(row) ? (
                     <span class="badge badge--offered">Referral</span>
                   ) : (
                     titleCase(row.intent)

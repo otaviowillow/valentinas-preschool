@@ -1,9 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import DatePicker from '../components/DatePicker.astro';
 import { site } from '../data/site';
 
 const { nap } = site;
+const minStartDate = new Date().toISOString().slice(0, 10);
+const maxStartDate = new Date(
+  new Date().getFullYear() + 3,
+  new Date().getMonth(),
+  new Date().getDate()
+)
+  .toISOString()
+  .slice(0, 10);
 const mapQuery = encodeURIComponent(
   `${nap.streetAddress}, ${nap.addressLocality}, ${nap.addressRegion} ${nap.postalCode}`
 );
@@ -19,12 +28,13 @@ const mapQuery = encodeURIComponent(
     lead="Spots are limited. We keep our family small on purpose. Tell us a little about your child and we’ll be in touch personally."
   />
 
-  <section class="section section--cream" style="padding: 0">
+  <section class="section section--cream">
     <div class="container contact-grid">
       <form
-        class="card contact-form stack"
+        class="card contact-form"
         action="/api/inquiries/"
         method="POST"
+        novalidate
       >
         <h2>Request a tour</h2>
 
@@ -33,56 +43,91 @@ const mapQuery = encodeURIComponent(
           or call us directly.
         </p>
 
-
-        {/* Honeypot: hidden from people, tempting to bots. Leave empty. */}
+        {/* Honeypots: hidden from people, tempting to bots. Leave empty. */}
         <div class="hp" aria-hidden="true">
           <label for="website">Website</label>
           <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          <label for="company">Company</label>
+          <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
         </div>
+        <input type="hidden" name="form_ts" id="form_ts" value="" />
 
         <div class="field">
           <label for="parent">Your name</label>
-          <input id="parent" name="parent_name" type="text" required />
+          <input
+            id="parent"
+            name="parent_name"
+            type="text"
+            required
+            maxlength="100"
+            autocomplete="name"
+          />
         </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required />
-          </div>
-          <div class="field">
-            <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="tel" />
-          </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            maxlength="200"
+            autocomplete="email"
+            inputmode="email"
+            aria-describedby="email-error"
+          />
+          <p class="field-error" id="email-error" role="alert" hidden></p>
         </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="childage">Child’s age</label>
-            <input
-              id="childage"
-              name="child_age"
-              type="text"
-              placeholder="e.g. 2 years"
-            />
-          </div>
-          <div class="field">
-            <label for="start">Desired start</label>
-            <input id="start" name="start_date" type="text" placeholder="e.g. Fall 2026" />
-          </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            maxlength="10"
+            autocomplete="tel"
+            inputmode="numeric"
+            pattern="[0-9]{10}"
+            placeholder="3105551234"
+            aria-describedby="phone-error"
+          />
+          <p class="field-error" id="phone-error" role="alert" hidden></p>
         </div>
 
-        <fieldset class="field">
+        <div class="field">
+          <label for="childage">Child’s age (months)</label>
+          <input
+            id="childage"
+            name="child_age"
+            type="number"
+            min="15"
+            max="60"
+            step="1"
+            placeholder="e.g. 24"
+            required
+          />
+          <span class="muted field-hint">Ages 15 months – 5 years (60 months).</span>
+        </div>
+
+        <div class="field">
+          <label id="start-label" for="start-trigger">Desired start</label>
+          <DatePicker id="start" name="start_date" min={minStartDate} max={maxStartDate} />
+        </div>
+
+        <fieldset class="field intent-field">
           <legend>I’d like to…</legend>
-          <label class="radio"
-            ><input type="radio" name="intent" value="tour" checked /> Book a tour</label
-          >
-          <label class="radio"
-            ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
-          >
-          <label class="radio"
-            ><input type="radio" name="intent" value="referral" /> I was referred</label
-          >
+          <div class="intent-options">
+            <label class="radio"
+              ><input type="radio" name="intent" value="tour" checked /> Book a tour</label
+            >
+            <label class="radio"
+              ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
+            >
+            <label class="radio"
+              ><input type="radio" name="intent" value="referral" /> I was referred</label
+            >
+          </div>
         </fieldset>
 
         <div class="field referred-by" hidden>
@@ -91,16 +136,19 @@ const mapQuery = encodeURIComponent(
             id="referred"
             name="referred_by"
             type="text"
-            placeholder="The family who sent you our way"
+            placeholder="Name of individual who referred you"
+            maxlength="200"
           />
         </div>
 
         <div class="field">
           <label for="message">Anything we should know?</label>
-          <textarea id="message" name="message" rows="4"></textarea>
+          <textarea id="message" name="message" rows="4" maxlength="2000"></textarea>
         </div>
 
-        <button type="submit" class="btn btn--primary btn--lg">Send request</button>
+        <button type="submit" class="btn btn--primary btn--lg" disabled>
+          Send request
+        </button>
         <p class="muted form-fallback">
           Prefer to talk? Call <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a>.
         </p>
@@ -135,30 +183,6 @@ const mapQuery = encodeURIComponent(
       </aside>
     </div>
   </section>
-
-  <script data-astro-rerun>
-    const intent = new URLSearchParams(location.search).get('intent');
-    const radios = Array.from(
-      document.querySelectorAll<HTMLInputElement>('input[name="intent"]')
-    );
-    const referredBy = document.querySelector<HTMLElement>('.referred-by');
-
-    function syncReferredField() {
-      const selected = radios.find((r) => r.checked)?.value;
-      if (referredBy) referredBy.hidden = selected !== 'referral';
-    }
-
-    if (intent && radios.some((r) => r.value === intent)) {
-      radios.forEach((r) => (r.checked = r.value === intent));
-    }
-    radios.forEach((r) => r.addEventListener('change', syncReferredField));
-    syncReferredField();
-
-    if (new URLSearchParams(location.search).get('error') === '1') {
-      const banner = document.getElementById('form-error');
-      if (banner) banner.hidden = false;
-    }
-  </script>
 </BaseLayout>
 
 <style>
@@ -169,20 +193,26 @@ const mapQuery = encodeURIComponent(
     align-items: start;
   }
   .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     padding: clamp(1.75rem, 4vw, 2.75rem);
   }
   .field {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
     border: 0;
     padding: 0;
     margin: 0;
   }
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  .intent-field {
+    gap: 0.75rem;
+  }
+  .intent-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
   }
   label,
   legend {
@@ -204,12 +234,35 @@ const mapQuery = encodeURIComponent(
     border-color: var(--color-primary);
     outline: none;
   }
-  .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+  input.is-invalid,
+  textarea.is-invalid {
+    border-color: #a51f1f;
+    background: #fff6f5;
+    box-shadow: inset 0 0 0 1px rgba(165, 31, 31, 0.15);
+  }
+  input.is-invalid:focus,
+  textarea.is-invalid:focus {
+    border-color: #a51f1f;
+    outline: 2px solid rgba(165, 31, 31, 0.3);
+    outline-offset: 1px;
+  }
+  .field-error {
+    margin: 0;
+    font-size: 0.85rem;
     font-weight: 600;
-    margin-right: 1.2rem;
+    color: #a51f1f;
+  }
+  .field-error:not([hidden]) {
+    display: block;
+  }
+  .radio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .field-hint {
+    font-size: 0.85rem;
   }
   .form-fallback {
     margin: 0.9rem 0 0;
@@ -243,9 +296,6 @@ const mapQuery = encodeURIComponent(
   }
   @media (max-width: 880px) {
     .contact-grid {
-      grid-template-columns: 1fr;
-    }
-    .row {
       grid-template-columns: 1fr;
     }
   }

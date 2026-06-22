@@ -8,6 +8,11 @@ import {
   PAY_TYPES,
   RECURRING_FREQUENCIES,
 } from '../db/schema';
+import {
+  CHILD_AGE_MAX_MONTHS,
+  CHILD_AGE_MIN_MONTHS,
+} from './inquiries';
+import { hasSuspiciousInjection } from './spam';
 
 // HTML forms (and FormData.get) yield `null` for absent fields and `''` for
 // empty ones. Normalize both so optional fields validate cleanly.
@@ -26,6 +31,50 @@ const optionalEmail = z.preprocess(
   emptyToUndef,
   z.string().email('Enter a valid email address').max(200).optional()
 );
+const requiredEmail = z.preprocess(
+  trimOrEmpty,
+  z.string().email('Enter a valid email address').max(200)
+);
+
+/** Letters, spaces, apostrophes, hyphens — no digits/URLs. */
+const personName = (max: number, msg: string) =>
+  z.preprocess(
+    trimOrEmpty,
+    z
+      .string()
+      .min(1, msg)
+      .max(max)
+      .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only in names')
+  );
+
+const optionalPhone = z.preprocess(
+  emptyToUndef,
+  z
+    .string()
+    .regex(/^\d{10}$/, 'Enter a valid 10-digit phone number')
+    .optional()
+);
+
+const safeOptionalText = (max: number) =>
+  z.preprocess(
+    emptyToUndef,
+    z
+      .string()
+      .max(max)
+      .refine((s) => !hasSuspiciousInjection(s), 'Invalid characters in text')
+      .optional()
+  );
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const optionalStartDate = z.preprocess(
+  emptyToUndef,
+  z
+    .string()
+    .regex(ISO_DATE, 'Enter a valid start date')
+    .refine((s) => !Number.isNaN(new Date(`${s}T12:00:00`).getTime()), 'Enter a valid start date')
+    .optional()
+);
 
 const optionalId = z.preprocess(
   emptyToUndef,
@@ -40,14 +89,34 @@ const requiredAmountCents = z.coerce.number().int().min(0);
 
 // ---- Public enrollment inquiry (from the contact form) --------------------
 export const inquiryInput = z.object({
-  parentName: requiredStr(200, 'Your name is required'),
-  email: optionalEmail,
-  phone: optionalStr(50),
-  childAge: optionalStr(100),
-  desiredStart: optionalStr(100),
+  parentName: personName(100, 'Your name is required'),
+  email: requiredEmail,
+  phone: optionalPhone,
+  childAge: z.preprocess(
+    emptyToUndef,
+    z.coerce
+      .number({ error: 'Enter your child’s age in months' })
+      .int()
+      .min(
+        CHILD_AGE_MIN_MONTHS,
+        `Minimum age is ${CHILD_AGE_MIN_MONTHS} months`
+      )
+      .max(
+        CHILD_AGE_MAX_MONTHS,
+        `Maximum age is 5 years (${CHILD_AGE_MAX_MONTHS} months)`
+      )
+  ),
+  desiredStart: optionalStartDate,
   intent: z.preprocess(emptyToUndef, z.enum(INQUIRY_INTENTS)).catch('tour'),
-  referredBy: optionalStr(200),
-  message: optionalStr(2000),
+  referredBy: z.preprocess(
+    emptyToUndef,
+    z
+      .string()
+      .max(200)
+      .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only')
+      .optional()
+  ),
+  message: safeOptionalText(2000),
 });
 export type InquiryInput = z.infer<typeof inquiryInput>;
 

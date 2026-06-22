@@ -86,7 +86,7 @@ export const footerLinks = {
   Programs: [
     { label: 'Programs by Age', href: '/programs/' },
     { label: 'Enrichment', href: '/enrichment/' },
-    { label: 'Tuition & FAQ', href: '/tuition/' },
+    { label: 'Tuition & FAQ', href: '/tuition/#faq' },
     { label: 'Testimonials', href: '/testimonials/' },
   ],
   Visit: [

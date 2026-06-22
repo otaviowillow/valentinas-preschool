@@ -6,6 +6,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
 import { formatDate, titleCase } from '../../../lib/format';
+import { isReferralInquiry } from '../../../lib/inquiries';
 import { INQUIRY_STATUSES } from '../../../db/schema';
 
 const id = Number(Astro.params.id);
@@ -34,7 +35,7 @@ const allFamilies = await db
 const referrer = inquiry.referredByFamilyId
   ? allFamilies.find((f) => f.id === inquiry.referredByFamilyId)
   : null;
-const isReferral = inquiry.intent === 'referral' || !!inquiry.referredBy;
+const isReferral = isReferralInquiry(inquiry);
 
 const self = `/admin/inquiries/${id}/`;
 ---
@@ -65,7 +66,11 @@ const self = `/admin/inquiries/${id}/`;
           <tr><th>Child age</th><td>{inquiry.childAge ?? '—'}</td></tr>
           <tr><th>Desired start</th><td>{inquiry.desiredStart ?? '—'}</td></tr>
           <tr><th>Intent</th><td>{titleCase(inquiry.intent)}</td></tr>
-          <tr><th>Referred by</th><td>{inquiry.referredBy ?? '—'}</td></tr>
+          {
+            isReferral && (
+              <tr><th>Referred by</th><td>{inquiry.referredBy ?? '—'}</td></tr>
+            )
+          }
           <tr><th>Source</th><td>{inquiry.source ?? '—'}</td></tr>
           <tr>
             <th>Message</th>
@@ -75,7 +80,7 @@ const self = `/admin/inquiries/${id}/`;
       </table>
     </section>
 
-    <aside class="stack" style="display:grid; gap:1.5rem;">
+    <aside class="inquiry-aside">
       <section class="admin-panel">
         <h2>Status</h2>
         <form method="POST" action="/api/admin/inquiries/" class="admin-form">
@@ -123,79 +128,83 @@ const self = `/admin/inquiries/${id}/`;
         }
       </section>
 
-      <section class="admin-panel" style={isReferral ? 'border-color:var(--color-accent);' : ''}>
-        <h2>Referral</h2>
-        <p class="muted" style="margin-top:0;">
-          Says they were referred by: <strong>{inquiry.referredBy ?? '—'}</strong>
-        </p>
+      {
+        isReferral && (
+          <section class="admin-panel" style="border-color:var(--color-accent);">
+            <h2>Referral</h2>
+            <p class="muted" style="margin-top:0;">
+              Says they were referred by: <strong>{inquiry.referredBy ?? '—'}</strong>
+            </p>
 
-        <form method="POST" action="/api/admin/inquiries/" class="admin-form">
-          <input type="hidden" name="_action" value="link_referrer" />
-          <input type="hidden" name="id" value={inquiry.id} />
-          <input type="hidden" name="_redirect" value={self} />
-          <div class="admin-field">
-            <label for="referredByFamilyId">Referring family</label>
-            <select id="referredByFamilyId" name="referredByFamilyId">
-              <option value="">— Not linked —</option>
-              {
-                allFamilies.map((f) => (
-                  <option
-                    value={f.id}
-                    selected={f.id === inquiry.referredByFamilyId}
+            <form method="POST" action="/api/admin/inquiries/" class="admin-form">
+              <input type="hidden" name="_action" value="link_referrer" />
+              <input type="hidden" name="id" value={inquiry.id} />
+              <input type="hidden" name="_redirect" value={self} />
+              <div class="admin-field">
+                <label for="referredByFamilyId">Referring family</label>
+                <select id="referredByFamilyId" name="referredByFamilyId">
+                  <option value="">— Not linked —</option>
+                  {
+                    allFamilies.map((f) => (
+                      <option
+                        value={f.id}
+                        selected={f.id === inquiry.referredByFamilyId}
+                      >
+                        {f.primaryContactName}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+              <button type="submit" class="admin-btn admin-btn--ghost admin-btn--sm">
+                Link referrer
+              </button>
+            </form>
+
+            {
+              referrer && (
+                <div style="margin-top:1rem;border-top:1px solid var(--color-surface-2);padding-top:1rem;">
+                  <p style="margin:0 0 .5rem;">
+                    Reward{' '}
+                    <a href={`/admin/families/${referrer.id}/`}>
+                      {referrer.primaryContactName}
+                    </a>{' '}
+                    with a referral credit:
+                  </p>
+                  <form
+                    method="POST"
+                    action="/api/admin/payments/"
+                    class="admin-actions"
                   >
-                    {f.primaryContactName}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
-          <button type="submit" class="admin-btn admin-btn--ghost admin-btn--sm">
-            Link referrer
-          </button>
-        </form>
-
-        {
-          referrer && (
-            <div style="margin-top:1rem;border-top:1px solid var(--color-surface-2);padding-top:1rem;">
-              <p style="margin:0 0 .5rem;">
-                Reward{' '}
-                <a href={`/admin/families/${referrer.id}/`}>
-                  {referrer.primaryContactName}
-                </a>{' '}
-                with a referral credit:
-              </p>
-              <form
-                method="POST"
-                action="/api/admin/payments/"
-                class="admin-actions"
-              >
-                <input type="hidden" name="_action" value="create" />
-                <input type="hidden" name="familyId" value={referrer.id} />
-                <input type="hidden" name="method" value="referral credit" />
-                <input
-                  type="hidden"
-                  name="note"
-                  value={`Referral credit — referred ${inquiry.parentName}`}
-                />
-                <input type="hidden" name="_redirect" value={self} />
-                <input
-                  name="amount"
-                  inputmode="decimal"
-                  value="100"
-                  style="width:6rem;padding:.4rem .5rem;border:1.5px solid var(--color-primary-light);border-radius:var(--radius);background:#fff;"
-                  aria-label="Credit amount (USD)"
-                />
-                <button type="submit" class="admin-btn admin-btn--sm">
-                  Apply credit
-                </button>
-              </form>
-              <p class="muted" style="font-size:.78rem;margin:.5rem 0 0;">
-                Recorded as a credit on their balance (Billing).
-              </p>
-            </div>
-          )
-        }
-      </section>
+                    <input type="hidden" name="_action" value="create" />
+                    <input type="hidden" name="familyId" value={referrer.id} />
+                    <input type="hidden" name="method" value="referral credit" />
+                    <input
+                      type="hidden"
+                      name="note"
+                      value={`Referral credit — referred ${inquiry.parentName}`}
+                    />
+                    <input type="hidden" name="_redirect" value={self} />
+                    <input
+                      name="amount"
+                      inputmode="decimal"
+                      value="100"
+                      style="width:6rem;padding:.4rem .5rem;border:1.5px solid var(--color-primary-light);border-radius:var(--radius);background:#fff;"
+                      aria-label="Credit amount (USD)"
+                    />
+                    <button type="submit" class="admin-btn admin-btn--sm">
+                      Apply credit
+                    </button>
+                  </form>
+                  <p class="muted" style="font-size:.78rem;margin:.5rem 0 0;">
+                    Recorded as a credit on their balance (Billing).
+                  </p>
+                </div>
+              )
+            }
+          </section>
+        )
+      }
 
       <section class="admin-panel">
         <h2 style="color:#a51f1f;">Danger zone</h2>
