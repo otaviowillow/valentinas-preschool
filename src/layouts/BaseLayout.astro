@@ -1,7 +1,6 @@
 ---
 import '@fontsource-variable/fraunces';
 import '@fontsource-variable/nunito-sans';
-import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -76,8 +75,6 @@ const businessSchema = {
 
     <meta name="theme-color" content="#4a7c59" />
 
-    <ClientRouter />
-
     <script
       type="application/ld+json"
       set:html={JSON.stringify(businessSchema)}
@@ -91,10 +88,25 @@ const businessSchema = {
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <Header />
-    <main id="main" transition:animate="fade">
+    <main id="main">
       <slot />
     </main>
     <Footer />
+
+    <script>
+      import { initContactForm } from '../scripts/contact-form.ts';
+      import { initDatePickers } from '../scripts/date-picker.ts';
+      import { bindSamePageNav } from '../scripts/site-nav.ts';
+
+      bindSamePageNav();
+
+      function initPageScripts() {
+        initContactForm();
+        initDatePickers();
+      }
+
+      initPageScripts();
+    </script>
 
     <style>
       .skip-link {

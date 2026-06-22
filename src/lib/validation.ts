@@ -51,8 +51,7 @@ const optionalPhone = z.preprocess(
   emptyToUndef,
   z
     .string()
-    .max(30)
-    .regex(/^[\d\s().+\-/]+$/, 'Enter a valid phone number')
+    .regex(/^\d{10}$/, 'Enter a valid 10-digit phone number')
     .optional()
 );
 
@@ -65,6 +64,17 @@ const safeOptionalText = (max: number) =>
       .refine((s) => !hasSuspiciousInjection(s), 'Invalid characters in text')
       .optional()
   );
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const optionalStartDate = z.preprocess(
+  emptyToUndef,
+  z
+    .string()
+    .regex(ISO_DATE, 'Enter a valid start date')
+    .refine((s) => !Number.isNaN(new Date(`${s}T12:00:00`).getTime()), 'Enter a valid start date')
+    .optional()
+);
 
 const optionalId = z.preprocess(
   emptyToUndef,
@@ -96,7 +106,7 @@ export const inquiryInput = z.object({
         `Maximum age is 5 years (${CHILD_AGE_MAX_MONTHS} months)`
       )
   ),
-  desiredStart: safeOptionalText(100),
+  desiredStart: optionalStartDate,
   intent: z.preprocess(emptyToUndef, z.enum(INQUIRY_INTENTS)).catch('tour'),
   referredBy: z.preprocess(
     emptyToUndef,

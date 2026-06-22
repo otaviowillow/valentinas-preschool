@@ -14,6 +14,17 @@ import { sendEmail, escapeHtml } from '../../lib/email';
 const thankYou = (redirect: (url: string, status: number) => Response) =>
   redirect('/thank-you/', 303);
 
+function formatDesiredStart(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 // Public enrollment intake. The contact form posts here (no JS required); we
 // validate, store the inquiry in D1, optionally notify the school by email, then
 // redirect to a thank-you page.
@@ -96,7 +107,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       `Email: ${data.email}`,
       `Phone: ${data.phone ?? '—'}`,
       `Child age: ${formatChildAgeMonths(data.childAge)}`,
-      `Desired start: ${data.desiredStart ?? '—'}`,
+      `Desired start: ${formatDesiredStart(data.desiredStart)}`,
       `Intent: ${data.intent}`,
       `Referred by: ${data.referredBy ?? '—'}`,
       `Message: ${data.message ?? '—'}`,

@@ -129,7 +129,7 @@ const faqSchema = {
     </div>
   </section>
 
-  <section class="section section--sand">
+  <section class="section section--sand" id="faq">
     <div class="container-narrow">
       <div class="section-head">
         <h2>Frequently asked questions</h2>
@@ -224,15 +224,20 @@ const faqSchema = {
     max-width: 32rem;
     margin: 0.6rem auto 1.4rem;
   }
+  #faq {
+    scroll-margin-top: 5rem;
+  }
   .faqs {
     display: grid;
     gap: 0.75rem;
+    overflow-anchor: none;
   }
   .faq {
     background: var(--color-white);
     border: 1px solid rgba(167, 196, 176, 0.5);
     border-radius: var(--radius);
     padding: 0 1.25rem;
+    overflow-anchor: none;
   }
   .faq summary {
     cursor: pointer;
@@ -244,6 +249,7 @@ const faqSchema = {
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    scroll-margin-top: 5rem;
   }
   .faq summary::after {
     content: '+';
