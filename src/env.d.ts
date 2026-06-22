@@ -10,6 +10,8 @@ declare namespace Cloudflare {
     MEDIA: import('@cloudflare/workers-types').R2Bucket;
     /** Static assets binding (managed by the @astrojs/cloudflare adapter). */
     ASSETS: import('@cloudflare/workers-types').Fetcher;
+    /** KV for Astro sessions + intake rate limiting. */
+    SESSION: import('@cloudflare/workers-types').KVNamespace;
 
     // ---- Secrets (set with `wrangler secret put <NAME>`; never commit) ------
     /** Resend API key for transactional/announcement email (optional). */

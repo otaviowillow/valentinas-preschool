@@ -34,41 +34,63 @@ const mapQuery = encodeURIComponent(
         </p>
 
 
-        {/* Honeypot: hidden from people, tempting to bots. Leave empty. */}
+        {/* Honeypots: hidden from people, tempting to bots. Leave empty. */}
         <div class="hp" aria-hidden="true">
           <label for="website">Website</label>
           <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          <label for="company">Company</label>
+          <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
         </div>
+        <input type="hidden" name="form_ts" id="form_ts" value="" />
 
         <div class="field">
           <label for="parent">Your name</label>
-          <input id="parent" name="parent_name" type="text" required />
+          <input
+            id="parent"
+            name="parent_name"
+            type="text"
+            required
+            maxlength="100"
+            autocomplete="name"
+          />
         </div>
 
         <div class="row">
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" required />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              maxlength="200"
+              autocomplete="email"
+            />
           </div>
           <div class="field">
             <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="tel" />
+            <input id="phone" name="phone" type="tel" maxlength="30" autocomplete="tel" />
           </div>
         </div>
 
         <div class="row">
           <div class="field">
-            <label for="childage">Child’s age</label>
+            <label for="childage">Child’s age (months)</label>
             <input
               id="childage"
               name="child_age"
-              type="text"
-              placeholder="e.g. 2 years"
+              type="number"
+              min="15"
+              max="60"
+              step="1"
+              placeholder="e.g. 24"
+              required
             />
+            <span class="muted field-hint">Ages 15 months – 5 years (60 months).</span>
           </div>
           <div class="field">
             <label for="start">Desired start</label>
-            <input id="start" name="start_date" type="text" placeholder="e.g. Fall 2026" />
+            <input id="start" name="start_date" type="text" placeholder="e.g. Fall 2026" maxlength="100" />
           </div>
         </div>
 
@@ -92,12 +114,13 @@ const mapQuery = encodeURIComponent(
             name="referred_by"
             type="text"
             placeholder="The family who sent you our way"
+            maxlength="200"
           />
         </div>
 
         <div class="field">
           <label for="message">Anything we should know?</label>
-          <textarea id="message" name="message" rows="4"></textarea>
+          <textarea id="message" name="message" rows="4" maxlength="2000"></textarea>
         </div>
 
         <button type="submit" class="btn btn--primary btn--lg">Send request</button>
@@ -143,9 +166,18 @@ const mapQuery = encodeURIComponent(
     );
     const referredBy = document.querySelector<HTMLElement>('.referred-by');
 
+    const referredInput = document.getElementById('referred') as HTMLInputElement | null;
+    const formTs = document.getElementById('form_ts') as HTMLInputElement | null;
+    if (formTs) formTs.value = String(Date.now());
+
     function syncReferredField() {
       const selected = radios.find((r) => r.checked)?.value;
-      if (referredBy) referredBy.hidden = selected !== 'referral';
+      const showReferral = selected === 'referral';
+      if (referredBy) referredBy.hidden = !showReferral;
+      if (referredInput) {
+        referredInput.disabled = !showReferral;
+        if (!showReferral) referredInput.value = '';
+      }
     }
 
     if (intent && radios.some((r) => r.value === intent)) {
@@ -210,6 +242,9 @@ const mapQuery = encodeURIComponent(
     gap: 0.4rem;
     font-weight: 600;
     margin-right: 1.2rem;
+  }
+  .field-hint {
+    font-size: 0.85rem;
   }
   .form-fallback {
     margin: 0.9rem 0 0;

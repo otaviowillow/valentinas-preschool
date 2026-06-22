@@ -727,6 +727,75 @@ sits above organic results** and likely drives most leads. Prioritize it.
    NAEYC, partner small businesses, local press. A handful of relevant local
    links outperforms volume.
 
+### 5a. Tech employer audience — local SEO expansion (exploration)
+
+> **Status:** strategy / content roadmap — not yet implemented on-site.  
+> **Goal:** reach dual-income and hybrid-schedule parents who work in Culver
+> City's media/tech cluster (Sony, Amazon MGM, HBO/WBD, Apple TV+, Pinterest,
+> TikTok, and Playa Vista / Silicon Beach commuters) without thin "employer
+> landing pages" or implied corporate endorsements.
+
+**Why the location fits:** 6100 Hargis St is in **Palms (90034)**, on the Culver
+City border — roughly 1 mile from downtown Culver City, walkable to **Palms/National
+Metro (E Line)**, and inside the commute shed for the Washington Blvd / Venice Blvd
+office corridor (Culver Studios, Sony, Ivy Station, Apple’s Culver Crossings build-out).
+
+**Audience segments to message differently:**
+
+| Segment | Where they work / live | What they search for |
+| --- | --- | --- |
+| Studio & streaming staff | Sony, Amazon, HBO at Ivy Station | Full-day hours, tour availability, Reggio credibility |
+| Tech & product (Apple, Pinterest, startups) | Culver City + Palms renters | Bilingual exposure, boutique feel, fast tour response |
+| Silicon Beach commuters | Google / Playa Vista, Marina del Rey | "Westside" + Reggio; willing to drive for fit |
+| Relocating hires | New job → new neighborhood | "Preschool near me," Palms/90034, urgent tours |
+
+**Positioning (no capacity/ratio lead):** boutique, Reggio-inspired, daily Spanish,
+meals included, **7:30 AM – 6:00 PM**, 14+ years same director, NAEYC member,
+license #197417501. Lead with **hours, pedagogy, bilingual, and commute convenience**
+— not headcount stats.
+
+**Keyword clusters to earn (site + GBP + reviews):**
+
+- Geo + modality: `boutique preschool Culver City`, `preschool Palms 90034`, `Reggio preschool West LA`, `bilingual preschool Culver City`
+- Working-parent logistics: `preschool extended hours Culver City`, `preschool meals included West LA`, `toddler program 15 months Culver City`
+- Landmark-adjacent (use in blog/FAQ/reviews, not doorway pages): `preschool near Culver City Metro`, `childcare near Culver City studios` — describe proximity honestly; never claim official employer partnerships
+
+**Google Business Profile (highest leverage):**
+
+- Service area: Culver City, Palms, Mar Vista, West LA, Mid-City, Playa Vista, Cheviot Hills, 90034, 90232
+- Description: hours, Reggio + bilingual + meals, Palms/Metro proximity, "families working in Culver City's creative offices"
+- Weekly posts: tours, enrichment, bilingual moments, seasonal open houses
+- Seed Q&A: full-day hours, ages accepted, parking/drop-off, Metro access, tour booking
+- Reviews: ask families to mention **neighborhood + commute** naturally ("easy from Palms," "short drive from Culver City")
+
+**Website content ideas (Phase 2 Resources / FAQ — no new employer URL spam):**
+
+1. Pillar: *"Choosing a preschool when both parents work on the Westside"*
+2. FAQ block (Tuition or Contact): Metro/E Line proximity, hours, meals, ages, parking, response time for tours
+3. Blog: *"What Reggio-inspired means on a school tour (checklist)"*
+4. Blog: *"Bilingual preschool at home — what daily Spanish looks like for toddlers"*
+5. One subtle homepage or tuition FAQ line: many families work in Culver City's media/tech offices — no trademark drops
+
+**Off-site channels:**
+
+- **Referrals** from current families (highest conversion; tech parents share in Slack/parent groups)
+- **Parent Facebook / Nextdoor:** Culver City, Palms, Westside working parents — authentic replies only
+- **Citations:** Winnie, Care.com, TOOTRiS (Apple backup-care ecosystem discoverability), NAEYC directory, Yelp
+- **Relocate touchpoints:** pediatricians and realtors who serve Palms/Culver transfers (one-pager, not ads)
+- **Employer HR (long game):** small Culver tenants (100–500 staff) for childcare *resource & referral* under IRS §45F — not "official Amazon preschool"
+
+**Competitive note:** Treehouse Tots (Culver/Playa Vista), Bright Horizons (corporate backup), CCUSD (public Spanish immersion). Win on **director-led stability, Reggio depth, emotional literacy, full-day hours, bilingual daily exposure**.
+
+**90-day priority (marketing ops, not code):**
+
+1. Fully optimize GBP + citation audit (NAP exact)
+2. Review campaign: 5–10 recent Google reviews mentioning neighborhood/working parents
+3. Publish one Resources pillar for working Westside families
+4. Instagram 2×/week: enrichment, bilingual, documentation, meals
+5. Referral push to enrolled families; track employer names privately on tours to refine copy
+
+**Do not:** doorway pages per employer (`/preschool-for-apple-employees/`), fake walking-distance claims, or leading public copy with enrollment numbers.
+
 ---
 
 ## 6. Technical SEO — Astro's home turf

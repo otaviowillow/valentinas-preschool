@@ -3,17 +3,52 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { dbFrom, getEnv, schema } from '../../db';
 import { inquiryInput } from '../../lib/validation';
+import { formatChildAgeMonths } from '../../lib/inquiries';
+import {
+  detectIntakeSpam,
+  intakeRateLimitAllowed,
+  scoreFormTiming,
+} from '../../lib/spam';
 import { sendEmail, escapeHtml } from '../../lib/email';
+
+const thankYou = (redirect: (url: string, status: number) => Response) =>
+  redirect('/thank-you/', 303);
 
 // Public enrollment intake. The contact form posts here (no JS required); we
 // validate, store the inquiry in D1, optionally notify the school by email, then
 // redirect to a thank-you page.
 export const POST: APIRoute = async ({ request, redirect }) => {
+  const contentType = request.headers.get('content-type') ?? '';
+  if (
+    !contentType.includes('multipart/form-data') &&
+    !contentType.includes('application/x-www-form-urlencoded')
+  ) {
+    return new Response('Unsupported Media Type', { status: 415 });
+  }
+
+  const env = getEnv();
+  const ip =
+    request.headers.get('cf-connecting-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'unknown';
+
+  if (!(await intakeRateLimitAllowed(env.SESSION, ip))) {
+    return thankYou(redirect);
+  }
+
   const form = await request.formData();
 
-  // Honeypot: bots fill hidden fields. Pretend success without storing.
-  if (String(form.get('website') ?? '').trim() !== '') {
-    return redirect('/thank-you/', 303);
+  // Honeypots: bots fill hidden fields. Pretend success without storing.
+  if (
+    String(form.get('website') ?? '').trim() !== '' ||
+    String(form.get('company') ?? '').trim() !== ''
+  ) {
+    return thankYou(redirect);
+  }
+
+  const timing = scoreFormTiming(form.get('form_ts'));
+  if (timing.reason === 'too_fast') {
+    return thankYou(redirect);
   }
 
   const parsed = inquiryInput.safeParse({
@@ -32,29 +67,35 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   }
 
   const data = parsed.data;
+
+  const spam = detectIntakeSpam(data);
+  const timingSpam = timing.score >= 3;
+  if (spam.spam || timingSpam) {
+    return thankYou(redirect);
+  }
+
   const db = dbFrom();
 
   await db.insert(schema.inquiries).values({
     parentName: data.parentName,
-    email: data.email ?? null,
+    email: data.email,
     phone: data.phone ?? null,
-    childAge: data.childAge ?? null,
+    childAge: formatChildAgeMonths(data.childAge),
     desiredStart: data.desiredStart ?? null,
     intent: data.intent,
-    referredBy: data.referredBy ?? null,
+    referredBy:
+      data.intent === 'referral' ? (data.referredBy ?? null) : null,
     message: data.message ?? null,
     source: 'website',
     status: 'new',
   });
 
-  // Fire-and-forget notification (no-op if RESEND_API_KEY/NOTIFY_EMAIL unset).
-  const env = getEnv();
   if (env.NOTIFY_EMAIL) {
     const lines = [
       `Parent: ${data.parentName}`,
-      `Email: ${data.email ?? '—'}`,
+      `Email: ${data.email}`,
       `Phone: ${data.phone ?? '—'}`,
-      `Child age: ${data.childAge ?? '—'}`,
+      `Child age: ${formatChildAgeMonths(data.childAge)}`,
       `Desired start: ${data.desiredStart ?? '—'}`,
       `Intent: ${data.intent}`,
       `Referred by: ${data.referredBy ?? '—'}`,
@@ -72,7 +113,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     });
   }
 
-  return redirect('/thank-you/', 303);
+  return thankYou(redirect);
 };
 
 // Visiting the endpoint directly: bounce to the contact form.
