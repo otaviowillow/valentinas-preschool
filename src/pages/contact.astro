@@ -136,7 +136,7 @@ const mapQuery = encodeURIComponent(
     </div>
   </section>
 
-  <script>
+  <script data-astro-rerun>
     const intent = new URLSearchParams(location.search).get('intent');
     const radios = Array.from(
       document.querySelectorAll<HTMLInputElement>('input[name="intent"]')

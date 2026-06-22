@@ -225,6 +225,9 @@
   gap: 1.1rem;
   margin-bottom: 1.75rem;
 }
+.admin-cards--stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
 .admin-card {
   position: relative;
   display: flex;
@@ -643,6 +646,14 @@
 /* ----------------------------- responsive ------------------------------- */
 @media (max-width: 980px) {
   .admin-dash { grid-template-columns: 1fr; }
+  .admin-cards--stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .admin-cards--stats {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 800px) {
   .admin-shell {

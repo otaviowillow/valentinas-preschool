@@ -73,57 +73,57 @@ const ic = {
     </div>
   </div>
 
+  <div class="admin-cards admin-cards--stats">
+    <article class="admin-card">
+      <div class="admin-card__head">
+        <span class="admin-card__icon admin-card__icon--sky" set:html={ic.inbox} />
+        {newInquiries?.c ? (
+          <span class="admin-card__trend admin-card__trend--down">Needs review</span>
+        ) : (
+          <span class="admin-card__trend admin-card__trend--up">All clear</span>
+        )}
+      </div>
+      <div class="num">{newInquiries?.c ?? 0}</div>
+      <div class="label">New inquiries</div>
+      <a class="admin-card__more" href="/admin/inquiries/">Review<span set:html={ic.chev} /></a>
+    </article>
+
+    <article class="admin-card">
+      <div class="admin-card__head">
+        <span class="admin-card__icon admin-card__icon--green" set:html={ic.child} />
+      </div>
+      <div class="num">{enrolledCount}</div>
+      <div class="label">Children enrolled</div>
+      <a class="admin-card__more" href="/admin/children/">Manage<span set:html={ic.chev} /></a>
+    </article>
+
+    <article class="admin-card">
+      <div class="admin-card__head">
+        <span class="admin-card__icon admin-card__icon--yellow" set:html={ic.seat} />
+        <span class="admin-card__trend admin-card__trend--up">{pctFull}% full</span>
+      </div>
+      <div class="num">{openSeats}</div>
+      <div class="label">Open seats</div>
+      <a class="admin-card__more" href="/admin/classes/">Classes<span set:html={ic.chev} /></a>
+    </article>
+
+    <article class="admin-card">
+      <div class="admin-card__head">
+        <span class="admin-card__icon admin-card__icon--coral" set:html={ic.money} />
+        {outstanding > 0 ? (
+          <span class="admin-card__trend admin-card__trend--down">Due</span>
+        ) : (
+          <span class="admin-card__trend admin-card__trend--up">Clear</span>
+        )}
+      </div>
+      <div class="num">{money(outstanding)}</div>
+      <div class="label">Outstanding balance</div>
+      <a class="admin-card__more" href="/admin/billing/">Billing<span set:html={ic.chev} /></a>
+    </article>
+  </div>
+
   <div class="admin-dash">
     <div>
-      <div class="admin-cards">
-        <article class="admin-card">
-          <div class="admin-card__head">
-            <span class="admin-card__icon admin-card__icon--sky" set:html={ic.inbox} />
-            {newInquiries?.c ? (
-              <span class="admin-card__trend admin-card__trend--down">Needs review</span>
-            ) : (
-              <span class="admin-card__trend admin-card__trend--up">All clear</span>
-            )}
-          </div>
-          <div class="num">{newInquiries?.c ?? 0}</div>
-          <div class="label">New inquiries</div>
-          <a class="admin-card__more" href="/admin/inquiries/">Review<span set:html={ic.chev} /></a>
-        </article>
-
-        <article class="admin-card">
-          <div class="admin-card__head">
-            <span class="admin-card__icon admin-card__icon--green" set:html={ic.child} />
-          </div>
-          <div class="num">{enrolledCount}</div>
-          <div class="label">Children enrolled</div>
-          <a class="admin-card__more" href="/admin/children/">Manage<span set:html={ic.chev} /></a>
-        </article>
-
-        <article class="admin-card">
-          <div class="admin-card__head">
-            <span class="admin-card__icon admin-card__icon--yellow" set:html={ic.seat} />
-            <span class="admin-card__trend admin-card__trend--up">{pctFull}% full</span>
-          </div>
-          <div class="num">{openSeats}</div>
-          <div class="label">Open seats</div>
-          <a class="admin-card__more" href="/admin/classes/">Classes<span set:html={ic.chev} /></a>
-        </article>
-
-        <article class="admin-card">
-          <div class="admin-card__head">
-            <span class="admin-card__icon admin-card__icon--coral" set:html={ic.money} />
-            {outstanding > 0 ? (
-              <span class="admin-card__trend admin-card__trend--down">Due</span>
-            ) : (
-              <span class="admin-card__trend admin-card__trend--up">Clear</span>
-            )}
-          </div>
-          <div class="num">{money(outstanding)}</div>
-          <div class="label">Outstanding balance</div>
-          <a class="admin-card__more" href="/admin/billing/">Billing<span set:html={ic.chev} /></a>
-        </article>
-      </div>
-
       <section class="admin-panel">
         <div class="admin-toolbar">
           <h2>Recent inquiries</h2>
