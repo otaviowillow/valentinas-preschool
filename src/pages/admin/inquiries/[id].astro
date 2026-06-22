@@ -40,7 +40,9 @@ const self = `/admin/inquiries/${id}/`;
 ---
 
 <AdminLayout title="Inquiry" active="inquiries">
-  <a class="admin-back" href="/admin/inquiries/">← All inquiries</a>
+  <a class="admin-back" href={isReferral ? '/admin/referrals/' : '/admin/inquiries/'}>
+    ← {isReferral ? 'All referrals' : 'All inquiries'}
+  </a>
 
   <div class="admin-head">
     <div>
@@ -180,7 +182,7 @@ const self = `/admin/inquiries/${id}/`;
                   name="amount"
                   inputmode="decimal"
                   value="100"
-                  style="width:6rem;padding:.4rem .5rem;border:1.5px solid var(--color-primary-light);border-radius:var(--radius);"
+                  style="width:6rem;padding:.4rem .5rem;border:1.5px solid var(--color-primary-light);border-radius:var(--radius);background:#fff;"
                   aria-label="Credit amount (USD)"
                 />
                 <button type="submit" class="admin-btn admin-btn--sm">

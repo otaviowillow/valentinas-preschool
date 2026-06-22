@@ -66,7 +66,9 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       replyTo: data.email,
       html: `<h2>New website inquiry</h2><p>${lines
         .map((l) => escapeHtml(l))
-        .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/inquiries/">Open in admin</a></p>`,
+        .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/${
+        data.intent === 'referral' ? 'referrals' : 'inquiries'
+      }/">Open in admin</a></p>`,
     });
   }
 

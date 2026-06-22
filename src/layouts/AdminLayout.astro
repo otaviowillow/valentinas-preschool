@@ -12,15 +12,65 @@ const adminEmail = Astro.locals.adminEmail ?? '';
 const flash = Astro.url.searchParams.get('flash');
 const error = Astro.url.searchParams.get('error');
 
-const nav = [
-  { key: 'dashboard', label: 'Dashboard', href: '/admin/' },
-  { key: 'inquiries', label: 'Inquiries', href: '/admin/inquiries/' },
-  { key: 'children', label: 'Children', href: '/admin/children/' },
-  { key: 'families', label: 'Families', href: '/admin/families/' },
-  { key: 'classes', label: 'Classes', href: '/admin/classes/' },
-  { key: 'billing', label: 'Billing', href: '/admin/billing/' },
-  { key: 'comms', label: 'Communications', href: '/admin/comms/' },
+// Inline stroke icons (no dependency). Keyed by nav slug.
+const icons: Record<string, string> = {
+  dashboard:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  inquiries:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H7l-3 3z"/><path d="M8 9h8M8 12h5"/></svg>',
+  children:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M9.2 10.5 7 14M14.8 10.5 17 14"/><path d="M5 21c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>',
+  families:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M2.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M15.5 20c0-2.4 1.5-4 4-4"/></svg>',
+  classes:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 12 3l9 3.5L12 10z"/><path d="M6 9v5c0 1.5 2.7 3 6 3s6-1.5 6-3V9"/></svg>',
+  billing:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 14.5h4"/></svg>',
+  comms:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg>',
+  team:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6"/><path d="M18 14c2.2.5 3.5 2.3 3.5 4.5"/></svg>',
+  payroll:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>',
+  settings:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.7-1.3-1.8-3.1-2 .8a7.6 7.6 0 0 0-2.6-1.5L12.3 2h-3.6l-.4 2.1A7.6 7.6 0 0 0 5.7 5.6l-2-.8L1.9 7.9l1.7 1.3a7.8 7.8 0 0 0 0 3l-1.7 1.3 1.8 3.1 2-.8a7.6 7.6 0 0 0 2.6 1.5l.4 2.1h3.6l.4-2.1a7.6 7.6 0 0 0 2.6-1.5l2 .8 1.8-3.1z"/></svg>',
+  referrals:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.828L3 7"/><path d="m15 9 6-6"/><path d="M21 16v5h-5"/><path d="M3 16v5h5"/><path d="m9 15-6 6"/></svg>',
+};
+
+const navGroups = [
+  {
+    label: null,
+    items: [{ key: 'dashboard', label: 'Dashboard', href: '/admin/' }],
+  },
+  {
+    label: 'Admissions & people',
+    items: [
+      { key: 'inquiries', label: 'Inquiries', href: '/admin/inquiries/' },
+      { key: 'referrals', label: 'Referrals', href: '/admin/referrals/' },
+      { key: 'children', label: 'Children', href: '/admin/children/' },
+      { key: 'families', label: 'Families', href: '/admin/families/' },
+      { key: 'classes', label: 'Classes', href: '/admin/classes/' },
+    ],
+  },
+  {
+    label: 'Staff',
+    items: [
+      { key: 'team', label: 'Team', href: '/admin/team/' },
+      { key: 'payroll', label: 'Payroll', href: '/admin/payroll/' },
+    ],
+  },
+  {
+    label: 'Operations',
+    items: [
+      { key: 'billing', label: 'Billing', href: '/admin/billing/' },
+      { key: 'comms', label: 'Communications', href: '/admin/comms/' },
+      { key: 'settings', label: 'Settings', href: '/admin/settings/' },
+    ],
+  },
 ];
+
+const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
 ---
 
 <!doctype html>
@@ -36,25 +86,41 @@ const nav = [
     <div class="admin-shell">
       <aside class="admin-sidebar">
         <a href="/admin/" class="admin-brand">
-          Valentina's
-          <small>Admin</small>
+          <img src="/logo-hands.png" alt="" width="32" height="32" />
+          <span class="admin-brand__name">Valentina's Preschool</span>
+          <span class="admin-brand__tag">Admin</span>
         </a>
         <nav class="admin-nav">
           {
-            nav.map((item) => (
-              <a
-                href={item.href}
-                aria-current={active === item.key ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
+            navGroups.map((group) => (
+              <>
+                {group.label && (
+                  <div class="admin-nav__group">{group.label}</div>
+                )}
+                {group.items.map((item) => (
+                  <a
+                    href={item.href}
+                    aria-current={active === item.key ? 'page' : undefined}
+                  >
+                    <span class="ico" set:html={icons[item.key]} />
+                    {item.label}
+                  </a>
+                ))}
+              </>
             ))
           }
         </nav>
         <div class="admin-sidebar__foot">
-          {adminEmail && <div>{adminEmail}</div>}
-          <a href="/cdn-cgi/access/logout">Sign out</a> ·
-          <a href="/">View site</a>
+          <div class="admin-profile">
+            <div class="admin-profile__avatar">{initial}</div>
+            <div class="admin-profile__meta">
+              <div class="admin-profile__name">{adminEmail || 'Signed in'}</div>
+              <div class="admin-profile__links">
+                <a href="/cdn-cgi/access/logout">Sign out</a> ·
+                <a href="/">View site</a>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
 

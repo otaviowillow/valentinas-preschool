@@ -17,6 +17,9 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     if (!parsed.success) {
       return redirect(addError(back, 'Check the child details.'), 303);
     }
+    if (!parsed.data.familyId) {
+      return redirect(addError(back, 'Choose a family.'), 303);
+    }
     await db.insert(schema.children).values(parsed.data);
     return redirect(addFlash(back, 'Child added.'), 303);
   }

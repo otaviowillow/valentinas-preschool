@@ -33,7 +33,10 @@ const [paid] = await db
   .select({ total: sql<number>`coalesce(sum(${payments.amountCents}), 0)` })
   .from(payments);
 
-const openSeats = Math.max(0, (capacity?.total ?? 0) - (enrolled?.c ?? 0));
+const enrolledCount = enrolled?.c ?? 0;
+const capacityTotal = capacity?.total ?? 0;
+const openSeats = Math.max(0, capacityTotal - enrolledCount);
+const pctFull = capacityTotal > 0 ? Math.round((enrolledCount / capacityTotal) * 100) : 0;
 const outstanding = (invoiced?.total ?? 0) - (paid?.total ?? 0);
 
 const recent = await db
@@ -41,6 +44,25 @@ const recent = await db
   .from(inquiries)
   .orderBy(desc(inquiries.createdAt))
   .limit(6);
+
+const ic = {
+  inbox:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13"/><path d="M4 13v5h16v-5h-5a3 3 0 0 1-6 0H4z"/></svg>',
+  child:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>',
+  seat:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><path d="M4 11h16v4H4z"/><path d="M6 15v4M18 15v4"/></svg>',
+  money:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/></svg>',
+  chev:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  megaphone:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></svg>',
+  plus:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  referrals:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.828L3 7"/><path d="m15 9 6-6"/></svg>',
+};
 ---
 
 <AdminLayout title="Dashboard" active="dashboard">
@@ -51,72 +73,154 @@ const recent = await db
     </div>
   </div>
 
-  <div class="admin-cards">
-    <div class="admin-card">
-      <div class="num">{newInquiries?.c ?? 0}</div>
-      <div class="label">New inquiries</div>
-      <a href="/admin/inquiries/">Review →</a>
-    </div>
-    <div class="admin-card">
-      <div class="num">{enrolled?.c ?? 0}</div>
-      <div class="label">Children enrolled</div>
-      <a href="/admin/children/">Manage →</a>
-    </div>
-    <div class="admin-card">
-      <div class="num">{openSeats}</div>
-      <div class="label">Open seats</div>
-      <a href="/admin/classes/">Classes →</a>
-    </div>
-    <div class="admin-card">
-      <div class="num">{money(outstanding)}</div>
-      <div class="label">Outstanding balance</div>
-      <a href="/admin/billing/">Billing →</a>
-    </div>
-  </div>
+  <div class="admin-dash">
+    <div>
+      <div class="admin-cards">
+        <article class="admin-card">
+          <div class="admin-card__head">
+            <span class="admin-card__icon admin-card__icon--sky" set:html={ic.inbox} />
+            {newInquiries?.c ? (
+              <span class="admin-card__trend admin-card__trend--down">Needs review</span>
+            ) : (
+              <span class="admin-card__trend admin-card__trend--up">All clear</span>
+            )}
+          </div>
+          <div class="num">{newInquiries?.c ?? 0}</div>
+          <div class="label">New inquiries</div>
+          <a class="admin-card__more" href="/admin/inquiries/">Review<span set:html={ic.chev} /></a>
+        </article>
 
-  <section class="admin-panel">
-    <div class="admin-toolbar">
-      <h2>Recent inquiries</h2>
-      <a class="admin-btn admin-btn--ghost admin-btn--sm" href="/admin/inquiries/"
-        >View all</a
-      >
+        <article class="admin-card">
+          <div class="admin-card__head">
+            <span class="admin-card__icon admin-card__icon--green" set:html={ic.child} />
+          </div>
+          <div class="num">{enrolledCount}</div>
+          <div class="label">Children enrolled</div>
+          <a class="admin-card__more" href="/admin/children/">Manage<span set:html={ic.chev} /></a>
+        </article>
+
+        <article class="admin-card">
+          <div class="admin-card__head">
+            <span class="admin-card__icon admin-card__icon--yellow" set:html={ic.seat} />
+            <span class="admin-card__trend admin-card__trend--up">{pctFull}% full</span>
+          </div>
+          <div class="num">{openSeats}</div>
+          <div class="label">Open seats</div>
+          <a class="admin-card__more" href="/admin/classes/">Classes<span set:html={ic.chev} /></a>
+        </article>
+
+        <article class="admin-card">
+          <div class="admin-card__head">
+            <span class="admin-card__icon admin-card__icon--coral" set:html={ic.money} />
+            {outstanding > 0 ? (
+              <span class="admin-card__trend admin-card__trend--down">Due</span>
+            ) : (
+              <span class="admin-card__trend admin-card__trend--up">Clear</span>
+            )}
+          </div>
+          <div class="num">{money(outstanding)}</div>
+          <div class="label">Outstanding balance</div>
+          <a class="admin-card__more" href="/admin/billing/">Billing<span set:html={ic.chev} /></a>
+        </article>
+      </div>
+
+      <section class="admin-panel">
+        <div class="admin-toolbar">
+          <h2>Recent inquiries</h2>
+          <a class="admin-btn admin-btn--ghost admin-btn--sm" href="/admin/inquiries/"
+            >View all</a
+          >
+        </div>
+        {
+          recent.length === 0 ? (
+            <p class="admin-empty">
+              No inquiries yet. They'll appear here when families submit the
+              contact form.
+            </p>
+          ) : (
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Parent</th>
+                  <th>Child age</th>
+                  <th>Desired start</th>
+                  <th>Status</th>
+                  <th>Received</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {recent.map((row) => (
+                  <tr>
+                    <td>{row.parentName}</td>
+                    <td>{row.childAge ?? '—'}</td>
+                    <td>{row.desiredStart ?? '—'}</td>
+                    <td>
+                      <StatusBadge status={row.status} />
+                    </td>
+                    <td>{formatDate(row.createdAt)}</td>
+                    <td>
+                      <a href={`/admin/inquiries/${row.id}/`}>Open</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        }
+      </section>
     </div>
-    {
-      recent.length === 0 ? (
-        <p class="admin-empty">
-          No inquiries yet. They'll appear here when families submit the contact
-          form.
-        </p>
-      ) : (
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Parent</th>
-              <th>Child age</th>
-              <th>Desired start</th>
-              <th>Status</th>
-              <th>Received</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {recent.map((row) => (
-              <tr>
-                <td>{row.parentName}</td>
-                <td>{row.childAge ?? '—'}</td>
-                <td>{row.desiredStart ?? '—'}</td>
-                <td>
-                  <StatusBadge status={row.status} />
-                </td>
-                <td>{formatDate(row.createdAt)}</td>
-                <td>
-                  <a href={`/admin/inquiries/${row.id}/`}>Open</a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
-    }
-  </section>
+
+    <aside class="admin-rail">
+      <section class="admin-panel">
+        <h2>Quick actions</h2>
+        <ul class="quick-links">
+          <li>
+            <a href="/admin/inquiries/">
+              <span class="ico" set:html={ic.inbox} /> Review inquiries
+              <span class="chev" set:html={ic.chev} />
+            </a>
+          </li>
+          <li>
+            <a href="/admin/referrals/">
+              <span class="ico" set:html={ic.referrals} /> Review referrals
+              <span class="chev" set:html={ic.chev} />
+            </a>
+          </li>
+          <li>
+            <a href="/admin/children/">
+              <span class="ico" set:html={ic.plus} /> Add a child
+              <span class="chev" set:html={ic.chev} />
+            </a>
+          </li>
+          <li>
+            <a href="/admin/billing/">
+              <span class="ico" set:html={ic.money} /> Create invoice
+              <span class="chev" set:html={ic.chev} />
+            </a>
+          </li>
+          <li>
+            <a href="/admin/comms/">
+              <span class="ico" set:html={ic.megaphone} /> Post announcement
+              <span class="chev" set:html={ic.chev} />
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="admin-panel">
+        <h2>Capacity</h2>
+        <div class="capacity-meter">
+          <div class="capacity-meter__bar">
+            <div class="capacity-meter__fill" style={`width:${pctFull}%`}></div>
+          </div>
+          <div class="capacity-meter__row">
+            <span><strong>{enrolledCount}</strong> enrolled</span>
+            <span><strong>{openSeats}</strong> open</span>
+            <span><strong>{capacityTotal}</strong> total</span>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
 </AdminLayout>

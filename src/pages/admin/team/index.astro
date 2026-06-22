@@ -1,0 +1,124 @@
+---
+export const prerender = false;
+
+import { asc } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { money } from '../../../lib/format';
+
+const db = dbFrom();
+const team = await db
+  .select()
+  .from(schema.employees)
+  .orderBy(asc(schema.employees.name));
+
+const rate = (cents: number, type: string) =>
+  type === 'salary' ? `${money(cents)}/yr` : `${money(cents)}/hr`;
+---
+
+<AdminLayout title="Team" active="team">
+  <div class="admin-head">
+    <div>
+      <h1>Team</h1>
+      <p>Staff and educators. Manage roles, pay rates, and status.</p>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    {
+      team.length === 0 ? (
+        <p class="admin-empty">No team members yet. Add one below.</p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Pay</th>
+              <th>Status</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {team.map((m) => (
+              <tr>
+                <td>
+                  <a href={`/admin/team/${m.id}/`}>{m.name}</a>
+                </td>
+                <td>{m.role ?? '—'}</td>
+                <td>{rate(m.payRateCents, m.payType)}</td>
+                <td>
+                  <span class={`badge badge--${m.status === 'active' ? 'enrolled' : 'withdrawn'}`}>
+                    {m.status}
+                  </span>
+                </td>
+                <td>
+                  <a href={`/admin/team/${m.id}/`}>Edit</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>Add a team member</h2>
+    <form method="POST" action="/api/admin/employees/" class="admin-form">
+      <input type="hidden" name="_action" value="create" />
+      <input type="hidden" name="_redirect" value="/admin/team/" />
+      <div class="admin-field">
+        <label for="name">Name *</label>
+        <input id="name" name="name" required />
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="role">Role / title</label>
+          <input id="role" name="role" placeholder="e.g. Lead Teacher" />
+        </div>
+        <div class="admin-field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" />
+        </div>
+        <div class="admin-field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="payType">Pay type</label>
+          <select id="payType" name="payType">
+            <option value="hourly">Hourly</option>
+            <option value="salary">Salary</option>
+          </select>
+        </div>
+        <div class="admin-field">
+          <label for="payRate">Pay rate ($)</label>
+          <input id="payRate" name="payRate" type="text" inputmode="decimal" placeholder="e.g. 28 or 52000" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="hireDate">Hire date</label>
+          <input id="hireDate" name="hireDate" type="date" />
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+      </div>
+      <div><button type="submit" class="admin-btn">Add team member</button></div>
+    </form>
+  </section>
+</AdminLayout>

@@ -1,19 +1,34 @@
 ---
+// SSR so office edits in /admin/settings show here without a rebuild.
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
+import { getSettings } from '../lib/settings';
 
-const { tuition } = site;
+const settings = await getSettings();
 
-// NOTE: figures below are from a third-party listing — CONFIRM with client
-// before launch (see README.md §5, Source Site Audit).
+// Tuition figures are office-editable (admin Settings), with site.ts fallback.
+const tuition = {
+  weeklyFrom: settings.weeklyFrom,
+  applicationFee: settings.applicationFee,
+  siblingDiscount: settings.siblingDiscount,
+  subsidiesAccepted: settings.subsidiesAccepted,
+  note: site.tuition.note,
+};
+
 const plans = [
-  { name: 'Part-time', price: 'Contact us', note: '2 or 3 days / week' },
   {
-    name: 'Full-time',
-    price: `from $${tuition.weeklyFrom}/wk`,
-    note: '5 days / week, full day',
+    name: settings.partTimeLabel,
+    price: settings.partTimePrice,
+    note: settings.partTimeNote,
+  },
+  {
+    name: settings.fullTimeLabel,
+    price: `from $${settings.weeklyFrom}/wk`,
+    note: settings.fullTimeNote,
     featured: true,
   },
 ];
@@ -90,8 +105,12 @@ const faqSchema = {
         }
       </div>
       <p class="fees muted">
-        One-time application fee: <strong>${tuition.applicationFee}</strong> ·
-        Sibling discount available · Childcare subsidies accepted
+        One-time application fee: <strong>${tuition.applicationFee}</strong>
+        {tuition.siblingDiscount && <> · Sibling discount available</>}
+        {tuition.subsidiesAccepted && <> · Childcare subsidies accepted</>}
+      </p>
+      <p class="cap-note">
+        A boutique program with just <strong>{settings.capacity}</strong> spots total.
       </p>
       <p class="confirm-note">
         Rates vary by schedule and are subject to change. Contact us for current
@@ -172,6 +191,12 @@ const faqSchema = {
     color: var(--color-ink-muted);
     font-size: 0.9rem;
     margin-top: 0.5rem;
+  }
+  .cap-note {
+    text-align: center;
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    margin-top: 0.4rem;
   }
   .referral {
     margin-top: 2.5rem;

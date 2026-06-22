@@ -1,0 +1,144 @@
+---
+export const prerender = false;
+
+import { desc, eq, isNotNull, or, sql } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import StatusBadge from '../../../components/admin/StatusBadge.astro';
+import { dbFrom, schema } from '../../../db';
+import { formatDate, titleCase } from '../../../lib/format';
+
+const db = dbFrom();
+const { inquiries, families } = schema;
+
+const referralFilter = or(
+  eq(inquiries.intent, 'referral'),
+  isNotNull(inquiries.referredBy)
+);
+
+const rows = await db
+  .select({
+    inquiry: inquiries,
+    referrerName: families.primaryContactName,
+    referrerId: families.id,
+  })
+  .from(inquiries)
+  .leftJoin(families, eq(inquiries.referredByFamilyId, families.id))
+  .where(referralFilter)
+  .orderBy(desc(inquiries.createdAt));
+
+const [stats] = await db
+  .select({
+    total: sql<number>`count(*)`,
+    unlinked: sql<number>`sum(case when ${inquiries.referredByFamilyId} is null then 1 else 0 end)`,
+    enrolled: sql<number>`sum(case when ${inquiries.status} = 'enrolled' then 1 else 0 end)`,
+  })
+  .from(inquiries)
+  .where(referralFilter);
+---
+
+<AdminLayout title="Referrals" active="referrals">
+  <div class="admin-head">
+    <div>
+      <h1>Referrals</h1>
+      <p>
+        Families who came through the tuition referral offer or said they were
+        referred on the contact form.
+      </p>
+    </div>
+  </div>
+
+  <div class="admin-cards">
+    <div class="admin-card">
+      <div class="num">{stats?.total ?? 0}</div>
+      <div class="label">Total referrals</div>
+    </div>
+    <div class="admin-card">
+      <div class="num">{stats?.unlinked ?? 0}</div>
+      <div class="label">Referrer not linked</div>
+    </div>
+    <div class="admin-card">
+      <div class="num">{stats?.enrolled ?? 0}</div>
+      <div class="label">Enrolled</div>
+    </div>
+  </div>
+
+  <section class="admin-panel">
+    {
+      rows.length === 0 ? (
+        <p class="admin-empty">
+          No referrals yet. They appear here when a family submits the contact
+          form with “I was referred” or arrives via{' '}
+          <a href="/tuition/">the tuition referral link</a>.
+        </p>
+      ) : (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>New family</th>
+              <th>Says referred by</th>
+              <th>Linked referrer</th>
+              <th>Status</th>
+              <th>Received</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ inquiry: r, referrerName, referrerId }) => (
+              <tr>
+                <td>
+                  <a href={`/admin/inquiries/${r.id}/`}>{r.parentName}</a>
+                </td>
+                <td>{r.referredBy ?? '—'}</td>
+                <td>
+                  {referrerId ? (
+                    <a href={`/admin/families/${referrerId}/`}>{referrerName}</a>
+                  ) : (
+                    <span class="badge badge--offered">Needs link</span>
+                  )}
+                </td>
+                <td>
+                  <StatusBadge status={r.status} />
+                </td>
+                <td>{formatDate(r.createdAt)}</td>
+                <td>
+                  <a href={`/admin/inquiries/${r.id}/`}>Manage</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
+
+  <section class="admin-panel">
+    <h2>How it works</h2>
+    <ol class="ref-flow">
+      <li>
+        A family clicks <strong>Refer a family</strong> on the tuition page or
+        selects “I was referred” on the contact form.
+      </li>
+      <li>The inquiry lands here with whatever name they typed in “Who referred
+        you?”</li>
+      <li>
+        Open the inquiry, link them to the correct <strong>referring
+        family</strong> in the database, then apply the referral credit when they
+        enroll.
+      </li>
+    </ol>
+  </section>
+</AdminLayout>
+
+<style>
+  .ref-flow {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.6rem;
+    color: var(--color-ink-muted);
+    line-height: 1.5;
+  }
+  .ref-flow strong {
+    color: var(--color-primary-dark);
+  }
+</style>

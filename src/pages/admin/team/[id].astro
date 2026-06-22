@@ -1,0 +1,212 @@
+---
+export const prerender = false;
+
+import { desc, eq, sql } from 'drizzle-orm';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { dbFrom, schema } from '../../../db';
+import { money, formatDate } from '../../../lib/format';
+
+const id = Number(Astro.params.id);
+const db = dbFrom();
+
+const [emp] = Number.isInteger(id)
+  ? await db.select().from(schema.employees).where(eq(schema.employees.id, id))
+  : [];
+if (!emp) return Astro.redirect('/admin/team/');
+
+const history = await db
+  .select()
+  .from(schema.payrollEntries)
+  .where(eq(schema.payrollEntries.employeeId, id))
+  .orderBy(desc(schema.payrollEntries.paidAt));
+
+const [totals] = await db
+  .select({ total: sql<number>`coalesce(sum(${schema.payrollEntries.grossCents}), 0)` })
+  .from(schema.payrollEntries)
+  .where(eq(schema.payrollEntries.employeeId, id));
+
+const self = `/admin/team/${id}/`;
+const rateDollars = (emp.payRateCents / 100).toString();
+---
+
+<AdminLayout title={emp.name} active="team">
+  <a class="admin-back" href="/admin/team/">← All team</a>
+
+  <div class="admin-head">
+    <div>
+      <h1>{emp.name}</h1>
+      <p>
+        {emp.role ?? 'Team member'} ·
+        {emp.payType === 'salary' ? `${money(emp.payRateCents)}/yr` : `${money(emp.payRateCents)}/hr`}
+        · paid {money(totals?.total ?? 0)} to date
+      </p>
+    </div>
+  </div>
+
+  <div class="grid-2col">
+    <section class="admin-panel">
+      <h2>Pay history</h2>
+      {
+        history.length === 0 ? (
+          <p class="muted">No payments recorded yet.</p>
+        ) : (
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Paid</th>
+                <th>Period</th>
+                <th>Hours</th>
+                <th>Gross</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((p) => (
+                <tr>
+                  <td>{formatDate(p.paidAt)}</td>
+                  <td>{p.periodLabel ?? '—'}</td>
+                  <td>{p.hours ?? '—'}</td>
+                  <td>{money(p.grossCents)}</td>
+                  <td>
+                    <form
+                      method="POST"
+                      action="/api/admin/payroll/"
+                      onsubmit="return confirm('Delete this payroll entry?');"
+                    >
+                      <input type="hidden" name="_action" value="delete" />
+                      <input type="hidden" name="id" value={p.id} />
+                      <input type="hidden" name="_redirect" value={self} />
+                      <button class="admin-btn admin-btn--danger admin-btn--sm">×</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+
+      <h2 style="margin-top:1.5rem;">Record a payment</h2>
+      <form method="POST" action="/api/admin/payroll/" class="admin-form">
+        <input type="hidden" name="_action" value="create" />
+        <input type="hidden" name="employeeId" value={id} />
+        <input type="hidden" name="_redirect" value={self} />
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="gross">Gross amount ($) *</label>
+            <input id="gross" name="gross" type="text" inputmode="decimal" required />
+          </div>
+          <div class="admin-field">
+            <label for="hours">Hours</label>
+            <input id="hours" name="hours" type="number" min="0" max="2000" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="periodLabel">Pay period</label>
+            <input id="periodLabel" name="periodLabel" placeholder="e.g. Jun 1–15" />
+          </div>
+          <div class="admin-field">
+            <label for="method">Method</label>
+            <select id="method" name="method">
+              <option value="">—</option>
+              <option value="check">Check</option>
+              <option value="transfer">Transfer</option>
+              <option value="cash">Cash</option>
+            </select>
+          </div>
+        </div>
+        <div><button type="submit" class="admin-btn">Record payment</button></div>
+      </form>
+    </section>
+
+    <section class="admin-panel">
+      <h2>Edit team member</h2>
+      <form method="POST" action="/api/admin/employees/" class="admin-form">
+        <input type="hidden" name="_action" value="update" />
+        <input type="hidden" name="id" value={id} />
+        <input type="hidden" name="_redirect" value={self} />
+        <div class="admin-field">
+          <label for="name">Name *</label>
+          <input id="name" name="name" value={emp.name} required />
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="role">Role / title</label>
+            <input id="role" name="role" value={emp.role ?? ''} />
+          </div>
+          <div class="admin-field">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="active" selected={emp.status === 'active'}>Active</option>
+              <option value="inactive" selected={emp.status === 'inactive'}>Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value={emp.email ?? ''} />
+          </div>
+          <div class="admin-field">
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" value={emp.phone ?? ''} />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="payType">Pay type</label>
+            <select id="payType" name="payType">
+              <option value="hourly" selected={emp.payType === 'hourly'}>Hourly</option>
+              <option value="salary" selected={emp.payType === 'salary'}>Salary</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="payRate">Pay rate ($)</label>
+            <input id="payRate" name="payRate" type="text" inputmode="decimal" value={rateDollars} />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="admin-field">
+            <label for="hireDate">Hire date</label>
+            <input id="hireDate" name="hireDate" type="date" value={emp.hireDate ?? ''} />
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="3">{emp.notes ?? ''}</textarea>
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn">Save changes</button>
+        </div>
+      </form>
+
+      <form
+        method="POST"
+        action="/api/admin/employees/"
+        onsubmit="return confirm('Remove this team member and their payroll history?');"
+        style="margin-top:1rem;"
+      >
+        <input type="hidden" name="_action" value="delete" />
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm">
+          Remove team member
+        </button>
+      </form>
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .grid-2col {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

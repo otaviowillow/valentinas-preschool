@@ -75,9 +75,19 @@ const self = `/admin/classes/${id}/`;
         <input type="hidden" name="_action" value="update" />
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="_redirect" value={self} />
+        <div class="name-color-row">
+          <div class="admin-field admin-field--grow">
+            <label for="name">Class name *</label>
+            <input id="name" name="name" value={cls.name} required />
+          </div>
+          <div class="admin-field admin-field--color">
+            <label for="color">Color</label>
+            <input id="color" name="color" type="color" value={cls.color ?? '#4fa45a'} />
+          </div>
+        </div>
         <div class="admin-field">
-          <label for="name">Class name *</label>
-          <input id="name" name="name" value={cls.name} required />
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="3">{cls.description ?? ''}</textarea>
         </div>
         <div class="grid2">
           <div class="admin-field">
@@ -103,22 +113,16 @@ const self = `/admin/classes/${id}/`;
             />
           </div>
         </div>
-        <div class="grid2">
-          <div class="admin-field">
-            <label for="capacity">Capacity</label>
-            <input
-              id="capacity"
-              name="capacity"
-              type="number"
-              min="0"
-              max="100"
-              value={cls.capacity}
-            />
-          </div>
-          <div class="admin-field">
-            <label for="color">Color</label>
-            <input id="color" name="color" type="color" value={cls.color ?? '#4fa45a'} />
-          </div>
+        <div class="admin-field">
+          <label for="capacity">Capacity</label>
+          <input
+            id="capacity"
+            name="capacity"
+            type="number"
+            min="0"
+            max="100"
+            value={cls.capacity}
+          />
         </div>
         <div class="admin-actions">
           <button type="submit" class="admin-btn">Save changes</button>
