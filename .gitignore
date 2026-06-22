@@ -23,8 +23,8 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# wrangler files
-.wrangler
+# wrangler local dev state (Miniflare D1/R2/KV cache — never commit)
+.wrangler/
 .dev.vars*
 !.dev.vars.example
 !.env.example
