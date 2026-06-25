@@ -1,21 +1,28 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import Img from '../components/Img.astro';
 import CtaBand from '../components/CtaBand.astro';
-import { site } from '../data/site';
+import { formatAgeMonths, formatAgeRangeLabel, getSettings } from '../lib/settings';
+
+const settings = await getSettings();
+const ageRange = formatAgeRangeLabel(settings.ageMinMonths, settings.ageMaxMonths);
+const toddlerAge = `${formatAgeMonths(settings.ageMinMonths)} – 3 years`;
+const preschoolAge = `3 – ${formatAgeMonths(settings.ageMaxMonths)}`;
 
 const programs = [
   {
     name: 'Toddlers',
-    age: '15 months – 3 years',
+    age: toddlerAge,
     body: 'Gentle first steps away from home. Toddlers settle into healthy routines, build language (in two tongues), and explore the world through their senses. We provide constant, loving attention.',
     points: ['Sensory & messy play', 'Early Spanish & songs', 'Self-care & routines'],
     img: 'programToddler',
   },
   {
     name: 'Preschool & Pre-K',
-    age: '3 – 5 years',
+    age: preschoolAge,
     body: 'A rich runway to kindergarten. Children dive into early literacy, math, and science through projects they help shape and our regular assessments make the Pre-K application process a breeze.',
     points: ['Literacy, math & science', 'Project-based learning', 'Kindergarten readiness'],
     img: 'programPreschool',
@@ -24,13 +31,13 @@ const programs = [
 ---
 
 <BaseLayout
-  title="Programs by Age: Toddler & Preschool in Culver City"
-  description="Toddler (15 months–3 years) and Preschool/Pre-K (3–5 years) programs at Valentina's in Culver City / West LA. Daily Spanish, meals included, kindergarten readiness."
+  title="Toddler & Preschool Programs in Culver City"
+  description={`Toddler (${toddlerAge}) and preschool (${preschoolAge}) programs in Culver City / West LA. Daily Spanish, meals included, kindergarten readiness.`}
 >
   <PageHero
-    eyebrow="Programs"
-    title="Programs that grow with your child"
-    lead={`From first goodbyes to kindergarten-ready, ages ${site.facts.ageRange}, all in one warm, home-like setting.`}
+    eyebrow={`Programs · Ages ${ageRange}`}
+    title="Toddler & preschool programs in Culver City"
+    lead={`From first goodbyes to kindergarten-ready — ages ${ageRange} in one warm, home-like setting on the Westside.`}
   />
 
   <section class="section section--cream">

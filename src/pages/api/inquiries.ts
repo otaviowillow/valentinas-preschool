@@ -2,8 +2,9 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { dbFrom, getEnv, schema } from '../../db';
-import { inquiryInput } from '../../lib/validation';
+import { createInquiryInput } from '../../lib/validation';
 import { formatChildAgeMonths } from '../../lib/inquiries';
+import { getSettings } from '../../lib/settings';
 import {
   detectIntakeSpam,
   intakeRateLimitAllowed,
@@ -62,7 +63,11 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return thankYou(redirect);
   }
 
-  const parsed = inquiryInput.safeParse({
+  const settings = await getSettings();
+  const parsed = createInquiryInput(
+    settings.ageMinMonths,
+    settings.ageMaxMonths
+  ).safeParse({
     parentName: form.get('parent_name'),
     email: form.get('email'),
     phone: form.get('phone'),

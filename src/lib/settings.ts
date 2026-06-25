@@ -7,6 +7,9 @@ import { eq } from 'drizzle-orm';
 import { dbFrom, schema } from '../db';
 import { site } from '../data/site';
 
+export const DEFAULT_AGE_MIN_MONTHS = 15;
+export const DEFAULT_AGE_MAX_MONTHS = 60;
+
 export interface SiteSettings {
   capacity: number;
   weeklyFrom: number;
@@ -18,6 +21,27 @@ export interface SiteSettings {
   fullTimeNote: string;
   siblingDiscount: boolean;
   subsidiesAccepted: boolean;
+  ageMinMonths: number;
+  ageMaxMonths: number;
+  tuitionNote: string;
+  siblingDiscountNote: string;
+  referralEnabled: boolean;
+  referralTitle: string;
+  referralBody: string;
+}
+
+/** Human label for a single age in months (e.g. 15 → "15 months", 60 → "5 years"). */
+export function formatAgeMonths(months: number): string {
+  if (months >= 24 && months % 12 === 0) {
+    const years = months / 12;
+    return years === 1 ? '1 year' : `${years} years`;
+  }
+  return months === 1 ? '1 month' : `${months} months`;
+}
+
+/** Display range for marketing copy (e.g. "15 months – 5 years"). */
+export function formatAgeRangeLabel(minMonths: number, maxMonths: number): string {
+  return `${formatAgeMonths(minMonths)} – ${formatAgeMonths(maxMonths)}`;
 }
 
 export function defaultSettings(): SiteSettings {
@@ -32,6 +56,14 @@ export function defaultSettings(): SiteSettings {
     fullTimeNote: '5 days / week, full day',
     siblingDiscount: site.tuition.siblingDiscount,
     subsidiesAccepted: site.tuition.subsidiesAccepted,
+    ageMinMonths: DEFAULT_AGE_MIN_MONTHS,
+    ageMaxMonths: DEFAULT_AGE_MAX_MONTHS,
+    tuitionNote: site.tuition.note,
+    siblingDiscountNote: 'Please contact us for sibling discount details.',
+    referralEnabled: true,
+    referralTitle: 'Refer a family, you both win',
+    referralBody:
+      'Know a family who would love it here? When they enroll, your application fee is waived and your first week is free.',
   };
 }
 
@@ -54,6 +86,13 @@ export async function getSettings(): Promise<SiteSettings> {
       fullTimeNote: row.fullTimeNote,
       siblingDiscount: row.siblingDiscount,
       subsidiesAccepted: row.subsidiesAccepted,
+      ageMinMonths: row.ageMinMonths,
+      ageMaxMonths: row.ageMaxMonths,
+      tuitionNote: row.tuitionNote,
+      siblingDiscountNote: row.siblingDiscountNote,
+      referralEnabled: row.referralEnabled,
+      referralTitle: row.referralTitle,
+      referralBody: row.referralBody,
     };
   } catch {
     return defaultSettings();

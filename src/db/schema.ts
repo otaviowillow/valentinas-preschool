@@ -31,6 +31,11 @@ export const INQUIRY_STATUSES = [
   'declined',
 ] as const;
 
+/** Pipeline stages staff pick manually — enrollment is set by the enroll workflow. */
+export const INQUIRY_PIPELINE_STATUSES = INQUIRY_STATUSES.filter(
+  (s) => s !== 'enrolled'
+);
+
 export const INQUIRY_INTENTS = ['tour', 'waitlist', 'referral'] as const;
 
 export const INVOICE_STATUSES = [
@@ -189,6 +194,27 @@ export const settings = sqliteTable('settings', {
   subsidiesAccepted: integer('subsidies_accepted', { mode: 'boolean' })
     .notNull()
     .default(true),
+  ageMinMonths: integer('age_min_months').notNull().default(15),
+  ageMaxMonths: integer('age_max_months').notNull().default(60),
+  tuitionNote: text('tuition_note')
+    .notNull()
+    .default(
+      'Pricing varies by schedule (2, 3, or 5 days). Contact us for current rates.'
+    ),
+  siblingDiscountNote: text('sibling_discount_note')
+    .notNull()
+    .default('Please contact us for sibling discount details.'),
+  referralEnabled: integer('referral_enabled', { mode: 'boolean' })
+    .notNull()
+    .default(true),
+  referralTitle: text('referral_title')
+    .notNull()
+    .default('Refer a family, you both win'),
+  referralBody: text('referral_body')
+    .notNull()
+    .default(
+      'Know a family who would love it here? When they enroll, your application fee is waived and your first week is free.'
+    ),
   ...timestamps,
 });
 

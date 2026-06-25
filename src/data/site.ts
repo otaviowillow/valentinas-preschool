@@ -8,7 +8,7 @@ export const site = {
   tagline:
     'Childhood is not a race. Every child develops at their own pace and grace.',
   description:
-    'A boutique, Reggio-inspired preschool in Culver City / West LA. Bilingual (daily Spanish), meals included. Ages 15 months–5 years.',
+    'A boutique, Reggio-inspired preschool in Culver City / West LA. Bilingual (daily Spanish), meals included.',
   // TODO: switch to https://www.valentinaspreschool.com once the domain is live.
   url: 'https://www.valentinaspreschool.com',
   director: 'Valentina Gloginic',
@@ -27,13 +27,20 @@ export const site = {
   },
 
   // Geo areas to target in copy/SEO (not the postal NAP).
-  areasServed: ['Culver City', 'West Los Angeles', 'Mid-City', 'Palms', '90034'],
+  areasServed: [
+    'Culver City',
+    'West Los Angeles',
+    'Mid-City',
+    'Palms',
+    'Mar Vista',
+    '90034',
+  ],
 
   // Verified facts (some from third-party listings — confirm with client).
   facts: {
     capacity: 12,
     ratio: '1:4',
-    ageRange: '15 months – 5 years', // NOTE: sources conflict (15mo–5yr / 17mo–6yr). Confirm.
+    ageRange: '15 months – 5 years', // Fallback; live value from admin Settings.
     hours: '7:30 AM – 6:00 PM, Monday–Friday',
     license: '197417501',
     accreditation: 'NAEYC Member',

@@ -2,16 +2,17 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getSettings } from '../../../lib/settings';
+import { formatAgeRangeLabel, getSettings } from '../../../lib/settings';
 
 const s = await getSettings();
+const agePreview = formatAgeRangeLabel(s.ageMinMonths, s.ageMaxMonths);
 ---
 
 <AdminLayout title="Site settings" active="settings">
   <div class="admin-head">
     <div>
       <h1>Site settings</h1>
-      <p>Capacity and the tuition pricing shown on the public site.</p>
+      <p>Public-site age range, tuition, discounts, and referral offer.</p>
     </div>
   </div>
 
@@ -19,6 +20,21 @@ const s = await getSettings();
     <form method="POST" action="/api/admin/settings/" class="admin-form">
       <input type="hidden" name="_action" value="update" />
       <input type="hidden" name="_redirect" value="/admin/settings/" />
+
+      <h2 style="margin:0 0 0.5rem;font-size:1.05rem;">Enrollment ages</h2>
+      <p class="muted" style="margin:0 0 1rem;font-size:0.85rem;">
+        Shown on the home page, programs, tuition FAQ, and contact form. Preview: <strong>{agePreview}</strong>
+      </p>
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="ageMinMonths">Minimum age (months)</label>
+          <input id="ageMinMonths" name="ageMinMonths" type="number" min="1" max="84" value={s.ageMinMonths} required />
+        </div>
+        <div class="admin-field">
+          <label for="ageMaxMonths">Maximum age (months)</label>
+          <input id="ageMaxMonths" name="ageMaxMonths" type="number" min="1" max="84" value={s.ageMaxMonths} required />
+        </div>
+      </div>
 
       <div class="grid2">
         <div class="admin-field">
@@ -31,7 +47,7 @@ const s = await getSettings();
         </div>
       </div>
 
-      <h2 style="margin:0.5rem 0 0;font-size:1.05rem;">Part-time plan</h2>
+      <h2 style="margin:1.25rem 0 0.5rem;font-size:1.05rem;">Part-time plan</h2>
       <div class="grid2">
         <div class="admin-field">
           <label for="partTimeLabel">Label</label>
@@ -47,7 +63,7 @@ const s = await getSettings();
         <input id="partTimeNote" name="partTimeNote" value={s.partTimeNote} />
       </div>
 
-      <h2 style="margin:0.5rem 0 0;font-size:1.05rem;">Full-time plan</h2>
+      <h2 style="margin:1.25rem 0 0.5rem;font-size:1.05rem;">Full-time plan</h2>
       <div class="grid2">
         <div class="admin-field">
           <label for="fullTimeLabel">Label</label>
@@ -66,13 +82,40 @@ const s = await getSettings();
         Full-time price displays as “from ${s.weeklyFrom}/wk”.
       </p>
 
+      <div class="admin-field" style="margin-top:1rem;">
+        <label for="tuitionNote">Tuition note (FAQ / pricing footnote)</label>
+        <textarea id="tuitionNote" name="tuitionNote" rows="2">{s.tuitionNote}</textarea>
+      </div>
+
       <div class="admin-field">
         <label class="email-opt" style="flex-direction:row;display:flex;gap:0.5rem;align-items:center;font-weight:600;">
           <input type="checkbox" name="siblingDiscount" checked={s.siblingDiscount} /> Sibling discount available
         </label>
+      </div>
+      <div class="admin-field">
+        <label for="siblingDiscountNote">Sibling discount description</label>
+        <textarea id="siblingDiscountNote" name="siblingDiscountNote" rows="2">{s.siblingDiscountNote}</textarea>
+      </div>
+
+      <div class="admin-field">
         <label class="email-opt" style="flex-direction:row;display:flex;gap:0.5rem;align-items:center;font-weight:600;">
           <input type="checkbox" name="subsidiesAccepted" checked={s.subsidiesAccepted} /> Childcare subsidies accepted
         </label>
+      </div>
+
+      <h2 style="margin:1.25rem 0 0.5rem;font-size:1.05rem;">Referral offer (tuition page)</h2>
+      <div class="admin-field">
+        <label class="email-opt" style="flex-direction:row;display:flex;gap:0.5rem;align-items:center;font-weight:600;">
+          <input type="checkbox" name="referralEnabled" checked={s.referralEnabled} /> Show referral offer on tuition page
+        </label>
+      </div>
+      <div class="admin-field">
+        <label for="referralTitle">Referral headline</label>
+        <input id="referralTitle" name="referralTitle" value={s.referralTitle} required />
+      </div>
+      <div class="admin-field">
+        <label for="referralBody">Referral description</label>
+        <textarea id="referralBody" name="referralBody" rows="3" required>{s.referralBody}</textarea>
       </div>
 
       <div><button type="submit" class="admin-btn">Save settings</button></div>
