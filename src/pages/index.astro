@@ -1,15 +1,21 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getImage } from 'astro:assets';
 import Img from '../components/Img.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
-import { testimonials, reviewStats } from '../data/testimonials';
-import { imageSrc } from '../data/images';
+import { testimonials } from '../data/testimonials';
+import { images } from '../data/images';
 
 const featured = testimonials.slice(0, 3);
 
-// Full-bleed hero background (swap to a real photo in src/data/images.ts).
-const heroSrc = imageSrc('hero', 1700, 1100);
+// Full-bleed hero photo (LCP element): self-hosted + optimized to WebP, served
+// eagerly with high fetch priority so it paints fast. Swap the source photo in
+// src/data/images.ts.
+const heroAsset = images.hero.asset!;
+const heroImg = await getImage({ src: heroAsset, width: 1920, format: 'webp' });
+const heroW = 1920;
+const heroH = Math.round((heroW * heroAsset.height) / heroAsset.width);
 
 const stats = [
   { num: site.yearsServing, label: 'years in the neighborhood' },
@@ -77,12 +83,22 @@ const curriculum = [
 
 <BaseLayout>
   <!-- ===================== FOLD 1 — HERO ===================== -->
-  <section class="hero" style={`background-image: url(${heroSrc})`}>
+  <section class="hero">
+    <img
+      src={heroImg.src}
+      alt={images.hero.alt}
+      class="hero__bg"
+      width={heroW}
+      height={heroH}
+      fetchpriority="high"
+      loading="eager"
+      decoding="async"
+    />
     <div class="hero__scrim"></div>
     <div class="container hero__inner">
       <div class="hero__copy stack">
-        <a href="/testimonials/" class="award" aria-label={`${site.award.title} by ${site.award.by}`}>
-          <span class="award__star">★</span>
+        <a href="/testimonials/" class="award">
+          <span class="award__star" aria-hidden="true">★</span>
           <span>
             <strong>{site.award.title}</strong>
             <small>{site.award.by} · {site.facts.accreditation}</small>
@@ -121,7 +137,7 @@ const curriculum = [
   </section>
 
   <!-- ===================== FOLD 2 — WHY US ===================== -->
-  <section class="section section--cream">
+  <section class="section section--cream section--cream-gap">
     <div class="container">
       <div class="section-head center">
         <p class="eyebrow">Why families choose us</p>
@@ -191,11 +207,12 @@ const curriculum = [
   </section>
 
   <!-- ===================== FOLD 3 — TESTIMONIALS ===================== -->
-  <section class="section section--cream">
+  <section class="section section--cream section--cream-gap">
     <div class="container">
       <div class="section-head center">
-        <p class="eyebrow">
-          ★★★★★ {reviewStats.reviewCount} reviews from real families
+        <p class="eyebrow eyebrow--rated">
+          <span class="eyebrow__stars" aria-hidden="true">★★★★★</span>
+          Reviews from real families
         </p>
         <h2>“No child gets left behind.”</h2>
       </div>
@@ -258,15 +275,21 @@ const curriculum = [
 <style>
   .hero {
     position: relative;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
     background-color: var(--color-primary-dark);
     display: flex;
     align-items: center;
     min-height: clamp(34rem, 78vh, 46rem);
     padding-block: clamp(3rem, 8vw, 6rem);
     overflow: hidden;
+  }
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
   }
   .hero__scrim {
     position: absolute;
@@ -348,6 +371,27 @@ const curriculum = [
   .award small {
     color: var(--color-ink-muted);
     font-size: 0.75rem;
+  }
+
+  /* Homepage cream sections follow contrasting bands, so they need their
+     normal top padding back (the global .section--cream zeroes it for spoke
+     pages where it flows out of a same-color PageHero). */
+  .section--cream-gap {
+    padding-top: var(--section-pad);
+  }
+
+  /* Rating eyebrow: gold stars sitting neatly beside the label. */
+  .eyebrow--rated {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .eyebrow__stars {
+    color: var(--color-accent);
+    letter-spacing: 0.08em;
+    font-size: 1rem;
+    line-height: 1;
   }
 
   .stats {

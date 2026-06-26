@@ -18,8 +18,19 @@ export default defineConfig({
   adapter: cloudflare({
     // Lets `astro dev` reach the D1/R2 bindings locally via Miniflare.
     platformProxy: { enabled: true },
+    // 'compile' optimizes images with Sharp at BUILD time for prerendered
+    // pages (emitting static .webp), instead of the default runtime Cloudflare
+    // Images service. All our marketing pages are static, so this gives real
+    // pre-optimized files and a fast LCP with no runtime image endpoint.
+    imageService: 'compile',
   }),
 
   integrations: [sitemap()],
   trailingSlash: 'always',
+
+  // Inline all CSS into each document's <head> so the browser never blocks
+  // first paint on a separate stylesheet request (helps FCP/LCP).
+  build: {
+    inlineStylesheets: 'always',
+  },
 });

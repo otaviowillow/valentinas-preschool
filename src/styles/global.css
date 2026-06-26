@@ -205,12 +205,12 @@ p {
   transform: translateY(-2px);
 }
 .btn--primary {
-  background: var(--color-secondary);
+  background: var(--color-secondary-dark);
   color: var(--color-white);
   box-shadow: var(--shadow-sm);
 }
 .btn--primary:hover {
-  background: var(--color-secondary-dark);
+  background: #92341a;
   color: var(--color-white);
   box-shadow: var(--shadow-md);
 }
