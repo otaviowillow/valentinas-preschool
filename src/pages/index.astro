@@ -1,21 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import Img from '../components/Img.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import { testimonials } from '../data/testimonials';
 import { images } from '../data/images';
 
+import iconAcademic from '../assets/photos/academic.png';
+import iconArts from '../assets/photos/arts.png';
+import iconPhysical from '../assets/photos/physical.png';
+import iconLife from '../assets/photos/life.png';
+import iconSocial from '../assets/photos/social.png';
+
 const featured = testimonials.slice(0, 3);
 
-// Full-bleed hero photo (LCP element): self-hosted + optimized to WebP, served
-// eagerly with high fetch priority so it paints fast. Swap the source photo in
-// src/data/images.ts.
+// Full-bleed hero photo (LCP element): self-hosted, optimized to responsive
+// WebP and served eagerly with high fetch priority so mobile downloads a
+// right-sized image and it paints fast. Swap the source in src/data/images.ts.
 const heroAsset = images.hero.asset!;
-const heroImg = await getImage({ src: heroAsset, width: 1920, format: 'webp' });
-const heroW = 1920;
-const heroH = Math.round((heroW * heroAsset.height) / heroAsset.width);
 
 const stats = [
   { num: site.yearsServing, label: 'years in the neighborhood' },
@@ -48,31 +51,31 @@ const pillars = [
 // Whole-child curriculum across five domains (client's framework).
 const curriculum = [
   {
-    icon: '/icons/academic.png',
+    icon: iconAcademic,
     title: 'Academic Foundations',
     items: ['Language & Literacy', 'Mathematics', 'Science'],
     tint: 'mint',
   },
   {
-    icon: '/icons/arts.png',
+    icon: iconArts,
     title: 'Creative Arts & Enrichment',
     items: ['Music', 'Dance', 'Art', 'Drama'],
     tint: 'peach',
   },
   {
-    icon: '/icons/physical.png',
+    icon: iconPhysical,
     title: 'Physical Development & Wellness',
     items: ['Yoga', 'Movement', 'Outdoor Play'],
     tint: 'sky',
   },
   {
-    icon: '/icons/life.png',
+    icon: iconLife,
     title: 'Life Skills',
     items: ['Cooking', 'Gardening', 'Practical Skills'],
     tint: 'butter',
   },
   {
-    icon: '/icons/social.png',
+    icon: iconSocial,
     title: 'Social-Emotional Development',
     items: ['Emotional Literacy', 'Self-Regulation', 'Empathy', 'Conflict Resolution'],
     tint: 'plum',
@@ -84,12 +87,14 @@ const curriculum = [
 <BaseLayout>
   <!-- ===================== FOLD 1 — HERO ===================== -->
   <section class="hero">
-    <img
-      src={heroImg.src}
+    <Image
+      src={heroAsset}
       alt={images.hero.alt}
       class="hero__bg"
-      width={heroW}
-      height={heroH}
+      widths={[480, 768, 1024, 1366, 1920]}
+      sizes="100vw"
+      format="webp"
+      quality={68}
       fetchpriority="high"
       loading="eager"
       decoding="async"
@@ -180,12 +185,13 @@ const curriculum = [
           curriculum.map((c) => (
             <article class={`curric-row curric-row--${c.tint}`}>
               <h3 class="curric-row__title">
-                <img
+                <Image
                   src={c.icon}
                   alt=""
                   class="curric-row__icon"
-                  width="160"
-                  height="160"
+                  width={96}
+                  height={96}
+                  format="webp"
                   loading="lazy"
                 />
                 {c.title}
