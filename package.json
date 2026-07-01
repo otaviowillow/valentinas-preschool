@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=22.16.0"
   },
+  "volta": {
+    "node": "22.16.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

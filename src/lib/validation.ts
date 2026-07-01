@@ -11,6 +11,7 @@ import {
   CHILD_AGE_MAX_MONTHS,
   CHILD_AGE_MIN_MONTHS,
 } from './inquiries';
+import { formatAgeMonths } from './settings';
 import { hasSuspiciousInjection } from './spam';
 
 // HTML forms (and FormData.get) yield `null` for absent fields and `''` for
@@ -87,36 +88,40 @@ const optionalMonths = z.preprocess(
 const requiredAmountCents = z.coerce.number().int().min(0);
 
 // ---- Public enrollment inquiry (from the contact form) --------------------
-export const inquiryInput = z.object({
-  parentName: personName(100, 'Your name is required'),
-  email: requiredEmail,
-  phone: optionalPhone,
-  childAge: z.preprocess(
-    emptyToUndef,
-    z.coerce
-      .number({ error: 'Enter your child’s age in months' })
-      .int()
-      .min(
-        CHILD_AGE_MIN_MONTHS,
-        `Minimum age is ${CHILD_AGE_MIN_MONTHS} months`
-      )
-      .max(
-        CHILD_AGE_MAX_MONTHS,
-        `Maximum age is 5 years (${CHILD_AGE_MAX_MONTHS} months)`
-      )
-  ),
-  desiredStart: optionalStartDate,
-  intent: z.preprocess(emptyToUndef, z.enum(['tour', 'waitlist'])).catch('tour'),
-  referredBy: z.preprocess(
-    emptyToUndef,
-    z
-      .string()
-      .max(200)
-      .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only')
-      .optional()
-  ),
-  message: safeOptionalText(2000),
-});
+export function createInquiryInput(minMonths: number, maxMonths: number) {
+  return z.object({
+    parentName: personName(100, 'Your name is required'),
+    email: requiredEmail,
+    phone: optionalPhone,
+    childAge: z.preprocess(
+      emptyToUndef,
+      z.coerce
+        .number({ error: 'Enter your child’s age in months' })
+        .int()
+        .min(minMonths, `Minimum age is ${minMonths} months`)
+        .max(
+          maxMonths,
+          `Maximum age is ${formatAgeMonths(maxMonths)} (${maxMonths} months)`
+        )
+    ),
+    desiredStart: optionalStartDate,
+    intent: z.preprocess(emptyToUndef, z.enum(['tour', 'waitlist'])).catch('tour'),
+    referredBy: z.preprocess(
+      emptyToUndef,
+      z
+        .string()
+        .max(200)
+        .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only')
+        .optional()
+    ),
+    message: safeOptionalText(2000),
+  });
+}
+
+export const inquiryInput = createInquiryInput(
+  CHILD_AGE_MIN_MONTHS,
+  CHILD_AGE_MAX_MONTHS
+);
 export type InquiryInput = z.infer<typeof inquiryInput>;
 
 // ---- Admin forms ----------------------------------------------------------
@@ -184,18 +189,39 @@ const boolFromForm = z.preprocess(
 );
 const nonNegInt = z.preprocess(emptyToUndef, z.coerce.number().int().min(0));
 
-export const settingsInput = z.object({
-  capacity: nonNegInt.catch(0),
-  weeklyFrom: nonNegInt.catch(0),
-  applicationFee: nonNegInt.catch(0),
-  partTimeLabel: requiredStr(60, 'Part-time label is required'),
-  partTimePrice: requiredStr(60, 'Part-time price is required'),
-  partTimeNote: optionalStr(120),
-  fullTimeLabel: requiredStr(60, 'Full-time label is required'),
-  fullTimeNote: optionalStr(120),
-  siblingDiscount: boolFromForm,
-  subsidiesAccepted: boolFromForm,
-});
+const ageMonths = z.preprocess(
+  emptyToUndef,
+  z.coerce.number().int().min(1).max(84)
+);
+
+export const settingsInput = z
+  .object({
+    capacity: nonNegInt.catch(0),
+    weeklyFrom: nonNegInt.catch(0),
+    applicationFee: nonNegInt.catch(0),
+    partTimeLabel: requiredStr(60, 'Part-time label is required'),
+    partTimePrice: requiredStr(60, 'Part-time price is required'),
+    partTimeNote: optionalStr(120),
+    fullTimeLabel: requiredStr(60, 'Full-time label is required'),
+    fullTimeNote: optionalStr(120),
+    siblingDiscount: boolFromForm,
+    subsidiesAccepted: boolFromForm,
+    ageMinMonths: ageMonths.catch(15),
+    ageMaxMonths: ageMonths.catch(60),
+    tuitionNote: z
+      .preprocess(trimOrEmpty, z.string().max(500))
+      .catch('Pricing varies by schedule (2, 3, or 5 days). Contact us for current rates.'),
+    siblingDiscountNote: z
+      .preprocess(trimOrEmpty, z.string().max(500))
+      .catch('Please contact us for sibling discount details.'),
+    referralEnabled: boolFromForm,
+    referralTitle: requiredStr(120, 'Referral title is required'),
+    referralBody: requiredStr(2000, 'Referral description is required'),
+  })
+  .refine((d) => d.ageMaxMonths >= d.ageMinMonths, {
+    message: 'Maximum age must be at least the minimum age',
+    path: ['ageMaxMonths'],
+  });
 
 export const holidayScheduleInput = z.object({
   holidayScheduleTitle: requiredStr(200, 'Holiday schedule title is required'),

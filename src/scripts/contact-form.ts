@@ -1,13 +1,12 @@
 import { isValidEmail, isValidPhone, digitsOnlyPhone } from '../lib/contact-form-validation';
-import {
-  CHILD_AGE_MAX_MONTHS,
-  CHILD_AGE_MIN_MONTHS,
-} from '../lib/inquiries';
 
 export function initContactForm() {
   const form = document.querySelector('.contact-form');
   if (!form || form.dataset.validationBound === 'true') return;
   form.dataset.validationBound = 'true';
+
+  const ageMin = Number(form.dataset.ageMin ?? 15);
+  const ageMax = Number(form.dataset.ageMax ?? 60);
 
   const params = new URLSearchParams(location.search);
   const intent = params.get('intent');
@@ -34,11 +33,7 @@ export function initContactForm() {
     const raw = childAgeInput.value.trim();
     if (!raw) return false;
     const age = Number(raw);
-    return (
-      Number.isInteger(age) &&
-      age >= CHILD_AGE_MIN_MONTHS &&
-      age <= CHILD_AGE_MAX_MONTHS
-    );
+    return Number.isInteger(age) && age >= ageMin && age <= ageMax;
   }
 
   function isFormReady(): boolean {

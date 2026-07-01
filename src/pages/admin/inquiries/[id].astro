@@ -7,7 +7,7 @@ import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
 import { formatDate, titleCase } from '../../../lib/format';
 import { isReferralInquiry } from '../../../lib/inquiries';
-import { INQUIRY_STATUSES } from '../../../db/schema';
+import { INQUIRY_PIPELINE_STATUSES } from '../../../db/schema';
 
 const id = Number(Astro.params.id);
 const db = dbFrom();
@@ -36,6 +36,26 @@ const referrer = inquiry.referredByFamilyId
   ? allFamilies.find((f) => f.id === inquiry.referredByFamilyId)
   : null;
 const isReferral = isReferralInquiry(inquiry);
+const isEnrolled = inquiry.status === 'enrolled';
+
+const classList = await db
+  .select()
+  .from(schema.classes)
+  .orderBy(asc(schema.classes.name));
+
+const enrollNotes = inquiry.childAge
+  ? `Age at inquiry: ${inquiry.childAge}`
+  : '';
+
+const familyDraft = {
+  primaryContactName: family?.primaryContactName ?? inquiry.parentName,
+  email: family?.email ?? inquiry.email ?? '',
+  phone: family?.phone ?? inquiry.phone ?? '',
+  address: family?.address ?? '',
+  notes:
+    family?.notes ??
+    (inquiry.message ? `From inquiry #${id}: ${inquiry.message}` : ''),
+};
 
 const self = `/admin/inquiries/${id}/`;
 ---
@@ -81,52 +101,145 @@ const self = `/admin/inquiries/${id}/`;
     </section>
 
     <aside class="inquiry-aside">
-      <section class="admin-panel">
-        <h2>Status</h2>
-        <form method="POST" action="/api/admin/inquiries/" class="admin-form">
-          <input type="hidden" name="_action" value="status" />
-          <input type="hidden" name="id" value={inquiry.id} />
-          <input type="hidden" name="_redirect" value={self} />
-          <div class="admin-field">
-            <label for="status">Pipeline stage</label>
-            <select id="status" name="status">
-              {
-                INQUIRY_STATUSES.map((s) => (
-                  <option value={s} selected={s === inquiry.status}>
-                    {titleCase(s)}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
-          <button type="submit" class="admin-btn">Update status</button>
-        </form>
-      </section>
-
-      <section class="admin-panel">
-        <h2>Family</h2>
+      <section class="admin-panel enroll-panel" id="enroll">
+        <h2>Enroll</h2>
         {
-          family ? (
-            <p>
-              Linked to{' '}
+          isEnrolled && family ? (
+            <p style="margin:0;">
+              Enrolled under{' '}
               <a href={`/admin/families/${family.id}/`}>
                 {family.primaryContactName}
               </a>
-              . Add the child from the family page.
+              . Add siblings or update details from the family page.
             </p>
           ) : (
-            <form method="POST" action="/api/admin/inquiries/">
-              <input type="hidden" name="_action" value="convert" />
-              <input type="hidden" name="id" value={inquiry.id} />
+            <>
               <p class="muted" style="margin-top:0;">
-                Create a family record from this inquiry's contact info, then add
-                the child.
+                Confirm family contact info, then add the child. {
+                  family
+                    ? <>Updates the linked <a href={`/admin/families/${family.id}/`}>family record</a>.</>
+                    : <>Creates a new family record.</>
+                }
               </p>
-              <button type="submit" class="admin-btn">Convert to family</button>
-            </form>
+              <form method="POST" action="/api/admin/inquiries/" class="admin-form">
+                <input type="hidden" name="_action" value="enroll" />
+                <input type="hidden" name="id" value={inquiry.id} />
+
+                <h3 class="enroll-subhead">Family record</h3>
+                <div class="admin-field">
+                  <label for="primaryContactName">Primary contact name *</label>
+                  <input
+                    id="primaryContactName"
+                    name="primaryContactName"
+                    value={familyDraft.primaryContactName}
+                    required
+                  />
+                </div>
+                <div class="grid2">
+                  <div class="admin-field">
+                    <label for="email">Email</label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={familyDraft.email}
+                    />
+                  </div>
+                  <div class="admin-field">
+                    <label for="phone">Phone</label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={familyDraft.phone}
+                    />
+                  </div>
+                </div>
+                <div class="admin-field">
+                  <label for="address">Address</label>
+                  <input id="address" name="address" value={familyDraft.address} />
+                </div>
+                <div class="admin-field">
+                  <label for="familyNotes">Family notes</label>
+                  <textarea id="familyNotes" name="familyNotes" rows="2">{familyDraft.notes}</textarea>
+                </div>
+
+                <h3 class="enroll-subhead">Child</h3>
+                <div class="grid2">
+                  <div class="admin-field">
+                    <label for="firstName">First name *</label>
+                    <input id="firstName" name="firstName" required />
+                  </div>
+                  <div class="admin-field">
+                    <label for="lastName">Last name</label>
+                    <input id="lastName" name="lastName" />
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="admin-field">
+                    <label for="dob">Date of birth</label>
+                    <input id="dob" name="dob" type="date" />
+                  </div>
+                  <div class="admin-field">
+                    <label for="classId">Class</label>
+                    <select id="classId" name="classId">
+                      <option value="">Unassigned</option>
+                      {
+                        classList.map((c) => (
+                          <option value={c.id}>{c.name}</option>
+                        ))
+                      }
+                    </select>
+                  </div>
+                </div>
+                <div class="admin-field">
+                  <label for="startDate">Start date</label>
+                  <input
+                    id="startDate"
+                    name="startDate"
+                    placeholder="e.g. Fall 2026"
+                    value={inquiry.desiredStart ?? ''}
+                  />
+                </div>
+                {
+                  enrollNotes && (
+                    <input type="hidden" name="childNotes" value={enrollNotes} />
+                  )
+                }
+                <button type="submit" class="admin-btn">Enroll child</button>
+              </form>
+            </>
           )
         }
       </section>
+
+      {
+        !isEnrolled && (
+          <section class="admin-panel">
+            <h2>Status</h2>
+            <form method="POST" action="/api/admin/inquiries/" class="admin-form">
+              <input type="hidden" name="_action" value="status" />
+              <input type="hidden" name="id" value={inquiry.id} />
+              <input type="hidden" name="_redirect" value={self} />
+              <div class="admin-field">
+                <label for="status">Pipeline stage</label>
+                <select id="status" name="status">
+                  {
+                    INQUIRY_PIPELINE_STATUSES.map((s) => (
+                      <option value={s} selected={s === inquiry.status}>
+                        {titleCase(s)}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+              <button type="submit" class="admin-btn admin-btn--ghost admin-btn--sm">
+                Update status
+              </button>
+            </form>
+          </section>
+        )
+      }
 
       {
         isReferral && (
@@ -226,6 +339,27 @@ const self = `/admin/inquiries/${id}/`;
 </AdminLayout>
 
 <style>
+  .enroll-panel {
+    border-color: var(--color-primary);
+  }
+
+  .enroll-subhead {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin: 1.25rem 0 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-surface-2);
+  }
+
+  .enroll-subhead:first-of-type {
+    margin-top: 0.75rem;
+    padding-top: 0;
+    border-top: none;
+  }
+
   @media (max-width: 860px) {
     .inquiry-grid {
       grid-template-columns: 1fr !important;
