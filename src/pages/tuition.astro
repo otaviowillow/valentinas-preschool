@@ -7,17 +7,11 @@ import PageHero from '../components/PageHero.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import { getSettings } from '../lib/settings';
+import { buildHolidayFaqAnswer, getHolidaySchedule } from '../lib/holidays';
+import { faqPageSchema, tuitionFaqs } from '../lib/seo';
 
 const settings = await getSettings();
-
-// Tuition figures are office-editable (admin Settings), with site.ts fallback.
-const tuition = {
-  weeklyFrom: settings.weeklyFrom,
-  applicationFee: settings.applicationFee,
-  siblingDiscount: settings.siblingDiscount,
-  subsidiesAccepted: settings.subsidiesAccepted,
-  note: site.tuition.note,
-};
+const holidaySchedule = await getHolidaySchedule();
 
 const plans = [
   {
@@ -27,66 +21,35 @@ const plans = [
   },
   {
     name: settings.fullTimeLabel,
-    price: `from $${settings.weeklyFrom}/wk`,
+    price: 'Contact us',
     note: settings.fullTimeNote,
     featured: true,
   },
 ];
 
 const faqs = [
+  ...tuitionFaqs(settings),
   {
-    q: 'What ages do you accept?',
-    a: `We welcome children ages ${site.facts.ageRange}.`,
+    q: 'What is teacher-to-child ratios?',
+    a: `Our typical teacher-to-child ratio is ${site.facts.ratio}.`,
   },
   {
-    q: 'What are your hours?',
-    a: `We’re open ${site.facts.hours}.`,
-  },
-  {
-    q: 'How much is tuition?',
-    a: `Tuition starts at $${tuition.weeklyFrom} per week for full-time (5 days) and varies by schedule. There is a one-time $${tuition.applicationFee} application fee. ${tuition.note}`,
-  },
-  {
-    q: 'Are meals included?',
-    a: 'Yes. Nutritious breakfast, lunch, and an afternoon snack are included every day. No cold lunchbox required.',
-  },
-  {
-    q: 'Do you offer a sibling discount?',
-    a: tuition.siblingDiscount
-      ? 'Yes, we offer a sibling discount. Please contact us for details.'
-      : 'Please contact us about current pricing.',
-  },
-  {
-    q: 'Do you accept childcare subsidies?',
-    a: tuition.subsidiesAccepted
-      ? 'Yes, we accept childcare subsidies. Reach out and we’ll walk you through it.'
-      : 'Please contact us to discuss payment options.',
-  },
-  {
-    q: 'What is enrichment going to cost extra?',
-    a: 'Nothing. Spanish, music & dance, yoga, gardening, cooking, and art are all included in tuition.',
+    q: 'When is the school closed for holidays?',
+    a: buildHolidayFaqAnswer(holidaySchedule),
+    preline: true,
   },
 ];
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a },
-  })),
-};
+const faqSchema = faqPageSchema(faqs);
 ---
 
 <BaseLayout
-  title="Tuition & FAQ"
+  title="Tuition & FAQ · Culver City Preschool"
   description="Tuition, fees, hours, meals, sibling discounts, and subsidies at Valentina's Preschool in Culver City / West LA. Enrichment always included."
   schema={[faqSchema]}
 >
   <PageHero
     eyebrow="Tuition & FAQ"
-    title="Simple, all-inclusive tuition"
+    title="Tuition & FAQ for Culver City families"
     lead="One tuition covers everything: enrichment, daily Spanish, and meals included. No surprise add-ons."
   />
 
@@ -105,27 +68,25 @@ const faqSchema = {
         }
       </div>
       <p class="fees muted">
-        One-time application fee: <strong>${tuition.applicationFee}</strong>
-        {tuition.siblingDiscount && <> · Sibling discount available</>}
-        {tuition.subsidiesAccepted && <> · Childcare subsidies accepted</>}
+        One-time application fee: <strong>${settings.applicationFee}</strong>
+        {settings.siblingDiscount && <> · Sibling discount available</>}
+        {settings.subsidiesAccepted && <> · Childcare subsidies accepted</>}
       </p>
       <p class="cap-note">
         A boutique program with limited enrollment — contact us for current availability.
       </p>
-      <p class="confirm-note">
-        Rates vary by schedule and are subject to change. Contact us for current
-        pricing and availability.
-      </p>
+      <p class="confirm-note">{settings.tuitionNote}</p>
 
-      <div class="referral">
-        <span class="referral__badge">Referral offer</span>
-        <h3>Refer a family, you both win</h3>
-        <p>
-          Know a family who would love it here? When they enroll, your
-          application fee is waived and your first week is free.
-        </p>
-        <a href="/contact/?intent=referral" class="btn btn--primary">Refer a family</a>
-      </div>
+      {
+        settings.referralEnabled && (
+          <div class="referral">
+            <span class="referral__badge">Referral offer</span>
+            <h3>{settings.referralTitle}</h3>
+            <p>{settings.referralBody}</p>
+            <a href="/contact/" class="btn btn--primary">Refer a family</a>
+          </div>
+        )
+      }
     </div>
   </section>
 
@@ -139,7 +100,7 @@ const faqSchema = {
           faqs.map((f) => (
             <details class="faq">
               <summary>{f.q}</summary>
-              <p>{f.a}</p>
+              <p class:list={[{ 'faq__preline': 'preline' in f && f.preline }]}>{f.a}</p>
             </details>
           ))
         }
@@ -266,5 +227,8 @@ const faqSchema = {
   .faq p {
     padding-bottom: 1.1rem;
     margin: 0;
+  }
+  .faq__preline {
+    white-space: pre-line;
   }
 </style>

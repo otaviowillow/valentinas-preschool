@@ -169,9 +169,16 @@ const isActive = (href: string) =>
       gap: 0.15rem;
       padding: 1rem 1.25rem 1.5rem;
     }
+    .nav__list > li {
+      width: 100%;
+    }
     .nav__link {
-      padding: 0.8rem 0.7rem;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.8rem 1rem;
       font-size: 1.05rem;
+      border-radius: var(--radius);
     }
     .nav__cta {
       margin: 0.5rem 0 0;

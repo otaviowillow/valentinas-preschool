@@ -3,8 +3,9 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { dbFrom, schema } from '../../../db';
-import { inquiryStatusInput } from '../../../lib/validation';
-import { badRequest, notFound, redirectTarget } from '../../../lib/admin';
+import { ensureFamilyFromInquiry, upsertFamilyForEnroll } from '../../../lib/inquiries';
+import { addError, addFlash, badRequest, notFound, redirectTarget } from '../../../lib/admin';
+import { childInput, familyInput, inquiryStatusInput } from '../../../lib/validation';
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   const form = await request.formData();
@@ -19,40 +20,64 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     .where(eq(schema.inquiries.id, id));
   if (!inquiry) return notFound();
 
+  const self = `/admin/inquiries/${id}/`;
+
   if (action === 'status') {
     const parsed = inquiryStatusInput.safeParse({ status: form.get('status') });
     if (!parsed.success) return badRequest('Invalid status');
+    if (parsed.data.status === 'enrolled') {
+      return redirect(`${self}#enroll`, 303);
+    }
     await db
       .update(schema.inquiries)
       .set({ status: parsed.data.status, updatedAt: new Date() })
       .where(eq(schema.inquiries.id, id));
-    return redirect(redirectTarget(form, `/admin/inquiries/${id}/`), 303);
+    return redirect(redirectTarget(form, self), 303);
+  }
+
+  if (action === 'enroll') {
+    if (inquiry.status === 'enrolled') {
+      return redirect(addError(self, 'This inquiry is already enrolled.'), 303);
+    }
+    const familyParsed = familyInput.safeParse({
+      primaryContactName: form.get('primaryContactName'),
+      email: form.get('email'),
+      phone: form.get('phone'),
+      address: form.get('address'),
+      notes: form.get('familyNotes'),
+    });
+    if (!familyParsed.success) {
+      return redirect(addError(`${self}#enroll`, 'Check the family details.'), 303);
+    }
+    const childParsed = childInput.safeParse({
+      firstName: form.get('firstName'),
+      lastName: form.get('lastName'),
+      dob: form.get('dob'),
+      classId: form.get('classId'),
+      startDate: form.get('startDate'),
+      notes: form.get('childNotes'),
+    });
+    if (!childParsed.success) {
+      return redirect(addError(`${self}#enroll`, 'Check the child details.'), 303);
+    }
+    const familyId = await upsertFamilyForEnroll(db, inquiry, id, familyParsed.data);
+    await db.insert(schema.children).values({
+      ...childParsed.data,
+      familyId,
+      status: 'enrolled',
+    });
+    await db
+      .update(schema.inquiries)
+      .set({ status: 'enrolled', familyId, updatedAt: new Date() })
+      .where(eq(schema.inquiries.id, id));
+    return redirect(
+      addFlash(`/admin/families/${familyId}/`, `${childParsed.data.firstName} enrolled.`),
+      303
+    );
   }
 
   if (action === 'convert') {
-    let familyId = inquiry.familyId;
-    if (!familyId) {
-      const [family] = await db
-        .insert(schema.families)
-        .values({
-          primaryContactName: inquiry.parentName,
-          email: inquiry.email,
-          phone: inquiry.phone,
-          notes: inquiry.message
-            ? `From inquiry #${id}: ${inquiry.message}`
-            : `Created from inquiry #${id}.`,
-        })
-        .returning({ id: schema.families.id });
-      familyId = family.id;
-      await db
-        .update(schema.inquiries)
-        .set({
-          familyId,
-          status: inquiry.status === 'new' ? 'contacted' : inquiry.status,
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.inquiries.id, id));
-    }
+    const familyId = await ensureFamilyFromInquiry(db, inquiry, id);
     return redirect(`/admin/families/${familyId}/`, 303);
   }
 
@@ -66,7 +91,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       .update(schema.inquiries)
       .set({ referredByFamilyId: referrerId, updatedAt: new Date() })
       .where(eq(schema.inquiries.id, id));
-    return redirect(redirectTarget(form, `/admin/inquiries/${id}/`), 303);
+    return redirect(redirectTarget(form, self), 303);
   }
 
   if (action === 'delete') {

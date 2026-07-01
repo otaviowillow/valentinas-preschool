@@ -1,8 +1,14 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import DatePicker from '../components/DatePicker.astro';
 import { site } from '../data/site';
+import { formatAgeRangeLabel, getSettings } from '../lib/settings';
+
+const settings = await getSettings();
+const ageRange = formatAgeRangeLabel(settings.ageMinMonths, settings.ageMaxMonths);
 
 const { nap } = site;
 const minStartDate = new Date().toISOString().slice(0, 10);
@@ -20,12 +26,12 @@ const mapQuery = encodeURIComponent(
 
 <BaseLayout
   title="Book a Tour & Contact"
-  description="Book a tour or join the waitlist at Valentina's Preschool, 6100 Hargis St, Los Angeles, CA 90034. Call (310) 839-9147 or send us a note."
+  description={`Book a tour at Valentina's Preschool — toddler & preschool childcare in Culver City / Palms (${site.nap.postalCode}). Ages ${ageRange}. Call ${nap.telephoneDisplay}.`}
 >
   <PageHero
-    eyebrow="Visit Us"
-    title="Come see if we’re the right fit"
-    lead="Spots are limited. We keep our family small on purpose. Tell us a little about your child and we’ll be in touch personally."
+    eyebrow="Visit Us · Culver City / West LA"
+    title="Book a tour at our Culver City preschool"
+    lead="Spots are limited. Tell us about your child and we’ll reply personally — usually within one business day."
   />
 
   <section class="section section--cream">
@@ -35,6 +41,8 @@ const mapQuery = encodeURIComponent(
         action="/api/inquiries/"
         method="POST"
         novalidate
+        data-age-min={settings.ageMinMonths}
+        data-age-max={settings.ageMaxMonths}
       >
         <h2>Request a tour</h2>
 
@@ -101,13 +109,13 @@ const mapQuery = encodeURIComponent(
             id="childage"
             name="child_age"
             type="number"
-            min="15"
-            max="60"
+            min={settings.ageMinMonths}
+            max={settings.ageMaxMonths}
             step="1"
             placeholder="e.g. 24"
             required
           />
-          <span class="muted field-hint">Ages 15 months – 5 years (60 months).</span>
+          <span class="muted field-hint">Ages {ageRange} ({settings.ageMaxMonths} months max).</span>
         </div>
 
         <div class="field">
@@ -124,11 +132,15 @@ const mapQuery = encodeURIComponent(
             <label class="radio"
               ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
             >
-            <label class="radio"
-              ><input type="radio" name="intent" value="referral" /> I was referred</label
-            >
           </div>
         </fieldset>
+
+        <div class="field referred-check">
+          <label class="checkbox">
+            <input type="checkbox" id="was-referred" value="1" />
+            I was referred by a family
+          </label>
+        </div>
 
         <div class="field referred-by" hidden>
           <label for="referred">Who referred you?</label>
@@ -260,6 +272,16 @@ const mapQuery = encodeURIComponent(
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
+  }
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .referred-check {
+    margin-top: -0.35rem;
   }
   .field-hint {
     font-size: 0.85rem;

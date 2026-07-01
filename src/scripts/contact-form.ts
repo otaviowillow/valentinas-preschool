@@ -1,18 +1,19 @@
 import { isValidEmail, isValidPhone, digitsOnlyPhone } from '../lib/contact-form-validation';
-import {
-  CHILD_AGE_MAX_MONTHS,
-  CHILD_AGE_MIN_MONTHS,
-} from '../lib/inquiries';
 
 export function initContactForm() {
   const form = document.querySelector('.contact-form');
   if (!form || form.dataset.validationBound === 'true') return;
   form.dataset.validationBound = 'true';
 
-  const intent = new URLSearchParams(location.search).get('intent');
+  const ageMin = Number(form.dataset.ageMin ?? 15);
+  const ageMax = Number(form.dataset.ageMax ?? 60);
+
+  const params = new URLSearchParams(location.search);
+  const intent = params.get('intent');
   const radios = Array.from(
     document.querySelectorAll<HTMLInputElement>('input[name="intent"]')
   );
+  const wasReferred = document.getElementById('was-referred');
   const referredBy = document.querySelector('.referred-by');
   const emailInput = document.getElementById('email');
   const phoneInput = document.getElementById('phone');
@@ -32,11 +33,7 @@ export function initContactForm() {
     const raw = childAgeInput.value.trim();
     if (!raw) return false;
     const age = Number(raw);
-    return (
-      Number.isInteger(age) &&
-      age >= CHILD_AGE_MIN_MONTHS &&
-      age <= CHILD_AGE_MAX_MONTHS
-    );
+    return Number.isInteger(age) && age >= ageMin && age <= ageMax;
   }
 
   function isFormReady(): boolean {
@@ -93,8 +90,8 @@ export function initContactForm() {
   }
 
   function syncReferredField() {
-    const selected = radios.find((r) => r.checked)?.value;
-    const showReferral = selected === 'referral';
+    const showReferral =
+      wasReferred instanceof HTMLInputElement && wasReferred.checked;
     if (referredBy instanceof HTMLElement) referredBy.hidden = !showReferral;
     if (referredInput instanceof HTMLInputElement) {
       referredInput.disabled = !showReferral;
@@ -105,7 +102,13 @@ export function initContactForm() {
   if (intent && radios.some((r) => r.value === intent)) {
     radios.forEach((r) => (r.checked = r.value === intent));
   }
-  radios.forEach((r) => r.addEventListener('change', syncReferredField));
+  if (
+    (params.get('referred') === '1' || intent === 'referral') &&
+    wasReferred instanceof HTMLInputElement
+  ) {
+    wasReferred.checked = true;
+  }
+  wasReferred?.addEventListener('change', syncReferredField);
   syncReferredField();
 
   parentInput?.addEventListener('input', syncSubmitState);

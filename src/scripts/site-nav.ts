@@ -29,3 +29,24 @@ export function bindSamePageNav() {
     true
   );
 }
+
+/** Close the mobile nav when tapping outside or following a link. */
+export function bindMobileNav() {
+  const header = document.querySelector('.site-header');
+  const toggle = document.getElementById('nav-toggle') as HTMLInputElement | null;
+  if (!header || !toggle || header.dataset.mobileNavBound === 'true') return;
+  header.dataset.mobileNavBound = 'true';
+
+  document.addEventListener('click', (e) => {
+    if (!toggle.checked) return;
+    const target = e.target as Node;
+    if (header.contains(target)) return;
+    toggle.checked = false;
+  });
+
+  header.querySelectorAll('.nav__link, .nav__cta .btn').forEach((el) => {
+    el.addEventListener('click', () => {
+      toggle.checked = false;
+    });
+  });
+}

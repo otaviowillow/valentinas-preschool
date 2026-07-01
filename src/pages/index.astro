@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { Image } from 'astro:assets';
 import Img from '../components/Img.astro';
@@ -6,12 +8,18 @@ import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import { testimonials } from '../data/testimonials';
 import { images } from '../data/images';
+import { formatAgeRangeLabel, getSettings } from '../lib/settings';
+import { siteDescription } from '../lib/seo';
 
 import iconAcademic from '../assets/photos/academic.png';
 import iconArts from '../assets/photos/arts.png';
 import iconPhysical from '../assets/photos/physical.png';
 import iconLife from '../assets/photos/life.png';
 import iconSocial from '../assets/photos/social.png';
+
+const settings = await getSettings();
+const ageRange = formatAgeRangeLabel(settings.ageMinMonths, settings.ageMaxMonths);
+const metaDescription = siteDescription(settings);
 
 const featured = testimonials.slice(0, 3);
 
@@ -42,7 +50,7 @@ const pillars = [
   },
   {
     title: 'Bilingual: daily Spanish',
-    body: 'Spanish is woven into every day through songs, play, and conversation. Children leave us switching between languages with ease.',
+    body: 'Spanish is woven into every day through songs, play, and conversation. Children build genuine familiarity with a second language.',
     href: '/bilingual/',
     cta: 'Our bilingual day',
   },
@@ -84,7 +92,7 @@ const curriculum = [
 
 ---
 
-<BaseLayout>
+<BaseLayout description={metaDescription}>
   <!-- ===================== FOLD 1 — HERO ===================== -->
   <section class="hero">
     <Image
@@ -109,12 +117,12 @@ const curriculum = [
             <small>{site.award.by} · {site.facts.accreditation}</small>
           </span>
         </a>
-        <h1>{site.tagline}</h1>
+        <h1>Reggio-Inspired Preschool in Culver City &amp; West LA</h1>
+        <p class="hero-tagline">{site.tagline}</p>
         <p class="lead">
-          A boutique, Reggio-inspired preschool in Culver City &amp; West Los
-          Angeles, with <strong>daily Spanish</strong>, an enrichment-rich
-          curriculum, and <strong>nutritious meals</strong> made with love, for
-          ages 15 months to 5 years.
+          A boutique preschool and toddler program with <strong>daily Spanish</strong>,
+          enrichment-rich curriculum, and <strong>nutritious meals</strong> included — for
+          ages {ageRange}.
         </p>
         <div class="hero__actions">
           <a href="/contact/" class="btn btn--primary btn--lg">Book a Tour</a>
@@ -205,7 +213,7 @@ const curriculum = [
           ))
         }
       </div>
-      <p class="text-center" style="margin-top:2.25rem">
+      <p class="curric-cta">
         <a href="/programs/" class="btn btn--ghost">Programs by age</a>
         <a href="/enrichment/" class="btn btn--ghost">Explore enrichment</a>
       </p>
@@ -275,6 +283,16 @@ const curriculum = [
     </div>
   </section>
 
+  <section class="section section--mint">
+    <div class="container container-narrow text-center">
+      <p class="lead muted" style="margin:0;">
+        On the Culver City border in Palms ({site.nap.postalCode}), we welcome families from{' '}
+        {site.areasServed.slice(0, -1).join(', ')}, and {site.areasServed.at(-1)} — a boutique
+        preschool and toddler childcare program with full-day hours for working Westside parents.
+      </p>
+    </div>
+  </section>
+
   <CtaBand />
 </BaseLayout>
 
@@ -319,6 +337,14 @@ const curriculum = [
   .hero h1 {
     color: var(--color-white);
     text-wrap: balance;
+  }
+  .hero-tagline {
+    font-family: var(--font-heading);
+    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+    font-style: italic;
+    color: rgba(255, 253, 247, 0.92);
+    margin: 0;
+    max-width: 28rem;
   }
   .hero .lead {
     color: rgba(255, 253, 247, 0.92);
@@ -494,6 +520,14 @@ const curriculum = [
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--color-ink);
+  }
+  .curric-cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem 1rem;
+    margin-top: 2.25rem;
+    text-align: center;
   }
   @media (max-width: 640px) {
     .curric-row {

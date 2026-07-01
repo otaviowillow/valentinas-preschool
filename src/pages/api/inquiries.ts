@@ -2,8 +2,9 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { dbFrom, getEnv, schema } from '../../db';
-import { inquiryInput } from '../../lib/validation';
+import { createInquiryInput } from '../../lib/validation';
 import { formatChildAgeMonths } from '../../lib/inquiries';
+import { getSettings } from '../../lib/settings';
 import {
   detectIntakeSpam,
   intakeRateLimitAllowed,
@@ -62,7 +63,11 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return thankYou(redirect);
   }
 
-  const parsed = inquiryInput.safeParse({
+  const settings = await getSettings();
+  const parsed = createInquiryInput(
+    settings.ageMinMonths,
+    settings.ageMaxMonths
+  ).safeParse({
     parentName: form.get('parent_name'),
     email: form.get('email'),
     phone: form.get('phone'),
@@ -94,8 +99,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     childAge: formatChildAgeMonths(data.childAge),
     desiredStart: data.desiredStart ?? null,
     intent: data.intent,
-    referredBy:
-      data.intent === 'referral' ? (data.referredBy ?? null) : null,
+    referredBy: data.referredBy ?? null,
     message: data.message ?? null,
     source: 'website',
     status: 'new',
@@ -119,7 +123,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       html: `<h2>New website inquiry</h2><p>${lines
         .map((l) => escapeHtml(l))
         .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/${
-        data.intent === 'referral' ? 'referrals' : 'inquiries'
+        data.referredBy ? 'referrals' : 'inquiries'
       }/">Open in admin</a></p>`,
     });
   }
