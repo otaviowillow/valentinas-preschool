@@ -189,6 +189,23 @@ export const settings = sqliteTable('settings', {
   subsidiesAccepted: integer('subsidies_accepted', { mode: 'boolean' })
     .notNull()
     .default(true),
+  holidayScheduleTitle: text('holiday_schedule_title')
+    .notNull()
+    .default('Holiday schedule'),
+  holidayScheduleIntro: text('holiday_schedule_intro')
+    .notNull()
+    .default(
+      'The school will be closed on the following days for holidays and vacation. Tuition is required year-round.'
+    ),
+  ...timestamps,
+});
+
+// School closure dates shown on the tuition FAQ and in family notices.
+export const holidays = sqliteTable('holidays', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  startDate: text('start_date').notNull(), // ISO date (YYYY-MM-DD)
+  endDate: text('end_date'), // ISO date; null = single day
   ...timestamps,
 });
 
@@ -244,6 +261,8 @@ export type Photo = typeof photos.$inferSelect;
 export type NewPhoto = typeof photos.$inferInsert;
 export type Settings = typeof settings.$inferSelect;
 export type NewSettings = typeof settings.$inferInsert;
+export type Holiday = typeof holidays.$inferSelect;
+export type NewHoliday = typeof holidays.$inferInsert;
 export type Employee = typeof employees.$inferSelect;
 export type NewEmployee = typeof employees.$inferInsert;
 export type PayrollEntry = typeof payrollEntries.$inferSelect;

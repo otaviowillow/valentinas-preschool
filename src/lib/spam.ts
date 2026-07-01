@@ -102,7 +102,6 @@ export function detectIntakeSpam(data: InquiryInput): SpamVerdict {
   const name = data.parentName.trim().toLowerCase();
   if (
     name.length >= 3 &&
-    data.intent !== 'referral' &&
     (data.desiredStart?.trim().toLowerCase() === name ||
       data.referredBy?.trim().toLowerCase() === name)
   ) {

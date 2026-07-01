@@ -7,8 +7,10 @@ import PageHero from '../components/PageHero.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import { getSettings } from '../lib/settings';
+import { buildHolidayFaqAnswer, getHolidaySchedule } from '../lib/holidays';
 
 const settings = await getSettings();
+const holidaySchedule = await getHolidaySchedule();
 
 // Tuition figures are office-editable (admin Settings), with site.ts fallback.
 const tuition = {
@@ -27,7 +29,7 @@ const plans = [
   },
   {
     name: settings.fullTimeLabel,
-    price: `from $${settings.weeklyFrom}/wk`,
+    price: 'Contact us',
     note: settings.fullTimeNote,
     featured: true,
   },
@@ -44,7 +46,11 @@ const faqs = [
   },
   {
     q: 'How much is tuition?',
-    a: `Tuition starts at $${tuition.weeklyFrom} per week for full-time (5 days) and varies by schedule. There is a one-time $${tuition.applicationFee} application fee. ${tuition.note}`,
+    a: `Tuition varies by schedule (2, 3, or 5 days). There is a one-time $${tuition.applicationFee} application fee. ${tuition.note}`,
+  },
+  {
+    q: 'What is teacher-to-child ratios?',
+    a: `Our typical teacher-to-child ratio is ${site.facts.ratio}.`,
   },
   {
     q: 'Are meals included?',
@@ -65,6 +71,11 @@ const faqs = [
   {
     q: 'What is enrichment going to cost extra?',
     a: 'Nothing. Spanish, music & dance, yoga, gardening, cooking, and art are all included in tuition.',
+  },
+  {
+    q: 'When is the school closed for holidays?',
+    a: buildHolidayFaqAnswer(holidaySchedule),
+    preline: true,
   },
 ];
 
@@ -119,12 +130,11 @@ const faqSchema = {
 
       <div class="referral">
         <span class="referral__badge">Referral offer</span>
-        <h3>Refer a family, you both win</h3>
+        <h3>Refer a family</h3>
         <p>
-          Know a family who would love it here? When they enroll, your
-          application fee is waived and your first week is free.
+          Refer a family and receive a bonus — please inquire about current offers.
         </p>
-        <a href="/contact/?intent=referral" class="btn btn--primary">Refer a family</a>
+        <a href="/contact/" class="btn btn--primary">Refer a family</a>
       </div>
     </div>
   </section>
@@ -139,7 +149,7 @@ const faqSchema = {
           faqs.map((f) => (
             <details class="faq">
               <summary>{f.q}</summary>
-              <p>{f.a}</p>
+              <p class:list={[{ 'faq__preline': 'preline' in f && f.preline }]}>{f.a}</p>
             </details>
           ))
         }
@@ -266,5 +276,8 @@ const faqSchema = {
   .faq p {
     padding-bottom: 1.1rem;
     margin: 0;
+  }
+  .faq__preline {
+    white-space: pre-line;
   }
 </style>

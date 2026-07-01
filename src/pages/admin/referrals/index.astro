@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { desc, eq, sql } from 'drizzle-orm';
+import { desc, eq, isNotNull, or, sql } from 'drizzle-orm';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import StatusBadge from '../../../components/admin/StatusBadge.astro';
 import { dbFrom, schema } from '../../../db';
@@ -10,7 +10,10 @@ import { formatDate, titleCase } from '../../../lib/format';
 const db = dbFrom();
 const { inquiries, families } = schema;
 
-const referralFilter = eq(inquiries.intent, 'referral');
+const referralFilter = or(
+  isNotNull(inquiries.referredBy),
+  eq(inquiries.intent, 'referral')
+);
 
 const rows = await db
   .select({

@@ -42,7 +42,7 @@ const pillars = [
   },
   {
     title: 'Bilingual: daily Spanish',
-    body: 'Spanish is woven into every day through songs, play, and conversation. Children leave us switching between languages with ease.',
+    body: 'Spanish is woven into every day through songs, play, and conversation. Children build genuine familiarity with a second language.',
     href: '/bilingual/',
     cta: 'Our bilingual day',
   },
@@ -205,7 +205,7 @@ const curriculum = [
           ))
         }
       </div>
-      <p class="text-center" style="margin-top:2.25rem">
+      <p class="curric-cta">
         <a href="/programs/" class="btn btn--ghost">Programs by age</a>
         <a href="/enrichment/" class="btn btn--ghost">Explore enrichment</a>
       </p>
@@ -494,6 +494,14 @@ const curriculum = [
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--color-ink);
+  }
+  .curric-cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem 1rem;
+    margin-top: 2.25rem;
+    text-align: center;
   }
   @media (max-width: 640px) {
     .curric-row {

@@ -6,6 +6,10 @@ import { dbFrom, getEnv, schema } from '../../../db';
 import { announcementInput } from '../../../lib/validation';
 import { addError, addFlash, badRequest, redirectTarget } from '../../../lib/admin';
 import { escapeHtml, sendEmail } from '../../../lib/email';
+import {
+  familyEmailResultMessage,
+  isFamilyEmailReady,
+} from '../../../lib/email-setup';
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   const form = await request.formData();
@@ -27,14 +31,17 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       publishedAt: new Date(),
     });
 
-    // Optional: email families. No-op unless RESEND_API_KEY is set.
-    if (form.get('email') === 'on') {
+    const wantsEmail = form.get('email') === 'on';
+    let recipientCount = 0;
+
+    if (wantsEmail) {
       const env = getEnv();
-      if (env.RESEND_API_KEY) {
+      if (isFamilyEmailReady(env)) {
         const recipients = await recipientEmails(
           db,
           data.audience === 'class' ? (data.classId ?? null) : null
         );
+        recipientCount = recipients.length;
         for (const to of recipients) {
           await sendEmail(env, {
             to,
@@ -46,7 +53,13 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         }
       }
     }
-    return redirect(addFlash(back, 'Announcement posted.'), 303);
+    return redirect(
+      addFlash(
+        back,
+        familyEmailResultMessage(wantsEmail, getEnv(), recipientCount)
+      ),
+      303
+    );
   }
 
   const id = Number(form.get('id'));

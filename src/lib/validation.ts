@@ -2,7 +2,6 @@ import { z } from 'zod';
 import {
   CHILD_STATUSES,
   EMPLOYEE_STATUSES,
-  INQUIRY_INTENTS,
   INQUIRY_STATUSES,
   INVOICE_STATUSES,
   PAY_TYPES,
@@ -107,7 +106,7 @@ export const inquiryInput = z.object({
       )
   ),
   desiredStart: optionalStartDate,
-  intent: z.preprocess(emptyToUndef, z.enum(INQUIRY_INTENTS)).catch('tour'),
+  intent: z.preprocess(emptyToUndef, z.enum(['tour', 'waitlist'])).catch('tour'),
   referredBy: z.preprocess(
     emptyToUndef,
     z
@@ -197,6 +196,31 @@ export const settingsInput = z.object({
   siblingDiscount: boolFromForm,
   subsidiesAccepted: boolFromForm,
 });
+
+export const holidayScheduleInput = z.object({
+  holidayScheduleTitle: requiredStr(200, 'Holiday schedule title is required'),
+  holidayScheduleIntro: requiredStr(2000, 'Holiday schedule intro is required'),
+});
+
+export const holidayInput = z
+  .object({
+    name: requiredStr(120, 'Holiday name is required'),
+    startDate: requiredStr(10, 'Start date is required').refine(
+      (s) => ISO_DATE.test(s),
+      'Enter a valid start date'
+    ),
+    endDate: z.preprocess(
+      emptyToUndef,
+      z
+        .string()
+        .regex(ISO_DATE, 'Enter a valid end date')
+        .optional()
+    ),
+  })
+  .refine(
+    (d) => !d.endDate || d.endDate >= d.startDate,
+    { message: 'End date must be on or after start date', path: ['endDate'] }
+  );
 
 // ---- Team / payroll -------------------------------------------------------
 export const employeeInput = z.object({

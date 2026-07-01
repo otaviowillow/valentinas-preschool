@@ -9,10 +9,12 @@ export function initContactForm() {
   if (!form || form.dataset.validationBound === 'true') return;
   form.dataset.validationBound = 'true';
 
-  const intent = new URLSearchParams(location.search).get('intent');
+  const params = new URLSearchParams(location.search);
+  const intent = params.get('intent');
   const radios = Array.from(
     document.querySelectorAll<HTMLInputElement>('input[name="intent"]')
   );
+  const wasReferred = document.getElementById('was-referred');
   const referredBy = document.querySelector('.referred-by');
   const emailInput = document.getElementById('email');
   const phoneInput = document.getElementById('phone');
@@ -93,8 +95,8 @@ export function initContactForm() {
   }
 
   function syncReferredField() {
-    const selected = radios.find((r) => r.checked)?.value;
-    const showReferral = selected === 'referral';
+    const showReferral =
+      wasReferred instanceof HTMLInputElement && wasReferred.checked;
     if (referredBy instanceof HTMLElement) referredBy.hidden = !showReferral;
     if (referredInput instanceof HTMLInputElement) {
       referredInput.disabled = !showReferral;
@@ -105,7 +107,13 @@ export function initContactForm() {
   if (intent && radios.some((r) => r.value === intent)) {
     radios.forEach((r) => (r.checked = r.value === intent));
   }
-  radios.forEach((r) => r.addEventListener('change', syncReferredField));
+  if (
+    (params.get('referred') === '1' || intent === 'referral') &&
+    wasReferred instanceof HTMLInputElement
+  ) {
+    wasReferred.checked = true;
+  }
+  wasReferred?.addEventListener('change', syncReferredField);
   syncReferredField();
 
   parentInput?.addEventListener('input', syncSubmitState);

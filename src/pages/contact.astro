@@ -124,11 +124,15 @@ const mapQuery = encodeURIComponent(
             <label class="radio"
               ><input type="radio" name="intent" value="waitlist" /> Join the waitlist</label
             >
-            <label class="radio"
-              ><input type="radio" name="intent" value="referral" /> I was referred</label
-            >
           </div>
         </fieldset>
+
+        <div class="field referred-check">
+          <label class="checkbox">
+            <input type="checkbox" id="was-referred" value="1" />
+            I was referred by a family
+          </label>
+        </div>
 
         <div class="field referred-by" hidden>
           <label for="referred">Who referred you?</label>
@@ -260,6 +264,16 @@ const mapQuery = encodeURIComponent(
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
+  }
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .referred-check {
+    margin-top: -0.35rem;
   }
   .field-hint {
     font-size: 0.85rem;

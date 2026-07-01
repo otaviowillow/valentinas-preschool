@@ -46,7 +46,7 @@ const businessSchema = {
   },
   areaServed: site.areasServed,
   founder: { '@type': 'Person', name: site.director },
-  openingHours: 'Mo-Fr 07:30-18:00',
+  openingHours: 'Mo-Fr 08:00-17:30',
   sameAs: [site.social.instagram],
 };
 ---
@@ -96,9 +96,10 @@ const businessSchema = {
     <script>
       import { initContactForm } from '../scripts/contact-form.ts';
       import { initDatePickers } from '../scripts/date-picker.ts';
-      import { bindSamePageNav } from '../scripts/site-nav.ts';
+      import { bindMobileNav, bindSamePageNav } from '../scripts/site-nav.ts';
 
       bindSamePageNav();
+      bindMobileNav();
 
       function initPageScripts() {
         initContactForm();

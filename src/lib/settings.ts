@@ -18,6 +18,8 @@ export interface SiteSettings {
   fullTimeNote: string;
   siblingDiscount: boolean;
   subsidiesAccepted: boolean;
+  holidayScheduleTitle: string;
+  holidayScheduleIntro: string;
 }
 
 export function defaultSettings(): SiteSettings {
@@ -32,6 +34,9 @@ export function defaultSettings(): SiteSettings {
     fullTimeNote: '5 days / week, full day',
     siblingDiscount: site.tuition.siblingDiscount,
     subsidiesAccepted: site.tuition.subsidiesAccepted,
+    holidayScheduleTitle: 'Holiday schedule for October 2024 – October 2025',
+    holidayScheduleIntro:
+      'The school will be closed on the following days for holidays and vacation. Tuition is required year-round.',
   };
 }
 
@@ -54,6 +59,10 @@ export async function getSettings(): Promise<SiteSettings> {
       fullTimeNote: row.fullTimeNote,
       siblingDiscount: row.siblingDiscount,
       subsidiesAccepted: row.subsidiesAccepted,
+      holidayScheduleTitle:
+        row.holidayScheduleTitle ?? defaultSettings().holidayScheduleTitle,
+      holidayScheduleIntro:
+        row.holidayScheduleIntro ?? defaultSettings().holidayScheduleIntro,
     };
   } catch {
     return defaultSettings();

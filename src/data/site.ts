@@ -34,7 +34,7 @@ export const site = {
     capacity: 12,
     ratio: '1:4',
     ageRange: '15 months – 5 years', // NOTE: sources conflict (15mo–5yr / 17mo–6yr). Confirm.
-    hours: '7:30 AM – 6:00 PM, Monday–Friday',
+    hours: '8:00 AM – 5:30 PM, Monday–Friday',
     license: '197417501',
     accreditation: 'NAEYC Member',
     languages: 'English & Spanish',

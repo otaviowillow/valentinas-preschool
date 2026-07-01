@@ -3,15 +3,38 @@ export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSettings } from '../../../lib/settings';
+import { formatHolidayDates } from '../../../lib/holidays';
+import { asc } from 'drizzle-orm';
+import { dbFrom, schema } from '../../../db';
 
 const s = await getSettings();
+const db = dbFrom();
+let holidayRows: {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string | null;
+}[] = [];
+try {
+  holidayRows = await db
+    .select({
+      id: schema.holidays.id,
+      name: schema.holidays.name,
+      startDate: schema.holidays.startDate,
+      endDate: schema.holidays.endDate,
+    })
+    .from(schema.holidays)
+    .orderBy(asc(schema.holidays.startDate));
+} catch {
+  /* table not migrated yet */
+}
 ---
 
 <AdminLayout title="Site settings" active="settings">
   <div class="admin-head">
     <div>
       <h1>Site settings</h1>
-      <p>Capacity and the tuition pricing shown on the public site.</p>
+      <p>Capacity, tuition pricing, and the holiday schedule on the public site.</p>
     </div>
   </div>
 
@@ -63,7 +86,7 @@ const s = await getSettings();
         <input id="fullTimeNote" name="fullTimeNote" value={s.fullTimeNote} />
       </div>
       <p class="muted" style="margin:0;font-size:0.85rem;">
-        Full-time price displays as “from ${s.weeklyFrom}/wk”.
+        Full-time pricing is shown as “Contact us” on the public tuition page.
       </p>
 
       <div class="admin-field">
@@ -78,4 +101,127 @@ const s = await getSettings();
       <div><button type="submit" class="admin-btn">Save settings</button></div>
     </form>
   </section>
+
+  <section class="admin-panel">
+    <h2 class="panel-title">Holiday schedule</h2>
+    <p class="muted panel-lead">
+      Shown in the tuition FAQ. Post the same schedule as a family announcement when it changes.
+    </p>
+
+    <form method="POST" action="/api/admin/holidays/" class="admin-form holiday-schedule">
+      <input type="hidden" name="_redirect" value="/admin/settings/" />
+      <div class="admin-field">
+        <label for="holiday-email" class="admin-toggle">
+          <input type="checkbox" id="holiday-email" name="email" role="switch" />
+          <span class="admin-toggle__track" aria-hidden="true"></span>
+          <span class="admin-toggle__label">Email families when sending notice</span>
+        </label>
+      </div>
+      <div class="admin-field">
+        <label for="holidayScheduleTitle">Schedule title</label>
+        <input
+          id="holidayScheduleTitle"
+          name="holidayScheduleTitle"
+          value={s.holidayScheduleTitle}
+          required
+        />
+      </div>
+      <div class="admin-field">
+        <label for="holidayScheduleIntro">Intro text</label>
+        <textarea id="holidayScheduleIntro" name="holidayScheduleIntro" rows="3" required>{s.holidayScheduleIntro}</textarea>
+      </div>
+      <div class="holiday-schedule__actions">
+        <button type="submit" name="_action" value="update_schedule" class="admin-btn">
+          Save schedule
+        </button>
+        <button type="submit" name="_action" value="send_notice" class="admin-btn admin-btn--ghost">
+          Send holiday notice
+        </button>
+      </div>
+    </form>
+
+    <form method="POST" action="/api/admin/holidays/" class="admin-form holiday-add">
+      <input type="hidden" name="_action" value="add" />
+      <input type="hidden" name="_redirect" value="/admin/settings/" />
+      <div class="grid2">
+        <div class="admin-field">
+          <label for="holidayName">Holiday name</label>
+          <input id="holidayName" name="name" required placeholder="e.g. Labor Day" />
+        </div>
+        <div class="admin-field">
+          <label for="holidayStart">Start date</label>
+          <input id="holidayStart" name="startDate" type="date" required />
+        </div>
+      </div>
+      <div class="admin-field">
+        <label for="holidayEnd">End date (optional, for multi-day closures)</label>
+        <input id="holidayEnd" name="endDate" type="date" />
+      </div>
+      <div><button type="submit" class="admin-btn admin-btn--ghost">Add holiday</button></div>
+    </form>
+
+    {
+      holidayRows.length === 0 ? (
+        <p class="muted holiday-empty">
+          No closure dates yet. Run the latest migration, or add one above.
+        </p>
+      ) : (
+        <table class="admin-table holiday-table">
+          <thead>
+            <tr>
+              <th>Holiday</th>
+              <th>Dates</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {holidayRows.map((h) => (
+              <tr>
+                <td>{h.name}</td>
+                <td>{formatHolidayDates(h.startDate, h.endDate)}</td>
+                <td>
+                  <form method="POST" action="/api/admin/holidays/" onsubmit="return confirm('Remove this holiday?');">
+                    <input type="hidden" name="_action" value="delete" />
+                    <input type="hidden" name="id" value={h.id} />
+                    <input type="hidden" name="_redirect" value="/admin/settings/" />
+                    <button class="admin-btn admin-btn--danger admin-btn--sm">Remove</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </section>
 </AdminLayout>
+
+<style>
+  .panel-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+  }
+  .panel-lead {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+  }
+  .holiday-schedule {
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-surface-2);
+  }
+  .holiday-schedule__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .holiday-add {
+    margin-bottom: 1.25rem;
+  }
+  .holiday-table {
+    margin-bottom: 0;
+  }
+  .holiday-empty {
+    margin: 0 0 1.25rem;
+  }
+</style>

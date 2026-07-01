@@ -94,8 +94,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     childAge: formatChildAgeMonths(data.childAge),
     desiredStart: data.desiredStart ?? null,
     intent: data.intent,
-    referredBy:
-      data.intent === 'referral' ? (data.referredBy ?? null) : null,
+    referredBy: data.referredBy ?? null,
     message: data.message ?? null,
     source: 'website',
     status: 'new',
@@ -119,7 +118,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       html: `<h2>New website inquiry</h2><p>${lines
         .map((l) => escapeHtml(l))
         .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/${
-        data.intent === 'referral' ? 'referrals' : 'inquiries'
+        data.referredBy ? 'referrals' : 'inquiries'
       }/">Open in admin</a></p>`,
     });
   }

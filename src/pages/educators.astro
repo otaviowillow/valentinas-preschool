@@ -19,15 +19,15 @@ const team = [
     img: null,
   },
   {
-    name: 'Milagros B. (“Mila”)',
-    role: 'Teacher’s Assistant',
-    bio: 'A dedicated part of our family for nearly a decade. With a background as a social worker in Peru and 15+ years assisting in Los Angeles classrooms, Mila is the backbone of our daily routines, and our students’ well-being.',
+    name: 'Amanda',
+    role: 'Teacher',
+    bio: 'Amanda recently earned her bachelor’s degree in Psychology and is currently pursuing her Master’s in Applied Behavior Analysis (ABA). She has supported young children in both preschool and behavioral therapy settings, and loves building meaningful connections that help each child feel confident, valued, and excited to explore. At Valentina’s Preschool, she strives to create a warm, nurturing, and engaging environment where every child feels safe, supported, and loved as they learn and grow.',
     img: null,
   },
   {
-    name: 'Slavica P.',
-    role: 'Art Teacher',
-    bio: 'Trained at an art school in Belgrade, Serbia, with an MS in Anthropology and experience as a kindergarten art educator. Slavica helps children turn their ideas into beautiful art, an artistic dimension that makes our school special.',
+    name: 'Milagros B. (“Mila”)',
+    role: 'Teacher’s Assistant',
+    bio: 'A dedicated part of our family for nearly a decade. With a background as a social worker in Peru and 15+ years assisting in Los Angeles classrooms, Mila is the backbone of our daily routines, and our students’ well-being.',
     img: null,
   },
 ];
@@ -58,7 +58,7 @@ const personSchema = {
     <div class="container stack-lg">
       {
         team.map((m) => (
-          <article class:list={['member grid grid-2', { 'member--text': !m.img }]}>
+          <article class:list={['member', { 'member--text': !m.img }]}>
             {m.img && <Img name={m.img as any} ratio="1/1" />}
             <div class="stack">
               <p class="eyebrow">{m.role}</p>
@@ -82,24 +82,27 @@ const personSchema = {
     margin-top: clamp(2.5rem, 5vw, 4rem);
   }
   .member {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    grid-template-columns: 0.7fr 1.3fr;
+    text-align: center;
+    max-width: 42rem;
+    margin-inline: auto;
+  }
+  .member .stack {
+    align-items: center;
   }
   .member--text {
-    grid-template-columns: 1fr;
+    max-width: 40rem;
   }
   .member h2 {
     margin-top: 0.2rem;
   }
   .member :global(.img) {
     max-width: 18rem;
+    margin-inline: auto;
   }
   .member:first-child :global(.img) {
     object-position: center 78%;
-  }
-  @media (max-width: 880px) {
-    .member {
-      grid-template-columns: 1fr;
-    }
   }
 </style>
