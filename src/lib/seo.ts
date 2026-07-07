@@ -85,3 +85,25 @@ export function faqPageSchema(faqs: FaqItem[]) {
     })),
   };
 }
+
+/** Book spotlight on the homepage — helps Google connect the school and Valentina's guide. */
+export function bookSchema(coverUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    name: site.book.title,
+    alternateName: "Valentina's Book",
+    author: {
+      '@type': 'Person',
+      name: site.book.author,
+      jobTitle: 'Founder & Director',
+      worksFor: { '@type': 'Preschool', name: site.name, url: site.url },
+    },
+    description: site.book.blurb,
+    url: site.book.href,
+    image: coverUrl,
+    inLanguage: 'en-US',
+    genre: 'Parenting',
+    about: ['Early childhood', 'Parenting', 'Child development'],
+  };
+}

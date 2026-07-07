@@ -5,48 +5,55 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container footer-grid">
-    <div class="footer-brand">
-      <span class="brand__name">Valentina’s Preschool</span>
-      <p class="muted footer-tag">
-        A boutique, Reggio-inspired preschool in Culver City / West LA with a whole lot of heart.
-      </p>
-      <p class="footer-badges">
-        <span class="pill">Licensed #{site.facts.license}</span>
-        <span class="pill">{site.facts.accreditation}</span>
-      </p>
-    </div>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="brand__name">Valentina’s Preschool</span>
+        <p class="muted footer-tag">
+          A boutique, Reggio-inspired preschool in Culver City / West LA with a whole lot of heart.
+        </p>
+        <p class="footer-badges">
+          <span class="pill">Licensed #{site.facts.license}</span>
+          <span class="pill">{site.facts.accreditation}</span>
+        </p>
+      </div>
 
-    {
-      Object.entries(footerLinks).map(([group, links]) => (
-        <nav class="footer-col" aria-label={group}>
-          <h2 class="footer-col__title">{group}</h2>
-          <ul>
-            {links.map((l) => (
-              <li>
-                <a href={l.href}>{l.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ))
-    }
+      {
+        Object.entries(footerLinks).map(([group, links]) => (
+          <nav class="footer-col" aria-label={group}>
+            <h2 class="footer-col__title">{group}</h2>
+            <ul>
+              {links.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
 
-    <div class="footer-col footer-contact">
-      <h2 class="footer-col__title">Visit Us</h2>
-      <address>
-        {nap.streetAddress}<br />
-        {nap.addressLocality}, {nap.addressRegion}
-        {nap.postalCode}<br />
-        <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a><br />
-        <span class="muted">{site.facts.hours}</span>
-      </address>
-      <a
-        href={site.social.instagram}
-        class="footer-ig"
-        rel="me noopener"
-        target="_blank">{site.social.instagramHandle}</a
-      >
+      <div class="footer-col footer-contact">
+        <h2 class="footer-col__title">Visit Us</h2>
+        <address>
+          {nap.streetAddress}<br />
+          {nap.addressLocality}, {nap.addressRegion}
+          {nap.postalCode}<br />
+          <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a><br />
+          <span class="muted">{site.facts.hours}</span>
+        </address>
+        <a
+          href={site.social.instagram}
+          class="footer-ig"
+          rel="me noopener"
+          target="_blank">{site.social.instagramHandle}</a
+        >
+      </div>
+
+      <div class="footer-col footer-book">
+        <h2 class="footer-col__title">Valentina's Book</h2>
+        <a href="/#valentinas-book">{site.book.title}</a>
+      </div>
     </div>
   </div>
 
@@ -68,8 +75,12 @@ const year = new Date().getFullYear();
   }
   .footer-grid {
     display: grid;
-    grid-template-columns: 1.6fr repeat(3, 1fr);
-    gap: 2.5rem;
+    grid-template-columns: minmax(11rem, 1.45fr) repeat(3, minmax(7.5rem, 1fr)) minmax(
+        10rem,
+        1.05fr
+      ) minmax(8.5rem, 0.95fr);
+    gap: 2rem 2.25rem;
+    align-items: start;
   }
   .footer-brand .brand__name {
     font-family: var(--font-heading);
@@ -88,12 +99,14 @@ const year = new Date().getFullYear();
     gap: 0.5rem;
   }
   .footer-col__title {
+    margin: 0 0 0.9rem;
     font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.3;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    font-size: 0.78rem;
     color: #ffd87a;
-    margin-bottom: 0.9rem;
   }
   .footer-col ul {
     list-style: none;
@@ -120,6 +133,11 @@ const year = new Date().getFullYear();
   .footer-contact .muted {
     color: rgba(251, 247, 240, 0.85);
   }
+  .footer-book a {
+    display: inline-block;
+    line-height: 1.45;
+    max-width: 12rem;
+  }
   .footer-ig {
     display: inline-block;
     margin-top: 0.8rem;
@@ -139,7 +157,12 @@ const year = new Date().getFullYear();
     color: rgba(251, 247, 240, 0.85);
     font-size: 0.85rem;
   }
-  @media (max-width: 880px) {
+  @media (max-width: 1024px) {
+    .footer-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 720px) {
     .footer-grid {
       grid-template-columns: 1fr 1fr;
       gap: 2rem;
