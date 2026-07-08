@@ -65,6 +65,15 @@ export const site = {
     href: 'https://businessrate.com/',
   },
 
+  book: {
+    title: 'The Real-Life Parenting Guide',
+    subtitle: 'Practical Tips for Raising Happy, Confident Kids (Ages 0–5)',
+    author: 'Valentina Gloginic',
+    href: 'https://www.amazon.com/dp/B0H57F4LBV',
+    blurb:
+      'A practical parenting guide to early childhood, drawn from years in the classroom and life as a parent of two, offering both perspectives.',
+  },
+
   social: {
     instagram: 'https://www.instagram.com/valentinaspreschool/',
     instagramHandle: '@valentinaspreschool',

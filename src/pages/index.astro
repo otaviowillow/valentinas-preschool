@@ -2,24 +2,28 @@
 export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Img from '../components/Img.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { site } from '../data/site';
 import { testimonials } from '../data/testimonials';
 import { images } from '../data/images';
 import { formatAgeRangeLabel, getSettings } from '../lib/settings';
-import { siteDescription } from '../lib/seo';
+import { siteDescription, bookSchema } from '../lib/seo';
 
 import iconAcademic from '../assets/photos/academic.png';
 import iconArts from '../assets/photos/arts.png';
 import iconPhysical from '../assets/photos/physical.png';
 import iconLife from '../assets/photos/life.png';
 import iconSocial from '../assets/photos/social.png';
+import bookCover from '../assets/book-cover.png';
 
 const settings = await getSettings();
 const ageRange = formatAgeRangeLabel(settings.ageMinMonths, settings.ageMaxMonths);
 const metaDescription = siteDescription(settings);
+const optimizedBookCover = await getImage({ src: bookCover, width: 480, format: 'webp' });
+const bookCoverUrl = new URL(optimizedBookCover.src, site.url).href;
+const homepageSchema = [bookSchema(bookCoverUrl)];
 
 const featured = testimonials.slice(0, 3);
 
@@ -92,7 +96,7 @@ const curriculum = [
 
 ---
 
-<BaseLayout description={metaDescription}>
+<BaseLayout description={metaDescription} schema={homepageSchema}>
   <!-- ===================== FOLD 1 — HERO ===================== -->
   <section class="hero">
     <Image
@@ -217,6 +221,51 @@ const curriculum = [
         <a href="/programs/" class="btn btn--ghost">Programs by age</a>
         <a href="/enrichment/" class="btn btn--ghost">Explore enrichment</a>
       </p>
+    </div>
+  </section>
+
+  <!-- ===================== BOOK ===================== -->
+  <section class="section book-spotlight" id="valentinas-book" aria-labelledby="book-heading">
+    <div class="container">
+      <aside class="book-spotlight__banner">
+        <a
+          href={site.book.href}
+          class="book-spotlight__cover-link"
+          rel="noopener noreferrer"
+          target="_blank"
+          aria-label={`View ${site.book.title} on Amazon`}
+        >
+          <span class="book-spotlight__cover-frame">
+            <Image
+              src={bookCover}
+              alt={`${site.book.title} — early childhood parenting guide by ${site.book.author}`}
+              class="book-spotlight__cover"
+              widths={[240, 320, 400, 480]}
+              sizes="(max-width: 640px) 200px, 240px"
+              format="webp"
+              quality={88}
+              loading="lazy"
+            />
+          </span>
+          <span class="book-spotlight__cover-hint">View on Amazon</span>
+        </a>
+        <div class="book-spotlight__copy">
+          <p class="book-spotlight__eyebrow">Valentina's Book</p>
+          <h2 id="book-heading" class="book-spotlight__title">{site.book.title}</h2>
+          <p class="book-spotlight__subtitle muted">{site.book.subtitle}</p>
+          <p class="book-spotlight__lead">{site.book.blurb}</p>
+          <p class="book-spotlight__cta">
+            <a
+              href={site.book.href}
+              class="btn btn--primary"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              View on Amazon
+            </a>
+          </p>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -457,6 +506,115 @@ const curriculum = [
     color: var(--color-secondary-dark);
   }
 
+  .book-spotlight {
+    background: var(--color-surface);
+    padding-block: clamp(2.75rem, 6vw, 4.5rem);
+  }
+  .book-spotlight__banner {
+    display: grid;
+    grid-template-columns: minmax(10rem, 13.5rem) 1fr;
+    gap: clamp(1.75rem, 4vw, 2.75rem);
+    align-items: center;
+    max-width: 52rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 3.5vw, 2.25rem);
+    background: linear-gradient(
+      128deg,
+      var(--color-peach) 0%,
+      var(--color-butter) 58%,
+      var(--color-white) 100%
+    );
+    border: 1px solid rgba(238, 108, 69, 0.22);
+    border-left: 6px solid var(--color-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+  .book-spotlight__cover-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius);
+    transition: transform 0.2s ease;
+  }
+  .book-spotlight__cover-link:hover,
+  .book-spotlight__cover-link:focus-visible {
+    transform: translateY(-2px);
+  }
+  .book-spotlight__cover-link:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+  }
+  .book-spotlight__cover-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border-radius: var(--radius-lg);
+    transition: transform 0.2s ease;
+  }
+  .book-spotlight__cover-link:hover .book-spotlight__cover-frame,
+  .book-spotlight__cover-link:focus-visible .book-spotlight__cover-frame {
+    transform: scale(1.02);
+  }
+  .book-spotlight__cover {
+    display: block;
+    width: 100%;
+    max-width: 11.5rem;
+    height: auto;
+    border-radius: calc(var(--radius-lg) - 6px);
+    box-shadow: 0 8px 24px rgba(46, 42, 38, 0.16);
+  }
+  .book-spotlight__cover-hint {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-secondary-dark);
+  }
+  .book-spotlight__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0;
+  }
+  .book-spotlight__eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-secondary-dark);
+  }
+  .book-spotlight__title {
+    margin: 0 0 0.85rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-primary-dark);
+  }
+  .book-spotlight__subtitle {
+    margin: 0 0 1.35rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  .book-spotlight__lead {
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    line-height: 1.55;
+    color: var(--color-ink);
+    margin: 0;
+    max-width: 32rem;
+  }
+  .book-spotlight__cta {
+    margin: 1.75rem 0 0;
+  }
+
   .curriculum {
     display: flex;
     flex-direction: column;
@@ -560,6 +718,19 @@ const curriculum = [
     }
     .ig-grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .book-spotlight__banner {
+      grid-template-columns: 1fr;
+      max-width: 24rem;
+    }
+    .book-spotlight__cover-link {
+      max-width: 14rem;
+      margin-inline: auto;
+    }
+    .book-spotlight__copy {
+      align-items: flex-start;
     }
   }
 </style>

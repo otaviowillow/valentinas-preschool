@@ -11,6 +11,7 @@ const team = [
     role: 'Founder & Director',
     bio: 'The heart of the school, with over a decade of dedication to our community. Valentina holds a Bachelor’s Degree and an On-Site Supervisor / Master Teacher certificate from California Teacher Credentialing, and is also a music, dance, and yoga teacher for young children. Her passion is positive discipline that helps children build genuine emotional intelligence, and she keeps sharpening her craft with cutting-edge child-development courses.',
     img: 'eduValentina',
+    bookAuthor: true,
   },
   {
     name: 'Ashley A.',
@@ -63,7 +64,20 @@ const personSchema = {
             <div class="stack">
               <p class="eyebrow">{m.role}</p>
               <h2>{m.name}</h2>
-              <p>{m.bio}</p>
+              <p>
+                {m.bio}
+                {
+                  m.bookAuthor && (
+                    <>
+                      {' '}She is also the author of{' '}
+                      <a class="member__book-link" href={site.book.href} rel="noopener noreferrer" target="_blank">
+                        {site.book.title}
+                      </a>
+                      .
+                    </>
+                  )
+                }
+              </p>
             </div>
           </article>
         ))
@@ -97,6 +111,14 @@ const personSchema = {
   }
   .member h2 {
     margin-top: 0.2rem;
+  }
+  .member__book-link {
+    font-weight: 700;
+    color: var(--color-secondary-dark);
+    text-decoration: none;
+  }
+  .member__book-link:hover {
+    text-decoration: underline;
   }
   .member :global(.img) {
     max-width: 18rem;
