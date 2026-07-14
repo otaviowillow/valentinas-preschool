@@ -127,4 +127,27 @@ const personSchema = {
   .member:first-child :global(.img) {
     object-position: center 78%;
   }
+
+  @media (min-width: 881px) {
+    .member {
+      flex-direction: row;
+      align-items: flex-start;
+      text-align: left;
+      gap: clamp(1.5rem, 3vw, 2.5rem);
+      max-width: none;
+      margin-inline: 0;
+    }
+    .member .stack {
+      align-items: flex-start;
+      flex: 1;
+    }
+    .member--text {
+      max-width: 48rem;
+    }
+    .member :global(.img) {
+      flex-shrink: 0;
+      width: min(18rem, 30%);
+      margin-inline: 0;
+    }
+  }
 </style>
