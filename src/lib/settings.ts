@@ -65,7 +65,7 @@ export function defaultSettings(): SiteSettings {
     referralEnabled: true,
     referralTitle: 'Refer a family, you both win',
     referralBody:
-      'Know a family who would love it here? When they enroll, your application fee is waived and your first week is free.',
+      'Know a family who would love it here? When they enroll you earn cash, please contact us to find out current offers.',
     holidayScheduleTitle: 'Holiday schedule for October 2024 – October 2025',
     holidayScheduleIntro:
       'The school will be closed on the following days for holidays and vacation. Tuition is required year-round.',
