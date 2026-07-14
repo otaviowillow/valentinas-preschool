@@ -50,6 +50,13 @@
       "when": 1782200000001,
       "tag": "0006_holidays",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1782200000002,
+      "tag": "0007_referral_copy",
+      "breakpoints": true
     }
   ]
 }

@@ -213,7 +213,7 @@ export const settings = sqliteTable('settings', {
   referralBody: text('referral_body')
     .notNull()
     .default(
-      'Know a family who would love it here? When they enroll, your application fee is waived and your first week is free.'
+      'Know a family who would love it here? When they enroll you earn cash, please contact us to find out current offers.'
     ),
   holidayScheduleTitle: text('holiday_schedule_title')
     .notNull()
