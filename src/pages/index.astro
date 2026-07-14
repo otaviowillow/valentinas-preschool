@@ -121,12 +121,14 @@ const curriculum = [
             <small>{site.award.by} · {site.facts.accreditation}</small>
           </span>
         </a>
-        <h1>Reggio-Inspired Preschool in Culver City &amp; West LA</h1>
-        <p class="hero-tagline">{site.tagline}</p>
-        <p class="lead">
+        <h1>Childhood is not a race. Every child develops at their own pace.</h1>
+        <p class="lead lead--desktop">
           A boutique preschool and toddler program with <strong>daily Spanish</strong>,
-          enrichment-rich curriculum, and <strong>nutritious meals</strong> included — for
+          enrichment-rich curriculum, and <strong>nutritious meals</strong> included for
           ages {ageRange}.
+        </p>
+        <p class="lead lead--mobile">
+          Daily Spanish, enrichment, and meals included for ages {ageRange}.
         </p>
         <div class="hero__actions">
           <a href="/contact/" class="btn btn--primary btn--lg">Book a Tour</a>
@@ -240,8 +242,8 @@ const curriculum = [
               src={bookCover}
               alt={`${site.book.title} — early childhood parenting guide by ${site.book.author}`}
               class="book-spotlight__cover"
-              widths={[240, 320, 400, 480]}
-              sizes="(max-width: 640px) 200px, 240px"
+              widths={[160, 200, 240]}
+              sizes="(max-width: 640px) 112px, 144px"
               format="webp"
               quality={88}
               loading="lazy"
@@ -253,7 +255,6 @@ const curriculum = [
           <p class="book-spotlight__eyebrow">Valentina's Book</p>
           <h2 id="book-heading" class="book-spotlight__title">{site.book.title}</h2>
           <p class="book-spotlight__subtitle muted">{site.book.subtitle}</p>
-          <p class="book-spotlight__lead">{site.book.blurb}</p>
           <p class="book-spotlight__cta">
             <a
               href={site.book.href}
@@ -275,7 +276,7 @@ const curriculum = [
       <div class="section-head center">
         <p class="eyebrow eyebrow--rated">
           <span class="eyebrow__stars" aria-hidden="true">★★★★★</span>
-          Reviews from real families
+          <span class="eyebrow__label">Reviews from real families</span>
         </p>
         <h2>“No child gets left behind.”</h2>
       </div>
@@ -379,14 +380,11 @@ const curriculum = [
   .hero h1 {
     color: var(--color-white);
     text-wrap: balance;
+    font-size: clamp(1.65rem, 4.5vw, 2.75rem);
+    line-height: 1.15;
   }
-  .hero-tagline {
-    font-family: var(--font-heading);
-    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
-    font-style: italic;
-    color: rgba(255, 253, 247, 0.92);
-    margin: 0;
-    max-width: 28rem;
+  .lead--mobile {
+    display: none;
   }
   .hero .lead {
     color: rgba(255, 253, 247, 0.92);
@@ -460,6 +458,10 @@ const curriculum = [
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+  .eyebrow__label {
+    white-space: nowrap;
   }
   .eyebrow__stars {
     color: var(--color-accent);
@@ -505,8 +507,8 @@ const curriculum = [
   }
   .book-spotlight__banner {
     display: grid;
-    grid-template-columns: minmax(10rem, 13.5rem) 1fr;
-    gap: clamp(1.75rem, 4vw, 2.75rem);
+    grid-template-columns: minmax(7rem, 9rem) 1fr;
+    gap: clamp(1.25rem, 3vw, 2rem);
     align-items: center;
     max-width: 52rem;
     margin-inline: auto;
@@ -557,17 +559,19 @@ const curriculum = [
   .book-spotlight__cover {
     display: block;
     width: 100%;
-    max-width: 11.5rem;
+    max-width: 9rem;
     height: auto;
     border-radius: calc(var(--radius-lg) - 6px);
     box-shadow: 0 8px 24px rgba(46, 42, 38, 0.16);
   }
   .book-spotlight__cover-hint {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     color: var(--color-secondary-dark);
+    white-space: nowrap;
+    text-align: center;
   }
   .book-spotlight__copy {
     display: flex;
@@ -593,19 +597,17 @@ const curriculum = [
     color: var(--color-primary-dark);
   }
   .book-spotlight__subtitle {
-    margin: 0 0 1.35rem;
+    margin: 0 0 1rem;
     font-size: 0.95rem;
     line-height: 1.4;
   }
-  .book-spotlight__lead {
-    font-size: clamp(1.05rem, 2vw, 1.2rem);
-    line-height: 1.55;
-    color: var(--color-ink);
-    margin: 0;
-    max-width: 32rem;
-  }
   .book-spotlight__cta {
-    margin: 1.75rem 0 0;
+    margin: 1rem 0 0;
+  }
+  .book-spotlight__cta .btn {
+    white-space: nowrap;
+    width: max-content;
+    max-width: 100%;
   }
 
   .curriculum {
@@ -716,18 +718,71 @@ const curriculum = [
     .ig-grid {
       grid-template-columns: repeat(2, 1fr);
     }
+    .hero {
+      min-height: clamp(28rem, 62vh, 38rem);
+    }
+    .hero__bg {
+      object-position: 82% center;
+      transform: none;
+    }
+    .hero__scrim {
+      background: linear-gradient(
+          100deg,
+          rgba(28, 50, 35, 0.92) 0%,
+          rgba(28, 50, 35, 0.78) 48%,
+          rgba(28, 50, 35, 0.35) 78%,
+          rgba(28, 50, 35, 0.15) 100%
+        ),
+        linear-gradient(0deg, rgba(28, 50, 35, 0.4), transparent 45%);
+    }
+    .lead--desktop {
+      display: none;
+    }
+    .lead--mobile {
+      display: block;
+    }
   }
   @media (max-width: 640px) {
+    .eyebrow--rated {
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .eyebrow__label {
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
     .book-spotlight__banner {
-      grid-template-columns: 1fr;
-      max-width: 24rem;
+      grid-template-columns: minmax(7.5rem, auto) 1fr;
+      max-width: none;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.15rem 1.25rem;
     }
     .book-spotlight__cover-link {
-      max-width: 14rem;
-      margin-inline: auto;
+      max-width: none;
+      min-width: 7.5rem;
+      margin-inline: 0;
+    }
+    .book-spotlight__cover {
+      max-width: 7rem;
     }
     .book-spotlight__copy {
       align-items: flex-start;
+    }
+    .book-spotlight__title {
+      font-size: 1.15rem;
+      margin-bottom: 0.45rem;
+    }
+    .book-spotlight__subtitle {
+      margin-bottom: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .book-spotlight__cta {
+      margin-top: 0.65rem;
+    }
+    .book-spotlight__cta .btn {
+      font-size: 0.88rem;
+      padding: 0.8em 1.15em;
     }
   }
 </style>
