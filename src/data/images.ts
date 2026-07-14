@@ -26,6 +26,21 @@ import classroomCircle from '../assets/photos/classroom-circle.jpg';
 import cooking from '../assets/photos/cooking.jpg';
 import baking from '../assets/photos/baking.jpg';
 import gardening from '../assets/photos/gardening.jpg';
+import heroBackground from '../assets/photos/hero-background.jpg';
+import programPreschoolPhoto from '../assets/photos/program-preschool.jpg';
+import igGallery1 from '../assets/photos/ig-gallery-1.jpg';
+import igGallery2 from '../assets/photos/ig-gallery-2.jpg';
+import valentina1 from '../assets/photos/valentina-1.png';
+import igGallery4 from '../assets/photos/ig-gallery-4.jpg';
+import igGallery5 from '../assets/photos/ig-gallery-5.jpg';
+import igGallery6 from '../assets/photos/ig-gallery-6.jpg';
+import philosophyInterior from '../assets/photos/philosophy-interior.jpg';
+import enrichCooking from '../assets/photos/enrich-cooking.jpg';
+import enrichGardening from '../assets/photos/enrich-gardening.jpg';
+import enrichYoga from '../assets/photos/enrich-yoga.jpg';
+import enrichMusic from '../assets/photos/enrich-music.jpg';
+import enrichSpanishPhoto from '../assets/photos/enrich-spanish.jpg';
+import enrichArtPhoto from '../assets/photos/enrich-art.jpg';
 import eduAshleyPhoto from '../assets/photos/edu-ashley.jpg';
 import eduMilaPhoto from '../assets/photos/edu-mila.jpg';
 import eduSlavicaPhoto from '../assets/photos/edu-slavica.jpg';
@@ -43,26 +58,50 @@ export interface SiteImage {
 
 export const images = {
   hero: {
-    alt: 'Children learning and playing together at Valentina’s Preschool in Culver City',
+    alt: 'Preschoolers and a teacher preparing food together in a bright classroom at Valentina’s Preschool',
     keywords: 'happy children in a bright classroom',
-    asset: classroomGroup,
+    asset: heroBackground,
   },
 
   // Instagram grid (home, fold 4)
-  igGarden: { alt: 'Children gardening outdoors with little tools', keywords: 'kids gardening', asset: gardening },
+  igCooking: {
+    alt: 'A teacher and preschoolers preparing snacks together around a classroom table',
+    keywords: 'kids cooking',
+    asset: igGallery2,
+  },
+  igGarden: {
+    alt: 'Three preschoolers working together to plant seeds in an outdoor planter with a hand trowel',
+    keywords: 'kids gardening',
+    asset: igGallery4,
+  },
+  igOutdoor: {
+    alt: 'A teacher and children practicing yoga in child’s pose on mats in the outdoor play area',
+    keywords: 'kids yoga outdoors',
+    asset: igGallery5,
+  },
+  igCircle: {
+    alt: 'A warm preschool playroom with a terracotta sofa, child-sized tables, and a red play kitchen on hardwood floors',
+    keywords: 'preschool interior',
+    asset: valentina1,
+  },
+  igYoga: {
+    alt: 'A preschooler practicing knife skills by cutting carrots at a wooden table',
+    keywords: 'kids cooking / fine motor',
+    asset: igGallery1,
+  },
+  igArt: {
+    alt: 'Preschoolers dancing with colorful scarves on the sunny outdoor playground',
+    keywords: 'child creative project',
+    asset: igGallery6,
+  },
   igPaint: { alt: 'Children making art together', keywords: 'child painting', asset: classroomPaint },
-  igYoga: { alt: 'Children being active and learning together', keywords: 'kids movement / yoga', asset: classroomActive },
-  igCooking: { alt: 'A cooking project: measuring and mixing', keywords: 'kids cooking', asset: cooking },
-  igCircle: { alt: 'Circle time learning together', keywords: 'kids circle time', asset: classroomCircle },
-  igArt: { alt: 'A child with a hands-on baking project', keywords: 'child creative project', asset: baking },
-  igOutdoor: { alt: 'Outdoor play and exploration', keywords: 'children playing outside', asset: gardening },
   igReading: { alt: 'A learning moment in the classroom', keywords: 'child reading', asset: classroomGroup },
 
   // Spoke pages
   philosophyObserve: {
-    alt: 'A teacher engaging with children at their level',
+    alt: 'A bright, home-like preschool classroom with child-sized wooden furniture and learning materials on open shelves',
     keywords: 'teacher with children',
-    asset: classroomCircle,
+    asset: philosophyInterior,
   },
   emotional: {
     alt: 'Children learning to share and cooperate with gentle guidance',
@@ -74,15 +113,50 @@ export const images = {
     keywords: 'kids singing / circle time',
     asset: classroomGroup,
   },
+  enrichment: {
+    alt: 'A teacher and preschoolers preparing snacks together around a classroom table',
+    keywords: 'kids enrichment activities',
+    asset: igGallery2,
+  },
+  enrichMusic: {
+    alt: 'Preschoolers waving colorful scarves during an outdoor music and dance activity',
+    keywords: 'kids music and dance',
+    asset: enrichMusic,
+  },
+  enrichYoga: {
+    alt: 'An instructor leading preschoolers in tree pose during outdoor yoga',
+    keywords: 'kids yoga',
+    asset: enrichYoga,
+  },
+  enrichGardening: {
+    alt: 'Children and a teacher planting seeds together in an outdoor planter',
+    keywords: 'kids gardening',
+    asset: enrichGardening,
+  },
+  enrichCooking: {
+    alt: 'Two preschoolers practicing food prep by cutting carrots at a wooden table',
+    keywords: 'kids cooking',
+    asset: enrichCooking,
+  },
+  enrichSpanish: {
+    alt: 'Colorful Spanish learning flashcards spread across a preschool wooden table',
+    keywords: 'bilingual preschool / Spanish',
+    asset: enrichSpanishPhoto,
+  },
+  enrichArt: {
+    alt: 'Art supplies and children’s craft projects in the preschool art atelier',
+    keywords: 'kids art and crafts',
+    asset: enrichArtPhoto,
+  },
   programToddler: {
     alt: 'Young children at play and discovery',
     keywords: 'toddlers playing',
     asset: baking,
   },
   programPreschool: {
-    alt: 'Preschoolers learning together, ages 3 to 5 years',
+    alt: 'Preschoolers moving and playing with colorful scarves on the outdoor playground',
     keywords: 'preschoolers in classroom',
-    asset: classroomPaint,
+    asset: programPreschoolPhoto,
   },
 
   // Educator portraits (placeholder headshots — swap for real staff photos)

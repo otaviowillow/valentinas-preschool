@@ -1,38 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import Img from '../components/Img.astro';
 import CtaBand from '../components/CtaBand.astro';
 
 const programs = [
   {
-    icon: '🗣️',
     name: 'Spanish language',
     body: 'A second language boosts verbal communication, math and reasoning, and cultural awareness. We practice it daily through song, play, and conversation.',
+    img: 'enrichSpanish',
   },
   {
-    icon: '🎵',
     name: 'Music & dance',
     body: 'Music supports motor skills, language, literacy, and memory. Dancing lets children practice self-expression while their bodies and minds learn to work together.',
+    img: 'enrichMusic',
   },
   {
-    icon: '🧘',
-    name: 'Yoga',
-    body: 'Yoga builds body awareness and teaches children to manage stress through breathing and movement, growing concentration, confidence, and a positive self-image.',
-  },
-  {
-    icon: '🌱',
-    name: 'Organic gardening',
-    body: 'Planting seeds, watering, and watching them grow gives children purpose and responsibility. The self-esteem of eating a tomato you grew yourself is priceless.',
-  },
-  {
-    icon: '🍳',
-    name: 'Cooking',
-    body: 'A basic life skill that sneaks in early math, counting eggs, measuring water, while inviting children to explore with their senses and try new tastes.',
-  },
-  {
-    icon: '🎨',
     name: 'Art atelier',
     body: 'Led by our art teacher, children create beautiful pieces that let them express their talents and see their “hundred languages” come to life.',
+    img: 'enrichArt',
+  },
+  {
+    name: 'Yoga',
+    body: 'Yoga builds body awareness and teaches children to manage stress through breathing and movement, growing concentration, confidence, and a positive self-image.',
+    img: 'enrichYoga',
+  },
+  {
+    name: 'Cooking',
+    body: 'A basic life skill that sneaks in early math, counting eggs, measuring water, while inviting children to explore with their senses and try new tastes.',
+    img: 'enrichCooking',
+  },
+  {
+    name: 'Organic gardening',
+    body: 'Planting seeds, watering, and watching them grow gives children purpose and responsibility. The self-esteem of eating a tomato you grew yourself is priceless.',
+    img: 'enrichGardening',
   },
 ];
 ---
@@ -48,15 +49,33 @@ const programs = [
   />
 
   <section class="section section--cream">
+    <div class="container grid grid-2" style="align-items:center">
+      <Img name="enrichment" ratio="4/3" />
+      <div class="stack">
+        <h2>Hands-on learning, every day</h2>
+        <p>
+          Yoga, music, gardening, cooking, art, and Spanish aren’t bolted on as
+          after-school extras. They’re woven into the rhythm of a typical morning
+          so children build real skills through play, movement, and making.
+        </p>
+        <p>
+          From measuring ingredients at the snack table to planting seeds in the
+          garden, enrichment here means doing, not watching.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sand">
     <div class="container grid grid-3">
       {
         programs.map((p) => (
-          <article class="card stack">
-            <span class="enrich-icon" aria-hidden="true">
-              {p.icon}
-            </span>
-            <h3>{p.name}</h3>
-            <p>{p.body}</p>
+          <article class="card enrich-card">
+            <div class="enrich-card__media">
+              <Img name={p.img as any} ratio="4/3" width={400} loading={p.img === 'enrichSpanish' ? 'eager' : 'lazy'} />
+              <h3 class="enrich-card__title">{p.name}</h3>
+            </div>
+            <p class="enrich-card__body">{p.body}</p>
           </article>
         ))
       }
@@ -67,8 +86,43 @@ const programs = [
 </BaseLayout>
 
 <style>
-  .enrich-icon {
-    font-size: 2rem;
-    line-height: 1;
+  .enrich-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .enrich-card__media {
+    position: relative;
+  }
+  .enrich-card__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(28, 50, 35, 0.82) 0%,
+      rgba(28, 50, 35, 0.35) 38%,
+      transparent 68%
+    );
+    pointer-events: none;
+  }
+  .enrich-card__title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    margin: 0;
+    padding: 1.35rem 1.25rem 1rem;
+    color: var(--color-white);
+    font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .enrich-card__body {
+    margin: 0;
+    padding: clamp(1rem, 2vw, 1.25rem);
+  }
+  .enrich-card__media :global(.img) {
+    border-radius: 0;
   }
 </style>

@@ -33,7 +33,7 @@ export const site = {
     'Mid-City',
     'Palms',
     'Mar Vista',
-    '90034',
+    'Greater Los Angeles area',
   ],
 
   // Verified facts (some from third-party listings — confirm with client).
