@@ -6,7 +6,7 @@ export const site = {
   name: "Valentina's Preschool",
   shortName: 'Valentina’s',
   tagline:
-    'Childhood is not a race. Every child develops at their own pace and grace.',
+    'Childhood is not a race. Every child develops at their own pace.',
   description:
     'A boutique, Reggio-inspired preschool in Culver City / West LA. Bilingual (daily Spanish), meals included.',
   // TODO: switch to https://www.valentinaspreschool.com once the domain is live.
