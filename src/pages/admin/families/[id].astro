@@ -52,7 +52,7 @@ const self = `/admin/families/${id}/`;
       kids.length === 0 ? (
         <p class="muted">No children linked yet. Add one below.</p>
       ) : (
-        <table class="admin-table">
+        <table class="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>Name</th>
@@ -66,18 +66,18 @@ const self = `/admin/families/${id}/`;
           <tbody>
             {kids.map((c) => (
               <tr>
-                <td>
+                <td data-primary>
                   <a href={`/admin/children/${c.id}/`}>
                     {c.firstName} {c.lastName ?? ''}
                   </a>
                 </td>
-                <td>{ageFromDob(c.dob)}</td>
-                <td>
+                <td data-label="Age">{ageFromDob(c.dob)}</td>
+                <td data-label="Status">
                   <StatusBadge status={c.status} />
                 </td>
-                <td>{c.classId ? (classMap.get(c.classId) ?? '—') : '—'}</td>
-                <td>{c.startDate ?? '—'}</td>
-                <td>
+                <td data-label="Class">{c.classId ? (classMap.get(c.classId) ?? '—') : '—'}</td>
+                <td data-label="Start">{c.startDate ?? '—'}</td>
+                <td data-action>
                   <a href={`/admin/children/${c.id}/`}>Edit</a>
                 </td>
               </tr>

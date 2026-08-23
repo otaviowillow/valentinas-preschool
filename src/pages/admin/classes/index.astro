@@ -38,7 +38,7 @@ const ageLabel = (min: number | null, max: number | null) => {
       classList.length === 0 ? (
         <p class="admin-empty">No classes yet. Create one below.</p>
       ) : (
-        <table class="admin-table">
+        <table class="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>Class</th>
@@ -55,21 +55,21 @@ const ageLabel = (min: number | null, max: number | null) => {
               const open = Math.max(0, c.capacity - filled);
               return (
                 <tr>
-                  <td>
+                  <td data-primary>
                     <span
                       style={`display:inline-block;width:.7rem;height:.7rem;border-radius:50%;margin-right:.4rem;background:${c.color ?? 'var(--color-primary)'}`}
                     />
                     <a href={`/admin/classes/${c.id}/`}>{c.name}</a>
                   </td>
-                  <td>{ageLabel(c.ageMinMonths, c.ageMaxMonths)}</td>
-                  <td>{c.capacity}</td>
-                  <td>{filled}</td>
-                  <td>
+                  <td data-label="Ages">{ageLabel(c.ageMinMonths, c.ageMaxMonths)}</td>
+                  <td data-label="Capacity">{c.capacity}</td>
+                  <td data-label="Enrolled">{filled}</td>
+                  <td data-label="Open seats">
                     <strong style={open === 0 ? 'color:#a51f1f' : ''}>
                       {open}
                     </strong>
                   </td>
-                  <td>
+                  <td data-action>
                     <a href={`/admin/classes/${c.id}/`}>Edit</a>
                   </td>
                 </tr>

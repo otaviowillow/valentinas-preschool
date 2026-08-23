@@ -138,7 +138,7 @@ const ic = {
               contact form.
             </p>
           ) : (
-            <table class="admin-table">
+            <table class="admin-table admin-table--cards">
               <thead>
                 <tr>
                   <th>Parent</th>
@@ -152,14 +152,14 @@ const ic = {
               <tbody>
                 {recent.map((row) => (
                   <tr>
-                    <td>{row.parentName}</td>
-                    <td>{row.childAge ?? '—'}</td>
-                    <td>{row.desiredStart ?? '—'}</td>
-                    <td>
+                    <td data-primary>{row.parentName}</td>
+                    <td data-label="Child age">{row.childAge ?? '—'}</td>
+                    <td data-label="Desired start">{row.desiredStart ?? '—'}</td>
+                    <td data-label="Status">
                       <StatusBadge status={row.status} />
                     </td>
-                    <td>{formatDate(row.createdAt)}</td>
-                    <td>
+                    <td data-label="Received">{formatDate(row.createdAt)}</td>
+                    <td data-action>
                       <a href={`/admin/inquiries/${row.id}/`}>Open</a>
                     </td>
                   </tr>

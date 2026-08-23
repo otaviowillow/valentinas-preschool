@@ -32,7 +32,7 @@ const countMap = new Map(counts.map((r) => [r.familyId, r.c]));
       families.length === 0 ? (
         <p class="admin-empty">No families yet. Add one below.</p>
       ) : (
-        <table class="admin-table">
+        <table class="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>Family</th>
@@ -46,14 +46,14 @@ const countMap = new Map(counts.map((r) => [r.familyId, r.c]));
           <tbody>
             {families.map((f) => (
               <tr>
-                <td>
+                <td data-primary>
                   <a href={`/admin/families/${f.id}/`}>{f.primaryContactName}</a>
                 </td>
-                <td>{f.email ?? '—'}</td>
-                <td>{f.phone ?? '—'}</td>
-                <td>{countMap.get(f.id) ?? 0}</td>
-                <td>{formatDate(f.createdAt)}</td>
-                <td>
+                <td data-label="Email" data-wide>{f.email ?? '—'}</td>
+                <td data-label="Phone">{f.phone ?? '—'}</td>
+                <td data-label="Children">{countMap.get(f.id) ?? 0}</td>
+                <td data-label="Added">{formatDate(f.createdAt)}</td>
+                <td data-action>
                   <a href={`/admin/families/${f.id}/`}>Open</a>
                 </td>
               </tr>

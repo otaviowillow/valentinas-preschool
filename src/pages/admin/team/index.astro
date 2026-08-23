@@ -29,7 +29,7 @@ const rate = (cents: number, type: string) =>
       team.length === 0 ? (
         <p class="admin-empty">No team members yet. Add one below.</p>
       ) : (
-        <table class="admin-table">
+        <table class="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>Name</th>
@@ -42,17 +42,17 @@ const rate = (cents: number, type: string) =>
           <tbody>
             {team.map((m) => (
               <tr>
-                <td>
+                <td data-primary>
                   <a href={`/admin/team/${m.id}/`}>{m.name}</a>
                 </td>
-                <td>{m.role ?? '—'}</td>
-                <td>{rate(m.payRateCents, m.payType)}</td>
-                <td>
+                <td data-label="Role">{m.role ?? '—'}</td>
+                <td data-label="Pay">{rate(m.payRateCents, m.payType)}</td>
+                <td data-label="Status">
                   <span class={`badge badge--${m.status === 'active' ? 'enrolled' : 'withdrawn'}`}>
                     {m.status}
                   </span>
                 </td>
-                <td>
+                <td data-action>
                   <a href={`/admin/team/${m.id}/`}>Edit</a>
                 </td>
               </tr>

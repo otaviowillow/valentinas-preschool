@@ -338,6 +338,20 @@
   margin-bottom: 1.5rem;
   overflow-x: auto;
 }
+.admin-panel:has(.admin-table:not(.admin-table--cards)) {
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--color-primary-light) transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-panel:has(.admin-table:not(.admin-table--cards))::-webkit-scrollbar {
+  height: 0.65rem;
+}
+.admin-panel:has(.admin-table:not(.admin-table--cards))::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border: 2px solid var(--admin-card);
+  border-radius: var(--radius-pill);
+}
 .admin-panel h2 {
   font-size: 1.2rem;
   margin: 0 0 1rem;
@@ -789,8 +803,78 @@
   .admin-nav a { font-size: 0.85rem; }
   .admin-form .grid2,
   .grid-2col { grid-template-columns: 1fr; }
-  .admin-table:has(thead) {
+  .admin-table:not(.admin-table--cards):has(thead) {
     min-width: 40rem;
+  }
+  .admin-table:not(.admin-table--cards) th:first-child,
+  .admin-table:not(.admin-table--cards) td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--admin-card);
+  }
+  .admin-table:not(.admin-table--cards) tbody tr:hover td:first-child {
+    background: var(--color-mint);
+  }
+  .admin-table--cards,
+  .admin-table--cards tbody,
+  .admin-table--cards tr,
+  .admin-table--cards td {
+    display: block;
+    width: 100%;
+  }
+  .admin-table--cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .admin-table--cards tbody {
+    display: grid;
+    gap: 0.8rem;
+  }
+  .admin-table--cards tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+    padding: 1rem;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: var(--admin-card);
+  }
+  .admin-table--cards td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+  .admin-table--cards td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.15rem;
+    color: var(--color-ink-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .admin-table--cards td[data-primary],
+  .admin-table--cards td[data-wide],
+  .admin-table--cards td[data-action] {
+    grid-column: 1 / -1;
+  }
+  .admin-table--cards td[data-primary] {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .admin-table--cards td[data-action] {
+    padding-top: 0.15rem;
+  }
+  .admin-table--cards td[data-primary]::before,
+  .admin-table--cards td[data-action]::before {
+    display: none;
   }
   .name-color-row {
     flex-wrap: wrap;

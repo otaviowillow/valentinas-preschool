@@ -71,7 +71,7 @@ const [stats] = await db
           <a href="/tuition/">the tuition referral link</a>.
         </p>
       ) : (
-        <table class="admin-table">
+        <table class="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>New family</th>
@@ -85,22 +85,22 @@ const [stats] = await db
           <tbody>
             {rows.map(({ inquiry: r, referrerName, referrerId }) => (
               <tr>
-                <td>
+                <td data-primary>
                   <a href={`/admin/inquiries/${r.id}/`}>{r.parentName}</a>
                 </td>
-                <td>{r.referredBy ?? '—'}</td>
-                <td>
+                <td data-label="Says referred by">{r.referredBy ?? '—'}</td>
+                <td data-label="Linked referrer">
                   {referrerId ? (
                     <a href={`/admin/families/${referrerId}/`}>{referrerName}</a>
                   ) : (
                     <span class="badge badge--offered">Needs link</span>
                   )}
                 </td>
-                <td>
+                <td data-label="Status">
                   <StatusBadge status={r.status} />
                 </td>
-                <td>{formatDate(r.createdAt)}</td>
-                <td>
+                <td data-label="Received">{formatDate(r.createdAt)}</td>
+                <td data-action>
                   <a href={`/admin/inquiries/${r.id}/`}>Manage</a>
                 </td>
               </tr>
