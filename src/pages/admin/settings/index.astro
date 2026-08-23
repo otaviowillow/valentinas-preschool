@@ -209,7 +209,7 @@ try {
           No closure dates yet. Run the latest migration, or add one above.
         </p>
       ) : (
-        <table class="admin-table holiday-table">
+        <table class="admin-table admin-table--cards holiday-table">
           <thead>
             <tr>
               <th>Holiday</th>
@@ -220,9 +220,9 @@ try {
           <tbody>
             {holidayRows.map((h) => (
               <tr>
-                <td>{h.name}</td>
-                <td>{formatHolidayDates(h.startDate, h.endDate)}</td>
-                <td>
+                <td data-primary>{h.name}</td>
+                <td data-label="Dates">{formatHolidayDates(h.startDate, h.endDate)}</td>
+                <td data-action>
                   <form method="POST" action="/api/admin/holidays/" onsubmit="return confirm('Remove this holiday?');">
                     <input type="hidden" name="_action" value="delete" />
                     <input type="hidden" name="id" value={h.id} />
