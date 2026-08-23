@@ -76,7 +76,7 @@ const self = `/admin/inquiries/${id}/`;
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items:start;" class="inquiry-grid">
+  <div class="admin-dash">
     <section class="admin-panel">
       <h2>Details</h2>
       <table class="admin-table">
@@ -360,9 +360,4 @@ const self = `/admin/inquiries/${id}/`;
     border-top: none;
   }
 
-  @media (max-width: 860px) {
-    .inquiry-grid {
-      grid-template-columns: 1fr !important;
-    }
-  }
 </style>

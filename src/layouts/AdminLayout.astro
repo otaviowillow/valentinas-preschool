@@ -81,6 +81,11 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/admin.webmanifest" />
+    <meta name="theme-color" content="#4a7c59" />
+    <meta name="apple-mobile-web-app-title" content="Valentina Admin" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>{title} · Admin · Valentina's Preschool</title>
     <ClientRouter />
   </head>
@@ -92,38 +97,46 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
           <span class="admin-brand__name">Valentina's Preschool</span>
           <span class="admin-brand__tag">Admin</span>
         </a>
-        <nav class="admin-nav">
-          {
-            navGroups.map((group) => (
-              <>
-                {group.label && (
-                  <div class="admin-nav__group">{group.label}</div>
-                )}
-                {group.items.map((item) => (
-                  <a
-                    href={item.href}
-                    aria-current={active === item.key ? 'page' : undefined}
-                  >
-                    <span class="ico" set:html={icons[item.key]} />
-                    {item.label}
-                  </a>
-                ))}
-              </>
-            ))
-          }
-        </nav>
-        <div class="admin-sidebar__foot">
-          <div class="admin-profile">
-            <div class="admin-profile__avatar">{initial}</div>
-            <div class="admin-profile__meta">
-              <div class="admin-profile__name">{adminEmail || 'Signed in'}</div>
-              <div class="admin-profile__links">
-                <a href="/cdn-cgi/access/logout">Sign out</a> ·
-                <a href="/">View site</a>
+        <details class="admin-menu" open>
+          <summary class="admin-menu__toggle">Menu</summary>
+          <nav class="admin-nav">
+            {
+              navGroups.map((group) => (
+                <>
+                  {group.label && (
+                    <div class="admin-nav__group">{group.label}</div>
+                  )}
+                  {group.items.map((item) => (
+                    <a
+                      href={item.href}
+                      aria-current={active === item.key ? 'page' : undefined}
+                    >
+                      <span class="ico" set:html={icons[item.key]} />
+                      {item.label}
+                    </a>
+                  ))}
+                </>
+              ))
+            }
+          </nav>
+          <div class="admin-sidebar__foot">
+            <div class="admin-profile">
+              <div class="admin-profile__avatar">{initial}</div>
+              <div class="admin-profile__meta">
+                <div class="admin-profile__name">{adminEmail || 'Signed in'}</div>
+                <div class="admin-profile__links">
+                  <a href="/cdn-cgi/access/logout">Sign out</a> ·
+                  <a href="/">View site</a>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </details>
+        <script is:inline>
+          if (window.matchMedia('(max-width: 800px)').matches) {
+            document.querySelector('.admin-menu')?.removeAttribute('open');
+          }
+        </script>
       </aside>
 
       <main class="admin-main" transition:animate="fade">
@@ -145,6 +158,9 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
           if (active) link.setAttribute('aria-current', 'page');
           else link.removeAttribute('aria-current');
         });
+        if (window.matchMedia('(max-width: 800px)').matches) {
+          document.querySelector('.admin-menu')?.removeAttribute('open');
+        }
       }
 
       document.addEventListener('astro:page-load', syncAdminNav);
