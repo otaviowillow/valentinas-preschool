@@ -93,6 +93,18 @@
   align-self: center;
 }
 
+.admin-menu {
+  display: contents;
+}
+.admin-menu > summary {
+  display: none;
+}
+.admin-menu > .admin-nav {
+  display: flex;
+}
+.admin-menu > .admin-sidebar__foot {
+  display: block;
+}
 .admin-nav {
   display: flex;
   flex-direction: column;
@@ -199,6 +211,7 @@
   padding: 0.5rem 0.5rem 2rem;
   max-width: 1320px;
   width: 100%;
+  min-width: 0;
 }
 .admin-head {
   display: flex;
@@ -323,11 +336,18 @@
   padding: clamp(1.1rem, 2vw, 1.6rem);
   box-shadow: var(--admin-shadow);
   margin-bottom: 1.5rem;
+  overflow-x: auto;
 }
 .admin-panel h2 {
   font-size: 1.2rem;
   margin: 0 0 1rem;
   color: var(--color-primary-dark);
+}
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
 }
 
 /* ----------------------------- dashboard rail --------------------------- */
@@ -727,13 +747,52 @@
     position: static;
     height: auto;
   }
-  .admin-brand { padding-bottom: 0.6rem; }
-  .admin-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
+  .admin-brand { padding-bottom: 0.4rem; }
+  .admin-menu {
+    display: block;
+  }
+  .admin-menu > .admin-menu__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 0.7rem;
+    border-radius: 12px;
+    background: var(--color-mint);
+    color: var(--color-primary-dark);
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  .admin-menu__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .admin-menu__toggle::after {
+    content: '+';
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .admin-menu[open] .admin-menu__toggle::after {
+    content: '−';
+  }
+  .admin-menu > .admin-nav,
+  .admin-menu > .admin-sidebar__foot {
+    display: none;
+  }
+  .admin-menu[open] > .admin-nav {
+    display: flex;
+    margin-top: 0.35rem;
     overflow: visible;
   }
-  .admin-nav__group { width: 100%; margin: 0.5rem 0.7rem 0.1rem; }
+  .admin-menu[open] > .admin-sidebar__foot {
+    display: block;
+  }
   .admin-nav a { font-size: 0.85rem; }
-  .admin-form .grid2 { grid-template-columns: 1fr; }
+  .admin-form .grid2,
+  .grid-2col { grid-template-columns: 1fr; }
+  .admin-table:has(thead) {
+    min-width: 40rem;
+  }
+  .name-color-row {
+    flex-wrap: wrap;
+  }
 }
