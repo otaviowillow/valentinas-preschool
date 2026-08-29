@@ -48,9 +48,9 @@ export const site = {
     mealsIncluded: true,
   },
 
-  // Tuition — figures from a third-party listing; CONFIRM before publishing.
+  // Tuition.
   tuition: {
-    weeklyFrom: 350,
+    weeklyFrom: 500,
     applicationFee: 300,
     siblingDiscount: true,
     subsidiesAccepted: true,

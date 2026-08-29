@@ -47,7 +47,7 @@ export function tuitionFaqs(settings: SiteSettings): FaqItem[] {
     },
     {
       q: 'How much is tuition?',
-      a: `Tuition starts at $${settings.weeklyFrom} per week for full-time (5 days) and varies by schedule. There is a one-time $${settings.applicationFee} application fee. ${settings.tuitionNote}`,
+      a: `Tuition is $${settings.weeklyFrom} per week for full-time (5 days). There is a one-time $${settings.applicationFee} application fee. ${settings.tuitionNote}`,
     },
     {
       q: 'Are meals included?',

@@ -179,7 +179,7 @@ export const recurringInvoices = sqliteTable('recurring_invoices', {
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   capacity: integer('capacity').notNull().default(12),
-  weeklyFrom: integer('weekly_from').notNull().default(350),
+  weeklyFrom: integer('weekly_from').notNull().default(500),
   applicationFee: integer('application_fee').notNull().default(300),
   partTimeLabel: text('part_time_label').notNull().default('Part-time'),
   partTimePrice: text('part_time_price').notNull().default('Contact us'),
