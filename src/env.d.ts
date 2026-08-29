@@ -14,8 +14,8 @@ declare namespace Cloudflare {
     SESSION: import('@cloudflare/workers-types').KVNamespace;
 
     // ---- Secrets (set with `wrangler secret put <NAME>`; never commit) ------
-    /** Resend API key for transactional/announcement email (optional). */
-    RESEND_API_KEY?: string;
+    /** Yahoo-generated app password for SMTP sending (optional). */
+    YAHOO_APP_PASSWORD?: string;
     /** Where new-inquiry notifications are sent (optional). */
     NOTIFY_EMAIL?: string;
     /** Cloudflare Access application audience (AUD) tag for JWT verification. */
@@ -23,6 +23,20 @@ declare namespace Cloudflare {
     /** Cloudflare Access team domain, e.g. https://<team>.cloudflareaccess.com */
     ACCESS_TEAM_DOMAIN?: string;
   }
+}
+
+declare module 'cloudflare:sockets' {
+  interface Socket {
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+    opened: Promise<void>;
+    close(): Promise<void>;
+  }
+
+  export function connect(
+    address: { hostname: string; port: number },
+    options?: { secureTransport?: 'off' | 'on' | 'starttls' }
+  ): Socket;
 }
 
 type Env = Cloudflare.Env;

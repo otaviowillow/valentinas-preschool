@@ -1,12 +1,17 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { eq, isNotNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { dbFrom, getEnv, schema } from '../../../db';
 import { buildHolidayNoticeBody, getHolidaySchedule } from '../../../lib/holidays';
 import { holidayInput, holidayScheduleInput } from '../../../lib/validation';
 import { addError, addFlash, badRequest, redirectTarget } from '../../../lib/admin';
 import { escapeHtml, sendEmail } from '../../../lib/email';
+import {
+  sendAnnouncementEmails,
+  type AnnouncementEmailSummary,
+} from '../../../lib/announcements';
+import { getAnnouncementRecipientEmails } from '../../../lib/announcement-recipients';
 import {
   holidayNoticeResultMessage,
   isFamilyEmailReady,
@@ -82,30 +87,30 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     });
 
     const wantsEmail = form.get('email') === 'on';
-    let recipientCount = 0;
+    let summary: AnnouncementEmailSummary = { attempted: 0, sent: 0, failed: 0 };
 
     if (wantsEmail) {
       const env = getEnv();
       if (isFamilyEmailReady(env)) {
-        const recipients = await familyEmails(db);
-        recipientCount = recipients.length;
-        for (const to of recipients) {
-          await sendEmail(env, {
+        const recipients = await getAnnouncementRecipientEmails(db, null);
+        summary = await sendAnnouncementEmails(recipients, (to) =>
+          sendEmail(env, {
             to,
             subject: title,
             html: `<h2>${escapeHtml(title)}</h2><p>${escapeHtml(body).replace(
               /\n/g,
               '<br>'
             )}</p>`,
-          });
-        }
+            text: `${title}\n\n${body}`,
+          })
+        );
       }
     }
 
     return redirect(
       addFlash(
         back,
-        holidayNoticeResultMessage(wantsEmail, getEnv(), recipientCount)
+        holidayNoticeResultMessage(wantsEmail, getEnv(), summary)
       ),
       303
     );
@@ -113,13 +118,3 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
   return badRequest('Unknown action');
 };
-
-async function familyEmails(
-  db: ReturnType<typeof dbFrom>
-): Promise<string[]> {
-  const rows = await db
-    .select({ email: schema.families.email })
-    .from(schema.families)
-    .where(isNotNull(schema.families.email));
-  return [...new Set(rows.map((r) => r.email).filter((v): v is string => !!v))];
-}

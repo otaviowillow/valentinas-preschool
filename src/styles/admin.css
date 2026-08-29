@@ -99,11 +99,8 @@
 .admin-menu > summary {
   display: none;
 }
-.admin-menu > .admin-nav {
-  display: flex;
-}
-.admin-menu > .admin-sidebar__foot {
-  display: block;
+.admin-menu__panel {
+  display: contents;
 }
 .admin-nav {
   display: flex;
@@ -212,6 +209,7 @@
   max-width: 1320px;
   width: 100%;
   min-width: 0;
+  position: relative;
 }
 .admin-head {
   display: flex;
@@ -661,14 +659,38 @@
   background: var(--admin-card);
 }
 
+.admin-flashes {
+  position: absolute;
+  z-index: 20;
+  top: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  gap: 0.5rem;
+}
 .admin-flash {
   background: #d7f0db;
   color: #2c6b40;
   border: 1px solid #2c6b40;
   border-radius: var(--radius);
   padding: 0.7rem 1rem;
-  margin-bottom: 1rem;
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.admin-flash button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.1rem 0.25rem;
 }
 .admin-flash--error {
   background: #fbdcd6;
@@ -758,47 +780,91 @@
     gap: 0.85rem;
   }
   .admin-sidebar {
-    position: static;
-    height: auto;
+    position: relative;
+    top: auto;
+    z-index: 30;
+    height: 4rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 18px;
+    flex-direction: row;
+    align-items: center;
   }
-  .admin-brand { padding-bottom: 0.4rem; }
+  .admin-brand {
+    padding: 0;
+    margin: 0;
+  }
+  .admin-brand img {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+  .admin-brand__name,
+  .admin-brand__tag {
+    display: none;
+  }
   .admin-menu {
     display: block;
+    margin-left: auto;
   }
   .admin-menu > .admin-menu__toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 0.7rem;
-    border-radius: 12px;
-    background: var(--color-mint);
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
     color: var(--color-primary-dark);
-    font-weight: 800;
     cursor: pointer;
     list-style: none;
   }
+  .admin-menu__toggle span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .admin-menu__toggle svg {
+    width: 1.75rem;
+    height: 1.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .admin-menu[open] > .admin-menu__toggle {
+    background: var(--color-mint);
+  }
+  .admin-menu__panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    padding: 0.65rem;
+    border: 1px solid var(--admin-line);
+    border-radius: 16px;
+    background: var(--admin-card);
+    box-shadow: var(--admin-shadow);
+  }
+  .admin-menu[open] > .admin-menu__panel {
+    display: block;
+  }
+  .admin-menu[open] .admin-nav {
+    display: flex;
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+  }
+  .admin-menu[open] .admin-sidebar__foot {
+    display: block;
+  }
   .admin-menu__toggle::-webkit-details-marker {
     display: none;
-  }
-  .admin-menu__toggle::after {
-    content: '+';
-    font-size: 1.25rem;
-    line-height: 1;
-  }
-  .admin-menu[open] .admin-menu__toggle::after {
-    content: '−';
-  }
-  .admin-menu > .admin-nav,
-  .admin-menu > .admin-sidebar__foot {
-    display: none;
-  }
-  .admin-menu[open] > .admin-nav {
-    display: flex;
-    margin-top: 0.35rem;
-    overflow: visible;
-  }
-  .admin-menu[open] > .admin-sidebar__foot {
-    display: block;
   }
   .admin-nav a { font-size: 0.85rem; }
   .admin-form .grid2,

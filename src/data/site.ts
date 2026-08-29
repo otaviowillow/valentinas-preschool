@@ -23,7 +23,7 @@ export const site = {
     addressCountry: 'US',
     telephoneDisplay: '(310) 839-9147',
     telephoneHref: '+13108399147',
-    email: '', // TODO: confirm a contact email with client
+    email: 'vanjagloginic@yahoo.com',
   },
 
   // Geo areas to target in copy/SEO (not the postal NAP).
@@ -48,9 +48,9 @@ export const site = {
     mealsIncluded: true,
   },
 
-  // Tuition — figures from a third-party listing; CONFIRM before publishing.
+  // Tuition.
   tuition: {
-    weeklyFrom: 350,
+    weeklyFrom: 500,
     applicationFee: 300,
     siblingDiscount: true,
     subsidiesAccepted: true,

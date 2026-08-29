@@ -186,8 +186,7 @@ to the two Cloudflare gives you.
 3. **Award badge** — clean (non-"SAMPLE") BusinessRate "Top 3 2026" image, and
    confirm she's OK with the "Mid-City LA" geo label.
 4. **Confirm facts:** director name spelling (Valentina Gloginic), age range
-   (sources conflict: 15mo–5yr vs 17mo–6yr), ~$350/wk + $300 app-fee pricing,
-   and a **contact email** (`nap.email` is still blank in `site.ts`).
+   (sources conflict: 15mo–5yr vs 17mo–6yr), and tuition details.
 5. **Google Business Profile access** — to update the URL + run the reviews engine.
 6. **Staff roster** — confirm current educators (is "Angelica" still on staff?).
 7. **Logo** — approve the hand-lettered wordmark direction (or have us generate concepts).
@@ -1043,7 +1042,7 @@ Phase 2 is intentionally deferred; v1 ships first.
 8. ✅ **Domain** — `valentinaspreschool.com` set in `astro.config.mjs` (client to
    purchase + point DNS).
 9. **Social links** (Yelp, Facebook, etc.) for footer.
-10. **Contact email** — still blank (`nap.email` in `site.ts`).
+10. ✅ **Contact email** — `vanjagloginic@yahoo.com`.
 
 ---
 
@@ -1780,12 +1779,22 @@ Then in the **Zero Trust dashboard → Access → Applications**, add a self-hos
 app covering `valentinaspreschool.com/admin*` and `/api/admin*`, with an
 allow policy listing the staff email(s).
 
+## Email
+
+`vanjagloginic@yahoo.com` is the public contact, inquiry destination, automated
+sender, and reply address. Automated mail connects directly to Yahoo SMTP over
+TLS using a Yahoo-generated app password.
+
 ## Secrets (never committed)
 
-Set as Worker secrets (`npx wrangler secret put NAME`) — all optional:
+Set as Worker secrets (`npx wrangler secret put NAME`):
 
-- `RESEND_API_KEY` — enables announcement + new-inquiry emails (Resend).
-- `NOTIFY_EMAIL` — where new-inquiry notifications are sent.
+- `YAHOO_APP_PASSWORD` — required for announcements and inquiry notifications.
+- `NOTIFY_EMAIL` — set to `vanjagloginic@yahoo.com`.
+
+The admin Communications page sends operational notices only to currently
+enrolled families. Yahoo personal accounts are not suitable for promotional
+campaigns or large mailing lists.
 
 ## Deploy
 

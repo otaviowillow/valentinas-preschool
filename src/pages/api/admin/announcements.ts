@@ -1,15 +1,33 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { eq, isNotNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { dbFrom, getEnv, schema } from '../../../db';
 import { announcementInput } from '../../../lib/validation';
 import { addError, addFlash, badRequest, redirectTarget } from '../../../lib/admin';
-import { escapeHtml, sendEmail } from '../../../lib/email';
+import { CONTACT_EMAIL, escapeHtml, sendEmail } from '../../../lib/email';
+import {
+  sendAnnouncementEmails,
+  type AnnouncementEmailSummary,
+} from '../../../lib/announcements';
 import {
   familyEmailResultMessage,
   isFamilyEmailReady,
 } from '../../../lib/email-setup';
+import { getAnnouncementRecipientEmails } from '../../../lib/announcement-recipients';
+
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const MAX_TOTAL_ATTACHMENT_BYTES = 15 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+]);
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   const form = await request.formData();
@@ -23,6 +41,26 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       return redirect(addError(back, 'Check the announcement.'), 303);
     }
     const data = parsed.data;
+    const attachedFiles = form
+      .getAll('attachment')
+      .filter((value): value is File => value instanceof File && value.size > 0);
+
+    if (attachedFiles.some((file) => file.size > MAX_ATTACHMENT_BYTES)) {
+      return redirect(addError(back, 'An attachment is too large (max 10 MB each).'), 303);
+    }
+    if (
+      attachedFiles.reduce((total, file) => total + file.size, 0) >
+      MAX_TOTAL_ATTACHMENT_BYTES
+    ) {
+      return redirect(addError(back, 'Attachments exceed the 15 MB total limit.'), 303);
+    }
+    if (attachedFiles.some((file) => !ALLOWED_ATTACHMENT_TYPES.has(file.type))) {
+      return redirect(
+        addError(back, 'Attach an image, PDF, Word document, or text file.'),
+        303
+      );
+    }
+
     await db.insert(schema.announcements).values({
       title: data.title,
       body: data.body,
@@ -31,32 +69,38 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       publishedAt: new Date(),
     });
 
-    const wantsEmail = form.get('email') === 'on';
-    let recipientCount = 0;
+    let summary: AnnouncementEmailSummary = { attempted: 0, sent: 0, failed: 0 };
 
-    if (wantsEmail) {
-      const env = getEnv();
-      if (isFamilyEmailReady(env)) {
-        const recipients = await recipientEmails(
-          db,
-          data.audience === 'class' ? (data.classId ?? null) : null
-        );
-        recipientCount = recipients.length;
-        for (const to of recipients) {
-          await sendEmail(env, {
-            to,
-            subject: data.title,
-            html: `<h2>${escapeHtml(data.title)}</h2><p>${escapeHtml(
-              data.body
-            ).replace(/\n/g, '<br>')}</p>`,
-          });
-        }
-      }
+    const env = getEnv();
+    if (isFamilyEmailReady(env)) {
+      const familyRecipients = await getAnnouncementRecipientEmails(
+        db,
+        data.audience === 'class' ? (data.classId ?? null) : null
+      );
+      const recipients = [...new Set([...familyRecipients, CONTACT_EMAIL])];
+      const attachments = await Promise.all(
+        attachedFiles.map(async (file) => ({
+          filename: file.name,
+          contentType: file.type,
+          data: await file.arrayBuffer(),
+        }))
+      );
+      summary = await sendAnnouncementEmails(recipients, (to) =>
+        sendEmail(env, {
+          to,
+          subject: data.title,
+          html: `<h2>${escapeHtml(data.title)}</h2><p>${escapeHtml(
+            data.body
+          ).replace(/\n/g, '<br>')}</p>`,
+          text: `${data.title}\n\n${data.body}`,
+          attachments,
+        })
+      );
     }
     return redirect(
       addFlash(
         back,
-        familyEmailResultMessage(wantsEmail, getEnv(), recipientCount)
+        familyEmailResultMessage(getEnv(), summary)
       ),
       303
     );
@@ -72,29 +116,3 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
   return badRequest('Unknown action');
 };
-
-async function recipientEmails(
-  db: ReturnType<typeof dbFrom>,
-  classId: number | null
-): Promise<string[]> {
-  if (classId) {
-    const rows = await db
-      .select({ email: schema.families.email })
-      .from(schema.children)
-      .innerJoin(
-        schema.families,
-        eq(schema.children.familyId, schema.families.id)
-      )
-      .where(eq(schema.children.classId, classId));
-    return unique(rows.map((r) => r.email));
-  }
-  const rows = await db
-    .select({ email: schema.families.email })
-    .from(schema.families)
-    .where(isNotNull(schema.families.email));
-  return unique(rows.map((r) => r.email));
-}
-
-function unique(values: (string | null)[]): string[] {
-  return [...new Set(values.filter((v): v is string => !!v))];
-}

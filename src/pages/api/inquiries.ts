@@ -92,20 +92,24 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
   const db = dbFrom();
 
-  await db.insert(schema.inquiries).values({
-    parentName: data.parentName,
-    email: data.email,
-    phone: data.phone ?? null,
-    childAge: formatChildAgeMonths(data.childAge),
-    desiredStart: data.desiredStart ?? null,
-    intent: data.intent,
-    referredBy: data.referredBy ?? null,
-    message: data.message ?? null,
-    source: 'website',
-    status: 'new',
-  });
+  const [createdInquiry] = await db
+    .insert(schema.inquiries)
+    .values({
+      parentName: data.parentName,
+      email: data.email,
+      phone: data.phone ?? null,
+      childAge: formatChildAgeMonths(data.childAge),
+      desiredStart: data.desiredStart ?? null,
+      intent: data.intent,
+      referredBy: data.referredBy ?? null,
+      message: data.message ?? null,
+      source: 'website',
+      status: 'new',
+    })
+    .returning({ id: schema.inquiries.id });
 
   if (env.NOTIFY_EMAIL) {
+    const inquiryUrl = `https://www.valentinaspreschool.com/admin/inquiries/${createdInquiry.id}/`;
     const lines = [
       `Parent: ${data.parentName}`,
       `Email: ${data.email}`,
@@ -122,9 +126,8 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       replyTo: data.email,
       html: `<h2>New website inquiry</h2><p>${lines
         .map((l) => escapeHtml(l))
-        .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/${
-        data.referredBy ? 'referrals' : 'inquiries'
-      }/">Open in admin</a></p>`,
+        .join('<br>')}</p><p><a href="${inquiryUrl}">Open this inquiry in admin</a></p>`,
+      text: `New website inquiry\n\n${lines.join('\n')}\n\nOpen this inquiry: ${inquiryUrl}`,
     });
   }
 

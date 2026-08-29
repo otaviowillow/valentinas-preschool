@@ -71,6 +71,9 @@ export async function runRecurringBilling(): Promise<{
           )}</strong> is due ${escapeHtml(next)}.</p><p>${escapeHtml(
             r.description ?? 'Recurring tuition'
           )}</p>`,
+          text: `A new invoice for ${money(r.amountCents)} is due ${next}.\n\n${
+            r.description ?? 'Recurring tuition'
+          }`,
         });
         emailed++;
       }
