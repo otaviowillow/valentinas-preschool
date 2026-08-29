@@ -2,17 +2,24 @@ import { connect } from 'cloudflare:sockets';
 
 export const CONTACT_EMAIL = 'vanjagloginic@yahoo.com';
 
+export interface EmailAttachment {
+  filename: string;
+  contentType: string;
+  data: ArrayBuffer;
+}
+
 interface SendArgs {
   to: string | string[];
   subject: string;
   html: string;
   text: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }
 
 export async function sendEmail(
   env: Env,
-  { to, subject, html, text, replyTo = CONTACT_EMAIL }: SendArgs
+  { to, subject, html, text, replyTo = CONTACT_EMAIL, attachments = [] }: SendArgs
 ): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   if (!env.YAHOO_APP_PASSWORD) return { ok: false, skipped: true };
 
@@ -24,6 +31,7 @@ export async function sendEmail(
         html,
         text,
         replyTo,
+        attachments,
       });
     }
     return { ok: true };
@@ -114,31 +122,76 @@ function buildMimeMessage({
   html,
   text,
   replyTo,
+  attachments = [],
 }: Omit<SendArgs, 'to'> & { to: string }): string {
-  const boundary = `vp-${crypto.randomUUID()}`;
-  const lines = [
+  const alternativeBoundary = `vp-alt-${crypto.randomUUID()}`;
+  const headers = [
     `From: ${encodeHeader("Valentina's Preschool")} <${CONTACT_EMAIL}>`,
     `To: <${to}>`,
     `Reply-To: <${replyTo}>`,
     `Subject: ${encodeHeader(subject)}`,
     `Date: ${new Date().toUTCString()}`,
     'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
+  ];
+  const alternative = [
+    `--${alternativeBoundary}`,
     'Content-Type: text/plain; charset=UTF-8',
     'Content-Transfer-Encoding: base64',
     '',
     wrapBase64(base64Utf8(text)),
-    `--${boundary}`,
+    `--${alternativeBoundary}`,
     'Content-Type: text/html; charset=UTF-8',
     'Content-Transfer-Encoding: base64',
     '',
     wrapBase64(base64Utf8(html)),
-    `--${boundary}--`,
+    `--${alternativeBoundary}--`,
   ];
 
+  if (attachments.length === 0) {
+    return [
+      ...headers,
+      `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+      '',
+      ...alternative,
+    ]
+      .join('\r\n')
+      .replace(/^\./gm, '..');
+  }
+
+  const mixedBoundary = `vp-mixed-${crypto.randomUUID()}`;
+  const lines = [
+    ...headers,
+    `Content-Type: multipart/mixed; boundary="${mixedBoundary}"`,
+    '',
+    `--${mixedBoundary}`,
+    `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+    '',
+    ...alternative,
+  ];
+
+  for (const attachment of attachments) {
+    const filename = attachment.filename.replace(/[\r\n"]/g, '_');
+    lines.push(
+      `--${mixedBoundary}`,
+      `Content-Type: ${attachment.contentType}; name="${filename}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(
+        attachment.filename
+      )}`,
+      '',
+      wrapBase64(base64Bytes(new Uint8Array(attachment.data)))
+    );
+  }
+
+  lines.push(`--${mixedBoundary}--`);
+
   return lines.join('\r\n').replace(/^\./gm, '..');
+}
+
+function base64Bytes(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
 }
 
 function encodeHeader(value: string): string {
@@ -146,10 +199,7 @@ function encodeHeader(value: string): string {
 }
 
 function base64Utf8(value: string): string {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
+  return base64Bytes(new TextEncoder().encode(value));
 }
 
 function wrapBase64(value: string): string {

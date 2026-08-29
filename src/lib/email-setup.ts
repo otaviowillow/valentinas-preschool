@@ -7,12 +7,9 @@ export function isFamilyEmailReady(env: Env): boolean {
 }
 
 export function familyEmailResultMessage(
-  wantedEmail: boolean,
   env: Env,
   summary: AnnouncementEmailSummary
 ): string {
-  if (!wantedEmail) return 'Announcement posted.';
-
   if (!isFamilyEmailReady(env)) {
     return 'Announcement posted. Email was not sent (sending is not configured).';
   }
@@ -25,9 +22,9 @@ export function familyEmailResultMessage(
     }; ${summary.failed} failed.`;
   }
   if (summary.sent === 1) {
-    return 'Announcement posted and emailed to 1 family.';
+    return 'Email sent successfully to 1 family. Announcement posted.';
   }
-  return `Announcement posted and emailed to ${summary.sent} families.`;
+  return `Email sent successfully to ${summary.sent} families. Announcement posted.`;
 }
 
 export function holidayNoticeResultMessage(

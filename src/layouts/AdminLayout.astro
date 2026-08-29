@@ -98,35 +98,42 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
           <span class="admin-brand__tag">Admin</span>
         </a>
         <details class="admin-menu" open>
-          <summary class="admin-menu__toggle">Menu</summary>
-          <nav class="admin-nav">
-            {
-              navGroups.map((group) => (
-                <>
-                  {group.label && (
-                    <div class="admin-nav__group">{group.label}</div>
-                  )}
-                  {group.items.map((item) => (
-                    <a
-                      href={item.href}
-                      aria-current={active === item.key ? 'page' : undefined}
-                    >
-                      <span class="ico" set:html={icons[item.key]} />
-                      {item.label}
-                    </a>
-                  ))}
-                </>
-              ))
-            }
-          </nav>
-          <div class="admin-sidebar__foot">
-            <div class="admin-profile">
-              <div class="admin-profile__avatar">{initial}</div>
-              <div class="admin-profile__meta">
-                <div class="admin-profile__name">{adminEmail || 'Signed in'}</div>
-                <div class="admin-profile__links">
-                  <a href="/cdn-cgi/access/logout">Sign out</a> ·
-                  <a href="/">View site</a>
+          <summary class="admin-menu__toggle" aria-label="Open navigation">
+            <span>Menu</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16"></path>
+            </svg>
+          </summary>
+          <div class="admin-menu__panel">
+            <nav class="admin-nav">
+              {
+                navGroups.map((group) => (
+                  <>
+                    {group.label && (
+                      <div class="admin-nav__group">{group.label}</div>
+                    )}
+                    {group.items.map((item) => (
+                      <a
+                        href={item.href}
+                        aria-current={active === item.key ? 'page' : undefined}
+                      >
+                        <span class="ico" set:html={icons[item.key]} />
+                        {item.label}
+                      </a>
+                    ))}
+                  </>
+                ))
+              }
+            </nav>
+            <div class="admin-sidebar__foot">
+              <div class="admin-profile">
+                <div class="admin-profile__avatar">{initial}</div>
+                <div class="admin-profile__meta">
+                  <div class="admin-profile__name">{adminEmail || 'Signed in'}</div>
+                  <div class="admin-profile__links">
+                    <a href="/cdn-cgi/access/logout">Sign out</a> ·
+                    <a href="/">View site</a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,8 +147,28 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
       </aside>
 
       <main class="admin-main" transition:animate="fade">
-        {flash && <div class="admin-flash">{flash}</div>}
-        {error && <div class="admin-flash admin-flash--error">{error}</div>}
+        {
+          (flash || error) && (
+            <div class="admin-flashes">
+              {flash && (
+                <div class="admin-flash" role="status">
+                  <span>{flash}</span>
+                  <button type="button" data-dismiss-flash="flash" aria-label="Dismiss message">
+                    ×
+                  </button>
+                </div>
+              )}
+              {error && (
+                <div class="admin-flash admin-flash--error" role="alert">
+                  <span>{error}</span>
+                  <button type="button" data-dismiss-flash="error" aria-label="Dismiss error">
+                    ×
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        }
         <slot />
       </main>
     </div>
@@ -160,6 +187,24 @@ const initial = (adminEmail || 'V').trim().charAt(0).toUpperCase();
         });
         if (window.matchMedia('(max-width: 800px)').matches) {
           document.querySelector('.admin-menu')?.removeAttribute('open');
+        }
+
+        document.querySelectorAll<HTMLButtonElement>('[data-dismiss-flash]').forEach((button) => {
+          if (button.dataset.dismissBound) return;
+          button.dataset.dismissBound = 'true';
+          button.addEventListener('click', () => {
+            button.closest('.admin-flash')?.remove();
+            const url = new URL(window.location.href);
+            url.searchParams.delete(button.dataset.dismissFlash ?? '');
+            window.history.replaceState({}, '', url);
+          });
+        });
+
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.has('flash') || currentUrl.searchParams.has('error')) {
+          currentUrl.searchParams.delete('flash');
+          currentUrl.searchParams.delete('error');
+          window.history.replaceState({}, '', currentUrl);
         }
       }
 
