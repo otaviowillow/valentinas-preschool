@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { dbFrom, getEnv, schema } from '../../../db';
 import { announcementInput } from '../../../lib/validation';
 import { addError, addFlash, badRequest, redirectTarget } from '../../../lib/admin';
-import { escapeHtml, sendEmail } from '../../../lib/email';
+import { CONTACT_EMAIL, escapeHtml, sendEmail } from '../../../lib/email';
 import {
   sendAnnouncementEmails,
   type AnnouncementEmailSummary,
@@ -73,10 +73,11 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
     const env = getEnv();
     if (isFamilyEmailReady(env)) {
-      const recipients = await getAnnouncementRecipientEmails(
+      const familyRecipients = await getAnnouncementRecipientEmails(
         db,
         data.audience === 'class' ? (data.classId ?? null) : null
       );
+      const recipients = [...new Set([...familyRecipients, CONTACT_EMAIL])];
       const attachments = await Promise.all(
         attachedFiles.map(async (file) => ({
           filename: file.name,

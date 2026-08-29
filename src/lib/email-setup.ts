@@ -18,13 +18,13 @@ export function familyEmailResultMessage(
   }
   if (summary.failed > 0) {
     return `Announcement posted. Email sent to ${summary.sent} ${
-      summary.sent === 1 ? 'family' : 'families'
+      summary.sent === 1 ? 'recipient' : 'recipients'
     }; ${summary.failed} failed.`;
   }
   if (summary.sent === 1) {
-    return 'Email sent successfully to 1 family. Announcement posted.';
+    return 'Email sent successfully to 1 recipient. Announcement posted.';
   }
-  return `Email sent successfully to ${summary.sent} families. Announcement posted.`;
+  return `Email sent successfully to ${summary.sent} recipients. Announcement posted.`;
 }
 
 export function holidayNoticeResultMessage(
