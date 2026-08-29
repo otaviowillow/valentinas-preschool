@@ -40,6 +40,7 @@ const year = new Date().getFullYear();
           {nap.addressLocality}, {nap.addressRegion}
           {nap.postalCode}<br />
           <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a><br />
+          <a href={`mailto:${nap.email}`}>{nap.email}</a><br />
           <span class="muted">{site.facts.hours}</span>
         </address>
         <a

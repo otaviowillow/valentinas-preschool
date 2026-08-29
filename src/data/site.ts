@@ -23,7 +23,7 @@ export const site = {
     addressCountry: 'US',
     telephoneDisplay: '(310) 839-9147',
     telephoneHref: '+13108399147',
-    email: '', // TODO: confirm a contact email with client
+    email: 'vanjagloginic@yahoo.com',
   },
 
   // Geo areas to target in copy/SEO (not the postal NAP).

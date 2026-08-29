@@ -1,43 +1,55 @@
-/** Family announcement email via Resend (Worker secret). */
+/** Family announcement email via Yahoo SMTP (Worker secret). */
+
+import type { AnnouncementEmailSummary } from './announcements';
 
 export function isFamilyEmailReady(env: Env): boolean {
-  return Boolean(env.RESEND_API_KEY);
+  return Boolean(env.YAHOO_APP_PASSWORD);
 }
 
 export function familyEmailResultMessage(
   wantedEmail: boolean,
   env: Env,
-  recipientCount: number
+  summary: AnnouncementEmailSummary
 ): string {
   if (!wantedEmail) return 'Announcement posted.';
 
   if (!isFamilyEmailReady(env)) {
     return 'Announcement posted. Email was not sent (sending is not configured).';
   }
-  if (recipientCount === 0) {
-    return 'Announcement posted. No family email addresses on file to send to.';
+  if (summary.attempted === 0) {
+    return 'Announcement posted. No enrolled family email addresses matched.';
   }
-  if (recipientCount === 1) {
+  if (summary.failed > 0) {
+    return `Announcement posted. Email sent to ${summary.sent} ${
+      summary.sent === 1 ? 'family' : 'families'
+    }; ${summary.failed} failed.`;
+  }
+  if (summary.sent === 1) {
     return 'Announcement posted and emailed to 1 family.';
   }
-  return `Announcement posted and emailed to ${recipientCount} families.`;
+  return `Announcement posted and emailed to ${summary.sent} families.`;
 }
 
 export function holidayNoticeResultMessage(
   wantedEmail: boolean,
   env: Env,
-  recipientCount: number
+  summary: AnnouncementEmailSummary
 ): string {
   if (!wantedEmail) return 'Holiday notice posted for families.';
 
   if (!isFamilyEmailReady(env)) {
     return 'Holiday notice posted. Email was not sent (sending is not configured).';
   }
-  if (recipientCount === 0) {
-    return 'Holiday notice posted. No family email addresses on file to send to.';
+  if (summary.attempted === 0) {
+    return 'Holiday notice posted. No enrolled family email addresses matched.';
   }
-  if (recipientCount === 1) {
+  if (summary.failed > 0) {
+    return `Holiday notice posted. Email sent to ${summary.sent} ${
+      summary.sent === 1 ? 'family' : 'families'
+    }; ${summary.failed} failed.`;
+  }
+  if (summary.sent === 1) {
     return 'Holiday notice posted and emailed to 1 family.';
   }
-  return `Holiday notice posted and emailed to ${recipientCount} families.`;
+  return `Holiday notice posted and emailed to ${summary.sent} families.`;
 }

@@ -1,10 +1,11 @@
 ---
 export const prerender = false;
 
-import { asc, desc } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { dbFrom, schema } from '../../../db';
 import { formatDate } from '../../../lib/format';
+import { selectAnnouncementRecipients } from '../../../lib/announcements';
 
 const db = dbFrom();
 const classList = await db
@@ -12,6 +13,25 @@ const classList = await db
   .from(schema.classes)
   .orderBy(asc(schema.classes.name));
 const classMap = new Map(classList.map((c) => [c.id, c.name]));
+const recipientRows = await db
+  .select({
+    email: schema.families.email,
+    childStatus: schema.children.status,
+    classId: schema.children.classId,
+  })
+  .from(schema.children)
+  .innerJoin(
+    schema.families,
+    eq(schema.children.familyId, schema.families.id)
+  )
+  .where(eq(schema.children.status, 'enrolled'));
+const allRecipientCount = selectAnnouncementRecipients(recipientRows, null).length;
+const classRecipientCounts = new Map(
+  classList.map((c) => [
+    c.id,
+    selectAnnouncementRecipients(recipientRows, c.id).length,
+  ])
+);
 
 const announcements = await db
   .select()
@@ -36,7 +56,12 @@ const photos = await db
   <div class="grid-2col">
     <section class="admin-panel">
       <h2>New announcement</h2>
-      <form method="POST" action="/api/admin/announcements/" class="admin-form">
+      <form
+        id="announcementForm"
+        method="POST"
+        action="/api/admin/announcements/"
+        class="admin-form"
+      >
         <input type="hidden" name="_action" value="create" />
         <input type="hidden" name="_redirect" value="/admin/comms/" />
         <div class="admin-field">
@@ -51,21 +76,33 @@ const photos = await db
           <div class="admin-field">
             <label for="audience">Audience</label>
             <select id="audience" name="audience">
-              <option value="all">All families</option>
+              <option value="all" data-count={allRecipientCount}>
+                All enrolled families ({allRecipientCount})
+              </option>
               <option value="class">Specific class</option>
             </select>
           </div>
           <div class="admin-field">
             <label for="aclass">Class (if specific)</label>
-            <select id="aclass" name="classId">
+            <select id="aclass" name="classId" disabled>
               <option value="">—</option>
-              {classList.map((c) => <option value={c.id}>{c.name}</option>)}
+              {
+                classList.map((c) => (
+                  <option value={c.id} data-count={classRecipientCounts.get(c.id) ?? 0}>
+                    {c.name} ({classRecipientCounts.get(c.id) ?? 0})
+                  </option>
+                ))
+              }
             </select>
           </div>
         </div>
         <label class="email-opt">
           <input type="checkbox" name="email" /> Also email families
         </label>
+        <p class="muted" id="announcementRecipients">
+          {allRecipientCount} enrolled {allRecipientCount === 1 ? 'family' : 'families'} with
+          email
+        </p>
         <div><button type="submit" class="admin-btn">Post announcement</button></div>
       </form>
     </section>
@@ -302,6 +339,50 @@ const photos = await db
 </style>
 
 <script data-astro-rerun>
+  const announcementForm = document.getElementById(
+    'announcementForm'
+  ) as HTMLFormElement | null;
+  const audience = document.getElementById('audience') as HTMLSelectElement | null;
+  const classSelect = document.getElementById('aclass') as HTMLSelectElement | null;
+  const recipientText = document.getElementById('announcementRecipients');
+
+  function selectedRecipientCount(): number {
+    const select = audience?.value === 'class' ? classSelect : audience;
+    const option = select?.selectedOptions[0];
+    return Number(option?.dataset.count ?? 0);
+  }
+
+  function updateAnnouncementAudience() {
+    const needsClass = audience?.value === 'class';
+    if (classSelect) {
+      classSelect.disabled = !needsClass;
+      classSelect.required = needsClass;
+      if (!needsClass) classSelect.value = '';
+    }
+    const count = selectedRecipientCount();
+    if (recipientText) {
+      recipientText.textContent = `${count} enrolled ${
+        count === 1 ? 'family' : 'families'
+      } with email`;
+    }
+  }
+
+  audience?.addEventListener('change', updateAnnouncementAudience);
+  classSelect?.addEventListener('change', updateAnnouncementAudience);
+  announcementForm?.addEventListener('submit', (event) => {
+    const email = announcementForm.querySelector<HTMLInputElement>(
+      'input[name="email"]'
+    );
+    if (!email?.checked) return;
+    const count = selectedRecipientCount();
+    if (!window.confirm(`Email this announcement to ${count} enrolled ${
+      count === 1 ? 'family' : 'families'
+    }?`)) {
+      event.preventDefault();
+    }
+  });
+  updateAnnouncementAudience();
+
   const form = document.getElementById('photoForm') as HTMLFormElement | null;
   const input = document.getElementById('file') as HTMLInputElement | null;
   const zone = document.getElementById('dropzone');

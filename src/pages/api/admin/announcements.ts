@@ -1,11 +1,16 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { eq, isNotNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { dbFrom, getEnv, schema } from '../../../db';
 import { announcementInput } from '../../../lib/validation';
 import { addError, addFlash, badRequest, redirectTarget } from '../../../lib/admin';
 import { escapeHtml, sendEmail } from '../../../lib/email';
+import {
+  sendAnnouncementEmails,
+  type AnnouncementEmailSummary,
+} from '../../../lib/announcements';
+import { getAnnouncementRecipientEmails } from '../../../lib/announcement-recipients';
 import {
   familyEmailResultMessage,
   isFamilyEmailReady,
@@ -32,31 +37,31 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     });
 
     const wantsEmail = form.get('email') === 'on';
-    let recipientCount = 0;
+    let summary: AnnouncementEmailSummary = { attempted: 0, sent: 0, failed: 0 };
 
     if (wantsEmail) {
       const env = getEnv();
       if (isFamilyEmailReady(env)) {
-        const recipients = await recipientEmails(
+        const recipients = await getAnnouncementRecipientEmails(
           db,
-          data.audience === 'class' ? (data.classId ?? null) : null
+          data.audience === 'class' ? data.classId! : null
         );
-        recipientCount = recipients.length;
-        for (const to of recipients) {
-          await sendEmail(env, {
+        summary = await sendAnnouncementEmails(recipients, (to) =>
+          sendEmail(env, {
             to,
             subject: data.title,
             html: `<h2>${escapeHtml(data.title)}</h2><p>${escapeHtml(
               data.body
             ).replace(/\n/g, '<br>')}</p>`,
-          });
-        }
+            text: `${data.title}\n\n${data.body}`,
+          })
+        );
       }
     }
     return redirect(
       addFlash(
         back,
-        familyEmailResultMessage(wantsEmail, getEnv(), recipientCount)
+        familyEmailResultMessage(wantsEmail, getEnv(), summary)
       ),
       303
     );
@@ -72,29 +77,3 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
   return badRequest('Unknown action');
 };
-
-async function recipientEmails(
-  db: ReturnType<typeof dbFrom>,
-  classId: number | null
-): Promise<string[]> {
-  if (classId) {
-    const rows = await db
-      .select({ email: schema.families.email })
-      .from(schema.children)
-      .innerJoin(
-        schema.families,
-        eq(schema.children.familyId, schema.families.id)
-      )
-      .where(eq(schema.children.classId, classId));
-    return unique(rows.map((r) => r.email));
-  }
-  const rows = await db
-    .select({ email: schema.families.email })
-    .from(schema.families)
-    .where(isNotNull(schema.families.email));
-  return unique(rows.map((r) => r.email));
-}
-
-function unique(values: (string | null)[]): string[] {
-  return [...new Set(values.filter((v): v is string => !!v))];
-}

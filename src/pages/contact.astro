@@ -176,6 +176,9 @@ const mapQuery = encodeURIComponent(
           <p>
             <a href={`tel:${nap.telephoneHref}`}>{nap.telephoneDisplay}</a>
           </p>
+          <p>
+            <a href={`mailto:${nap.email}`}>{nap.email}</a>
+          </p>
           <p><strong>Hours:</strong><br />{site.facts.hours}</p>
           <p>
             <a href={site.social.instagram} rel="noopener" target="_blank"

@@ -125,6 +125,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         .join('<br>')}</p><p><a href="https://www.valentinaspreschool.com/admin/${
         data.referredBy ? 'referrals' : 'inquiries'
       }/">Open in admin</a></p>`,
+      text: `New website inquiry\n\n${lines.join('\n')}`,
     });
   }
 

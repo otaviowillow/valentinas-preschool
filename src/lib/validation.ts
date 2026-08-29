@@ -13,6 +13,7 @@ import {
 } from './inquiries';
 import { formatAgeMonths } from './settings';
 import { hasSuspiciousInjection } from './spam';
+export { announcementInput } from './announcement-validation';
 
 // HTML forms (and FormData.get) yield `null` for absent fields and `''` for
 // empty ones. Normalize both so optional fields validate cleanly.
@@ -169,13 +170,6 @@ export const paymentInput = z.object({
   amountCents: requiredAmountCents,
   method: optionalStr(40),
   note: optionalStr(300),
-});
-
-export const announcementInput = z.object({
-  title: requiredStr(200, 'Title is required'),
-  body: requiredStr(5000, 'Message is required'),
-  audience: z.preprocess(emptyToUndef, z.enum(['all', 'class'])).catch('all'),
-  classId: optionalId,
 });
 
 export const inquiryStatusInput = z.object({
