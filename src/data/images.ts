@@ -26,7 +26,7 @@ import classroomCircle from '../assets/photos/classroom-circle.jpg';
 import cooking from '../assets/photos/cooking.jpg';
 import baking from '../assets/photos/baking.jpg';
 import gardening from '../assets/photos/gardening.jpg';
-import heroBackground from '../assets/photos/hero.png';
+import heroBackground from '../assets/photos/hero.jpg';
 import programPreschoolPhoto from '../assets/photos/program-preschool.jpg';
 import igGallery1 from '../assets/photos/ig-gallery-1.jpg';
 import igGallery2 from '../assets/photos/ig-gallery-2.jpg';
