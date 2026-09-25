@@ -64,6 +64,13 @@
       "when": 1788032220000,
       "tag": "0008_tuition_rate",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1790375760000,
+      "tag": "0009_inquiry_spam_flags",
+      "breakpoints": true
     }
   ]
 }

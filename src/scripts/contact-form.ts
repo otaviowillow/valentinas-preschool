@@ -78,11 +78,13 @@ export function initContactForm() {
     return !message;
   }
 
-  function validatePhone() {
+  function validatePhone(requireValue = false) {
     if (!(phoneInput instanceof HTMLInputElement)) return true;
     const value = phoneInput.value.trim();
     let message = '';
-    if (value && !isValidPhone(value)) {
+    if (!value && requireValue) {
+      message = 'Phone number is required';
+    } else if (value && !isValidPhone(value)) {
       message = 'Enter a valid 10-digit phone number';
     }
     setFieldError(phoneInput, phoneError, message);
@@ -136,14 +138,14 @@ export function initContactForm() {
     syncSubmitState();
   });
   phoneInput?.addEventListener('blur', () => {
-    validatePhone();
+    validatePhone(true);
     syncSubmitState();
   });
 
   form.addEventListener('submit', (e) => {
     emailTouched = true;
     const emailOk = validateEmail(true);
-    const phoneOk = validatePhone();
+    const phoneOk = validatePhone(true);
     if (!emailOk || !phoneOk) {
       e.preventDefault();
       if (!emailOk && emailInput instanceof HTMLInputElement) emailInput.focus();

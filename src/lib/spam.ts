@@ -1,4 +1,4 @@
-import type { InquiryInput } from './validation';
+import type { InquiryInput } from './inquiry-validation';
 
 /** Marketing / SEO spam phrases seen in preschool intake abuse. */
 const SPAM_PHRASES = [
@@ -20,6 +20,13 @@ const SPAM_PHRASES = [
   'business listing',
   'reputation management',
   'grow your business online',
+  'guest post',
+  'lead generation',
+  'sales proposal',
+  'paid advertising',
+  'do you need a new website',
+  'investment opportunity',
+  'cryptocurrency',
 ];
 
 const URL_RE = /https?:\/\/|www\.\w|\b[a-z0-9-]+\.(com|net|org|io|co|biz|info|xyz)\b/i;
@@ -54,7 +61,7 @@ function countUrls(...parts: Array<string | undefined>): number {
 
 export type SpamVerdict = { spam: boolean; score: number; reasons: string[] };
 
-/** Score intake submissions; spam at >= 3 or any high-confidence hit. */
+/** Score intake submissions; suspicious submissions are flagged for admin review. */
 export function detectIntakeSpam(data: InquiryInput): SpamVerdict {
   const reasons: string[] = [];
   let score = 0;
@@ -83,9 +90,9 @@ export function detectIntakeSpam(data: InquiryInput): SpamVerdict {
   if (urls >= 2) {
     reasons.push('multiple_urls');
     score += 3;
-  } else if (urls === 1 && (data.message?.length ?? 0) > 80) {
+  } else if (urls === 1) {
     reasons.push('url_in_message');
-    score += 2;
+    score += 3;
   }
 
   if (data.email && isDotStuffedEmail(data.email)) {
@@ -96,6 +103,14 @@ export function detectIntakeSpam(data: InquiryInput): SpamVerdict {
   if ((data.message?.length ?? 0) > 400 && urls >= 1) {
     reasons.push('long_pitch');
     score += 1;
+  }
+
+  if (
+    /^(\d)\1{9}$/.test(data.phone) ||
+    ['0123456789', '1234567890', '0987654321'].includes(data.phone)
+  ) {
+    reasons.push('implausible_phone');
+    score += 2;
   }
 
   // Name repeated in unrelated fields (classic bot form fill).
@@ -113,7 +128,7 @@ export function detectIntakeSpam(data: InquiryInput): SpamVerdict {
     r.startsWith('phrase:') || r === 'multiple_urls'
   );
 
-  return { spam: highConfidence || score >= 3, score, reasons };
+  return { spam: highConfidence || score >= 2, score, reasons };
 }
 
 /** Minimum ms between page load (form_ts) and submit. */

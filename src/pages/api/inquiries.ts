@@ -85,10 +85,12 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const data = parsed.data;
 
   const spam = detectIntakeSpam(data);
-  const timingSpam = timing.score >= 3;
-  if (spam.spam || timingSpam) {
-    return thankYou(redirect);
-  }
+  const spamScore = spam.score + timing.score;
+  const spamReasons = [
+    ...spam.reasons,
+    ...(timing.reason ? [`timing:${timing.reason}`] : []),
+  ];
+  const isSpam = spam.spam || spamScore >= 2;
 
   const db = dbFrom();
 
@@ -105,10 +107,13 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       message: data.message ?? null,
       source: 'website',
       status: 'new',
+      isSpam,
+      spamScore,
+      spamReasons: spamReasons.length ? spamReasons.join(',') : null,
     })
     .returning({ id: schema.inquiries.id });
 
-  if (env.NOTIFY_EMAIL) {
+  if (env.NOTIFY_EMAIL && !isSpam) {
     const inquiryUrl = `https://www.valentinaspreschool.com/admin/inquiries/${createdInquiry.id}/`;
     const lines = [
       `Parent: ${data.parentName}`,
