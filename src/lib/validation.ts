@@ -7,13 +7,12 @@ import {
   PAY_TYPES,
   RECURRING_FREQUENCIES,
 } from '../db/schema';
-import {
-  CHILD_AGE_MAX_MONTHS,
-  CHILD_AGE_MIN_MONTHS,
-} from './inquiries';
-import { formatAgeMonths } from './settings';
-import { hasSuspiciousInjection } from './spam';
 export { announcementInput } from './announcement-validation';
+export {
+  createInquiryInput,
+  inquiryInput,
+  type InquiryInput,
+} from './inquiry-validation';
 
 // HTML forms (and FormData.get) yield `null` for absent fields and `''` for
 // empty ones. Normalize both so optional fields validate cleanly.
@@ -32,50 +31,7 @@ const optionalEmail = z.preprocess(
   emptyToUndef,
   z.string().email('Enter a valid email address').max(200).optional()
 );
-const requiredEmail = z.preprocess(
-  trimOrEmpty,
-  z.string().email('Enter a valid email address').max(200)
-);
-
-/** Letters, spaces, apostrophes, hyphens — no digits/URLs. */
-const personName = (max: number, msg: string) =>
-  z.preprocess(
-    trimOrEmpty,
-    z
-      .string()
-      .min(1, msg)
-      .max(max)
-      .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only in names')
-  );
-
-const optionalPhone = z.preprocess(
-  emptyToUndef,
-  z
-    .string()
-    .regex(/^\d{10}$/, 'Enter a valid 10-digit phone number')
-    .optional()
-);
-
-const safeOptionalText = (max: number) =>
-  z.preprocess(
-    emptyToUndef,
-    z
-      .string()
-      .max(max)
-      .refine((s) => !hasSuspiciousInjection(s), 'Invalid characters in text')
-      .optional()
-  );
-
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-const optionalStartDate = z.preprocess(
-  emptyToUndef,
-  z
-    .string()
-    .regex(ISO_DATE, 'Enter a valid start date')
-    .refine((s) => !Number.isNaN(new Date(`${s}T12:00:00`).getTime()), 'Enter a valid start date')
-    .optional()
-);
 
 const optionalId = z.preprocess(
   emptyToUndef,
@@ -87,43 +43,6 @@ const optionalMonths = z.preprocess(
   z.coerce.number().int().min(0).max(120).optional()
 );
 const requiredAmountCents = z.coerce.number().int().min(0);
-
-// ---- Public enrollment inquiry (from the contact form) --------------------
-export function createInquiryInput(minMonths: number, maxMonths: number) {
-  return z.object({
-    parentName: personName(100, 'Your name is required'),
-    email: requiredEmail,
-    phone: optionalPhone,
-    childAge: z.preprocess(
-      emptyToUndef,
-      z.coerce
-        .number({ error: 'Enter your child’s age in months' })
-        .int()
-        .min(minMonths, `Minimum age is ${minMonths} months`)
-        .max(
-          maxMonths,
-          `Maximum age is ${formatAgeMonths(maxMonths)} (${maxMonths} months)`
-        )
-    ),
-    desiredStart: optionalStartDate,
-    intent: z.preprocess(emptyToUndef, z.enum(['tour', 'waitlist'])).catch('tour'),
-    referredBy: z.preprocess(
-      emptyToUndef,
-      z
-        .string()
-        .max(200)
-        .regex(/^[\p{L}\s'.-]+$/u, 'Use letters only')
-        .optional()
-    ),
-    message: safeOptionalText(2000),
-  });
-}
-
-export const inquiryInput = createInquiryInput(
-  CHILD_AGE_MIN_MONTHS,
-  CHILD_AGE_MAX_MONTHS
-);
-export type InquiryInput = z.infer<typeof inquiryInput>;
 
 // ---- Admin forms ----------------------------------------------------------
 export const familyInput = z.object({

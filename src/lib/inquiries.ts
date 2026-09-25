@@ -8,6 +8,7 @@ import {
 } from './settings';
 import type { dbFrom } from '../db';
 import { families, inquiries, type Inquiry } from '../db/schema';
+export { PUBLIC_INQUIRY_MAX_MONTHS } from './inquiry-validation';
 
 export { formatAgeMonths, formatAgeRangeLabel } from './settings';
 

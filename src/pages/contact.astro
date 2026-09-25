@@ -6,9 +6,11 @@ import PageHero from '../components/PageHero.astro';
 import DatePicker from '../components/DatePicker.astro';
 import { site } from '../data/site';
 import { formatAgeRangeLabel, getSettings } from '../lib/settings';
+import { PUBLIC_INQUIRY_MAX_MONTHS } from '../lib/inquiries';
 
 const settings = await getSettings();
-const ageRange = formatAgeRangeLabel(settings.ageMinMonths, settings.ageMaxMonths);
+const inquiryAgeMax = Math.min(settings.ageMaxMonths, PUBLIC_INQUIRY_MAX_MONTHS);
+const ageRange = formatAgeRangeLabel(settings.ageMinMonths, inquiryAgeMax);
 
 const { nap } = site;
 const minStartDate = new Date().toISOString().slice(0, 10);
@@ -42,7 +44,7 @@ const mapQuery = encodeURIComponent(
         method="POST"
         novalidate
         data-age-min={settings.ageMinMonths}
-        data-age-max={settings.ageMaxMonths}
+        data-age-max={inquiryAgeMax}
       >
         <h2>Request a tour</h2>
 
@@ -73,7 +75,7 @@ const mapQuery = encodeURIComponent(
         </div>
 
         <div class="field">
-          <label for="email">Email</label>
+          <label for="email">Email *</label>
           <input
             id="email"
             name="email"
@@ -88,11 +90,12 @@ const mapQuery = encodeURIComponent(
         </div>
 
         <div class="field">
-          <label for="phone">Phone</label>
+          <label for="phone">Phone *</label>
           <input
             id="phone"
             name="phone"
             type="tel"
+            required
             maxlength="10"
             autocomplete="tel"
             inputmode="numeric"
@@ -104,18 +107,18 @@ const mapQuery = encodeURIComponent(
         </div>
 
         <div class="field">
-          <label for="childage">Child’s age (months)</label>
+          <label for="childage">Child’s age (months) *</label>
           <input
             id="childage"
             name="child_age"
             type="number"
             min={settings.ageMinMonths}
-            max={settings.ageMaxMonths}
+            max={inquiryAgeMax}
             step="1"
             placeholder="e.g. 24"
             required
           />
-          <span class="muted field-hint">Ages {ageRange} ({settings.ageMaxMonths} months max).</span>
+          <span class="muted field-hint">Ages {ageRange} ({inquiryAgeMax} months max).</span>
         </div>
 
         <div class="field">
